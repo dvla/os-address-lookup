@@ -1,7 +1,6 @@
 package dvla.domain
 
 import org.scalatest.{Matchers, WordSpec}
-import dvla.domain.vehicle_lookup.VehicleLookupRequest
 import dvla.domain.JsonFormats._
 import spray.json._
 import dvla.domain.address_lookup.AddressLookupRequest
