@@ -1,0 +1,4 @@
+#!/bin/bash
+
+initctl stop qas-address-lookup
+exit

@@ -1,0 +1,12 @@
+---
+- hosts: all
+  remote_user: vagrant
+  sudo: yes
+
+  tasks:
+
+  - include: compile.yml
+  - include: install-monit.yml
+  - include: decrypt-secrets.yml
+  - include: install-microservice.yml
+

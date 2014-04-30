@@ -1,0 +1,16 @@
+  - name: get epel-release
+    get_url: dest=/tmp/epel.rpm url=http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+
+  - name: get remi-release
+    get_url: dest=/tmp/remi.rpm url=http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+
+  - name: install epel
+    command: rpm -Uvh /tmp/remi.rpm /tmp/epel.rpm
+      creates=/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6
+
+  - name: install monit
+    yum: name=monit state=present
+
+  - name: start monit
+    service: name=monit state=running
+

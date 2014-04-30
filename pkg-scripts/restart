@@ -1,0 +1,5 @@
+#!/bin/bash
+
+initctl stop qas-address-lookup
+initctl start qas-address-lookup
+exit 0
