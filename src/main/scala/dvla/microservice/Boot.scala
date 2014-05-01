@@ -21,7 +21,7 @@ object Boot extends App {
   val log = Logging(system, getClass)
 
   implicit val commandExecutionContext = system.dispatcher
-  // TODO: add soap implementation once we have the wsdl
+  // TODO: add real implementation not just the canned data version
   implicit val command = if (callCannedWebService) new CannedAddressLookupCommand(configuration) else new CannedAddressLookupCommand(configuration)
   val creationProperties = Props(new SprayQASAddressLookupService(configuration))
 
@@ -37,8 +37,8 @@ object Boot extends App {
     log.debug(s"Listening for HTTP on port = ${serverPort}")
     callCannedWebService match {
       case true  =>
-        log.debug("Micro service configured to call soap web service")
-        log.debug(s"Timeout when calling soap endpoints = ${timeoutInMillis} millis")
+        log.debug("Micro service configured to call real web service")
+        log.debug(s"Timeout when calling endpoints = ${timeoutInMillis} millis")
       case false => log.debug("Micro service configured to return canned data")
     }
   }
