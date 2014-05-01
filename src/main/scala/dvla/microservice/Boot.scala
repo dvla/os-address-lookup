@@ -26,6 +26,7 @@ object Boot extends App {
   val log = Logging(system, getClass)
 
   implicit val commandExecutionContext = system.dispatcher
+
   // TODO: add soap implementation once we have the wsdl
   implicit val command = if (callOSWebService) new OSAddressLookupCommand(configuration) else new CannedAddressLookupCommand(configuration)
   val creationProperties = Props(new SprayOSAddressLookupService(configuration))
