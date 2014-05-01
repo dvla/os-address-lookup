@@ -11,6 +11,11 @@ scalaVersion := "2.10.3"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
+resolvers ++= Seq(
+  "local nexus snapshots" at "http://rep002-01.skyscape.preview-dvla.co.uk:8081/nexus/content/repositories/snapshots",
+  "local nexus releases" at "http://rep002-01.skyscape.preview-dvla.co.uk:8081/nexus/content/repositories/releases"
+)
+
 // sbt-Revolver allows the running of the spray service in sbt in the background using re-start
 seq(Revolver.settings: _*)
 
@@ -20,6 +25,7 @@ libraryDependencies ++= {
   val akkaV = "2.2.3"
   val sprayV = "1.2.0"
   Seq(
+    "dvla" % "vehicles-ms-common_2.10" % "0.1-SNAPSHOT",
     "io.spray" % "spray-can" % sprayV,
     "io.spray" % "spray-caching" % sprayV,
     "com.typesafe.akka" %% "akka-slf4j" % akkaV,
