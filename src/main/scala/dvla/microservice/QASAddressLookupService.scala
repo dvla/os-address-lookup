@@ -23,22 +23,35 @@ trait QASAddressLookupService extends HttpService {
   // TODO Work out if we want to dispatch soap requests on a different dispatcher
   private implicit def executionContext = actorRefFactory.dispatcher
 
-  // TODO this should really be a GET not a POST
+  // TODO these should really be a GET not a POST
   val route = {
     post {
       pathPrefix("postcode-to-address") {
-          entity(as[AddressLookupRequest]) { postcodeToAddressResponse =>
+          entity(as[PostcodeToAddressLookupRequest]) { postcodeToAddressResponse =>
             onComplete(lookupAddress(postcodeToAddressResponse)) {
               case Success(resp) => complete(resp)
               case Failure(_) => complete(ServiceUnavailable)
             }
           }
-      }
+      } ~
+        pathPrefix("uprn-to-address") {
+          entity(as[UprnToAddressLookupRequest]) { uprnToAddressResponse =>
+            onComplete(lookupAddress(uprnToAddressResponse)) {
+              case Success(resp) => complete(resp)
+              case Failure(_) => complete(ServiceUnavailable)
+            }
+          }
+        }
     }
   }
 
-  private def lookupAddress(request: AddressLookupRequest): Future[PostcodeToAddressResponse] = {
+  private def lookupAddress(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
     log.debug(s"Received post request on postcode-to-address. Request object = ${request}")
+    command(request)
+  }
+
+  private def lookupAddress(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
+    log.debug(s"Received post request on uprn-to-address. Request object = ${request}")
     command(request)
   }
 
