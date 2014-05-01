@@ -1,3 +1,3 @@
 package dvla.microservice
 
-case class Configuration(baseUrl: String, timeoutInMillisSoap: Int)
+case class Configuration(ordnanceSurveyUsername: String, ordnanceSurveyPassword: String, ordnanceSurveyBaseUrl : String, ordnanceSurveyRequestTimeout: Int)

@@ -1,19 +1,19 @@
 package dvla.microservice
 
 import spray.routing.HttpService
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import spray.http.StatusCodes._
-import dvla.domain.address_lookup._
 import scala.util.{Failure, Success}
 import akka.event.LoggingAdapter
 import dvla.domain.JsonFormats._
+import dvla.domain.address_lookup._
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class SprayQASAddressLookupService(val configuration: Configuration)(implicit val command: AddressLookupCommand) extends SprayHttpService with QASAddressLookupService
+class SprayOSAddressLookupService(val configuration: Configuration)(implicit val command: AddressLookupCommand) extends SprayHttpService with OSAddressLookupService
 
 // this trait defines our service behavior independently from the service actor
-trait QASAddressLookupService extends HttpService {
+trait OSAddressLookupService extends HttpService {
 
   val log: LoggingAdapter
   val configuration: Configuration

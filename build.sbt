@@ -64,6 +64,7 @@ libraryDependencies ++= {
   val sprayV = "1.2.0"
   Seq(
     "io.spray" % "spray-can" % sprayV,
+    "io.spray" % "spray-client" % sprayV,
     "io.spray" % "spray-caching" % sprayV,
     "com.typesafe.akka" %% "akka-slf4j" % akkaV,
     "io.spray" % "spray-routing" % sprayV,
@@ -73,7 +74,6 @@ libraryDependencies ++= {
     "ch.qos.logback" % "logback-classic" % "1.1.0",
     "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
     "com.github.nscala-time" %% "nscala-time" % "0.8.0",
-    "org.apache.cxf" % "cxf-tools-wsdlto-frontend-jaxws" % cxf.cxfVersion.value,
-    "org.apache.cxf" % "cxf-tools-wsdlto-databinding-jaxb" % cxf.cxfVersion.value
+    "com.typesafe.play" %% "play-json" % "2.2.2"
   )
 }

@@ -1,4 +1,4 @@
 package dvla.domain.address_lookup
 
-case class PostcodeToAddressLookupRequest(postcode: String) {
-}
+case class PostcodeToAddressLookupRequest(postcode: String)
+

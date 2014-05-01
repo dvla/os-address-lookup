@@ -11,10 +11,15 @@ object Boot extends App {
   val conf = ConfigFactory.load()
 
   val serverPort = conf.getInt("port")
-  val baseUrl = conf.getString("qas.baseurl")
-  val callCannedWebService = conf.getBoolean("callCannedWebService")
-  val timeoutInMillis = conf.getInt("timeoutInMillis")
-  val configuration = Configuration(baseUrl, timeoutInMillis)
+
+  val osUsername = conf.getString("ordnancesurvey.username")
+  val osPassword = conf.getString("ordnancesurvey.password")
+  val osBaseUrl = conf.getString("ordnancesurvey.baseurl")
+  val osRequestTimeout = conf.getInt("ordnancesurvey.requesttimeout")
+  val configuration = Configuration(osUsername, osPassword, osBaseUrl, osRequestTimeout)
+
+  val callOSWebService = conf.getBoolean("callOSWebService")
+
 
   // we need an ActorSystem to host our application in
   implicit val system = ActorSystem("on-spray-can")
@@ -22,8 +27,8 @@ object Boot extends App {
 
   implicit val commandExecutionContext = system.dispatcher
   // TODO: add soap implementation once we have the wsdl
-  implicit val command = if (callCannedWebService) new CannedAddressLookupCommand(configuration) else new CannedAddressLookupCommand(configuration)
-  val creationProperties = Props(new SprayQASAddressLookupService(configuration))
+  implicit val command = if (callOSWebService) new OSAddressLookupCommand(configuration) else new CannedAddressLookupCommand(configuration)
+  val creationProperties = Props(new SprayOSAddressLookupService(configuration))
 
   // create and start our service actor
   val service = system.actorOf(creationProperties, "micro-service")
@@ -35,10 +40,10 @@ object Boot extends App {
 
   private def logStartupConfiguration = {
     log.debug(s"Listening for HTTP on port = ${serverPort}")
-    callCannedWebService match {
+    callOSWebService match {
       case true  =>
-        log.debug("Micro service configured to call soap web service")
-        log.debug(s"Timeout when calling soap endpoints = ${timeoutInMillis} millis")
+        log.debug("Micro service configured to call ordnance survey web service")
+        log.debug(s"Timeout = ${osRequestTimeout} millis")
       case false => log.debug("Micro service configured to return canned data")
     }
   }
