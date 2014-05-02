@@ -2,9 +2,13 @@ package dvla.microservice
 
 import dvla.domain.JsonFormats._
 import spray.http.StatusCodes._
-import dvla.domain.address_lookup.{UprnAddressPair, AddressViewModel, UprnToAddressResponse, PostcodeToAddressResponse}
+import dvla.domain.address_lookup._
 import org.mockito.Mockito._
 import org.mockito.BDDMockito.given
+import dvla.domain.address_lookup.PostcodeToAddressResponse
+import dvla.domain.address_lookup.AddressViewModel
+import dvla.domain.address_lookup.UprnToAddressResponse
+import scala.Some
 
 class OSAddressLookupServiceSpec extends RouteSpecBase {
 
@@ -22,39 +26,29 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
 
   "The postcode to address lookup service" should {
 
-    // This is used because you can't create real request object with invalid parameters
-    case class TestRequest(postcode: String)
-
-    implicit val testRequestFormat = jsonFormat1(TestRequest)
-    val response = mock[PostcodeToAddressResponse]
-    val request = TestRequest(postcodeValid)
+    val request = PostcodeToAddressLookupRequest(postcodeValid)
 
     "return a successful response containing a model for a valid postcode to address lookup request" in {
-      given(response.addresses) willReturn Seq(UprnAddressPair("12345","44 Hythe Road, White City, London, NW10 6RJ"))
-
       Post(postocdeToAddressLookupUrl, request) ~> sealRoute(route) ~> check {
       status should equal(OK)
-      response.addresses(0).uprn should equal("12345")
+        val resp = responseAs[PostcodeToAddressResponse]
+        resp.addresses(0).uprn should equal("12345")
       }
     }
   }
 
   "The uprn to address lookup service" should {
 
-    // This is used because you can't create real request object with invalid parameters
-    case class TestRequest(uprn: Long)
-
-    implicit val testRequestFormat = jsonFormat1(TestRequest)
-    val response = mock[UprnToAddressResponse]
-    val request = TestRequest(uprnValid)
+    val request = UprnToAddressLookupRequest(uprnValid)
 
     "return a successful response containing a model for a valid uprn to address lookup request" in {
-      given(response.addressViewModel) willReturn Some(AddressViewModel(Some(12345),List("44 Hythe Road, White City, London, NW10 6RJ")))
       Post(uprntoAddressLookupUrl, request) ~> sealRoute(route) ~> check {
         status should equal(OK)
-        response.addressViewModel should be (defined)
-        testValidAddressViewModel(response.addressViewModel.get)
+        val resp = responseAs[UprnToAddressResponse]
+        resp.addressViewModel should be (defined)
+        testValidAddressViewModel(resp.addressViewModel.get)
       }
     }
   }
+
 }
