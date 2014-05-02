@@ -2,7 +2,9 @@ package dvla.microservice
 
 import dvla.domain.JsonFormats._
 import spray.http.StatusCodes._
-import dvla.domain.address_lookup.{AddressViewModel, UprnToAddressResponse, PostcodeToAddressResponse}
+import dvla.domain.address_lookup.{UprnAddressPair, AddressViewModel, UprnToAddressResponse, PostcodeToAddressResponse}
+import org.mockito.Mockito._
+import org.mockito.BDDMockito.given
 
 class OSAddressLookupServiceSpec extends RouteSpecBase {
 
@@ -24,17 +26,17 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
     case class TestRequest(postcode: String)
 
     implicit val testRequestFormat = jsonFormat1(TestRequest)
+    val response = mock[PostcodeToAddressResponse]
+    val request = TestRequest(postcodeValid)
 
     "return a successful response containing a model for a valid postcode to address lookup request" in {
-      val request = TestRequest(postcodeValid)
+      given(response.addresses) willReturn Seq(UprnAddressPair("12345","44 Hythe Road, White City, London, NW10 6RJ"))
+
       Post(postocdeToAddressLookupUrl, request) ~> sealRoute(route) ~> check {
-        status should equal(OK)
-        val resp = responseAs[PostcodeToAddressResponse]
-        resp.addresses(0).uprn should equal("12345")
-        // TODO check address half of pair after using mocked not canned data
+      status should equal(OK)
+      response.addresses(0).uprn should equal("12345")
       }
     }
-
   }
 
   "The uprn to address lookup service" should {
@@ -43,17 +45,16 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
     case class TestRequest(uprn: Long)
 
     implicit val testRequestFormat = jsonFormat1(TestRequest)
+    val response = mock[UprnToAddressResponse]
+    val request = TestRequest(uprnValid)
 
     "return a successful response containing a model for a valid uprn to address lookup request" in {
-      val request = TestRequest(uprnValid)
+      given(response.addressViewModel) willReturn Some(AddressViewModel(Some(12345),List("44 Hythe Road, White City, London, NW10 6RJ")))
       Post(uprntoAddressLookupUrl, request) ~> sealRoute(route) ~> check {
         status should equal(OK)
-        val resp = responseAs[UprnToAddressResponse]
-        resp.addressViewModel should be (defined)
-        testValidAddressViewModel(resp.addressViewModel.get)
+        response.addressViewModel should be (defined)
+        testValidAddressViewModel(response.addressViewModel.get)
       }
     }
-
   }
-
 }

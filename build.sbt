@@ -38,6 +38,8 @@ libraryDependencies ++= {
     "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
     "com.github.nscala-time" %% "nscala-time" % "0.8.0",
     "com.typesafe.play" %% "play-json" % "2.2.2",
-    "com.github.nscala-time" %% "nscala-time" % "0.8.0"
+    "com.github.nscala-time" %% "nscala-time" % "0.8.0",
+    "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1" % "test",
+    "org.mockito" % "mockito-all" % "1.9.5" % "test"
   )
 }
