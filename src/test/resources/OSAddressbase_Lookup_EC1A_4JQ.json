@@ -1,0 +1,219 @@
+{
+    "header" : {
+        "uri" : "https://addressapi.ordnancesurvey.co.uk/postcode?&postcode=EC1A+4JQ&dataset=dpa&_=1392379157908",
+        "query" : "postcode=EC1A 4JQ",
+        "offset" : 0,
+        "totalresults" : 13,
+        "format" : "JSON",
+        "dataset" : "dpa",
+        "maxresults" : 100
+    },
+    "results" : [ {
+        "DPA" : {
+            "UPRN" : "5300000798",
+            "ADDRESS" : "NELHART NEWS, 127, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "NELHART NEWS",
+            "BUILDING_NUMBER" : "127",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532073.0,
+            "Y_COORDINATE" : 181928.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "5300000799",
+            "ADDRESS" : "UPPER FLAT, 127, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "SUB_BUILDING_NAME" : "UPPER FLAT",
+            "BUILDING_NUMBER" : "127",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532073.0,
+            "Y_COORDINATE" : 181928.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "5300000795",
+            "ADDRESS" : "MARTIN GODDARD DESIGN LTD, 124, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "MARTIN GODDARD DESIGN LTD",
+            "BUILDING_NUMBER" : "124",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532049.0,
+            "Y_COORDINATE" : 181925.0,
+            "STATUS" : "HISTORICAL",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "95506420",
+            "ADDRESS" : "CLASSIC CLEAN, 135, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "CLASSIC CLEAN",
+            "BUILDING_NUMBER" : "135",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532084.0,
+            "Y_COORDINATE" : 181867.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "5300000801",
+            "ADDRESS" : "VECCHIO PARIOLI RISTORANTE, 129, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "VECCHIO PARIOLI RISTORANTE",
+            "BUILDING_NUMBER" : "129",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532073.0,
+            "Y_COORDINATE" : 181920.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "5300000792",
+            "ADDRESS" : "WHERE ARE YOU NOW LTD, 123, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "WHERE ARE YOU NOW LTD",
+            "BUILDING_NUMBER" : "123",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532068.0,
+            "Y_COORDINATE" : 181941.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "5300000738",
+            "ADDRESS" : "FOOD HUT, 107, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "FOOD HUT",
+            "BUILDING_NUMBER" : "107",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532085.0,
+            "Y_COORDINATE" : 182011.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "5300000739",
+            "ADDRESS" : "CORONATION EXPORT & IMPORT LTD, 108, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "CORONATION EXPORT & IMPORT LTD",
+            "BUILDING_NUMBER" : "108",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532079.0,
+            "Y_COORDINATE" : 182005.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "95511342",
+            "ADDRESS" : "WILLIAM HILL BOOKMAKERS, 131, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "WILLIAM HILL BOOKMAKERS",
+            "BUILDING_NUMBER" : "131",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "1",
+            "X_COORDINATE" : 532080.0,
+            "Y_COORDINATE" : 181893.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "95509827",
+            "ADDRESS" : "TESCO, 131, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "TESCO",
+            "BUILDING_NUMBER" : "131",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532079.0,
+            "Y_COORDINATE" : 181897.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "10090550860",
+            "ADDRESS" : "107A, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "BUILDING_NAME" : "107A",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532085.0,
+            "Y_COORDINATE" : 182011.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "5300100488",
+            "ADDRESS" : "R3, 120, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "R3",
+            "BUILDING_NUMBER" : "120",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532052.0,
+            "Y_COORDINATE" : 181949.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    }, {
+        "DPA" : {
+            "UPRN" : "5300100480",
+            "ADDRESS" : "SKANSKA CONSTRUCTION UK LTD, 120, ALDERSGATE STREET, LONDON, EC1A 4JQ",
+            "ORGANISATION_NAME" : "SKANSKA CONSTRUCTION UK LTD",
+            "BUILDING_NUMBER" : "120",
+            "THOROUGHFARE_NAME" : "ALDERSGATE STREET",
+            "POST_TOWN" : "LONDON",
+            "POSTCODE" : "EC1A 4JQ",
+            "RPC" : "2",
+            "X_COORDINATE" : 532052.0,
+            "Y_COORDINATE" : 181949.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.0,
+            "MATCH_DESCRIPTION" : "NO MATCH"
+        }
+    } ]
+}

@@ -1,0 +1,11 @@
+{
+    "header" : {
+        "uri" : "https://addressapi.ordnancesurvey.co.uk/postcode?&postcode=EC1A+4JQ&dataset=dpa&_=1392379157908",
+        "query" : "postcode=EC1A 4JQ",
+        "offset" : 0,
+        "totalresults" : 0,
+        "format" : "JSON",
+        "dataset" : "dpa",
+        "maxresults" : 100
+    }
+}
