@@ -75,7 +75,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
 
   // TODO extract common code from the below two methods?
-  private def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[OSAddressbaseSearchResponse] = {
+  def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[OSAddressbaseSearchResponse] = {
 
     import spray.httpx.PlayJsonSupport._
 
@@ -93,7 +93,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
   }
 
-  private def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[OSAddressbaseSearchResponse] = {
+  def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[OSAddressbaseSearchResponse] = {
 
     import spray.httpx.PlayJsonSupport._
 
