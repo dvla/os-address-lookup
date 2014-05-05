@@ -1,6 +1,6 @@
 package dvla.microservice
 
-import scala.util.{Success, Failure}
+import scala.util.Failure
 import akka.actor.ActorSystem
 import scala.concurrent._
 import akka.event.Logging
@@ -13,15 +13,14 @@ import dvla.domain.address_lookup.PostcodeToAddressResponse
 import dvla.domain.address_lookup.UprnAddressPair
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 import scala.Some
-import dvla.domain.JsonFormats._
 import dvla.domain.ordnance_survey.{OSAddressbaseSearchResponse, OSAddressbaseDPA}
 import dvla.domain.address_lookup.AddressViewModel
 
 class OSAddressLookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
-  val username = s"${ configuration.ordnanceSurveyUsername }"
-  val password = s"${ configuration.ordnanceSurveyPassword }"
-  val baseUrl = s"${ configuration.ordnanceSurveyBaseUrl }"
+  val username = s"${configuration.ordnanceSurveyUsername}"
+  val password = s"${configuration.ordnanceSurveyPassword}"
+  val baseUrl = s"${configuration.ordnanceSurveyBaseUrl}"
   val requestTimeout = configuration.ordnanceSurveyRequestTimeout.toInt
 
   final lazy val log = Logging(system, this.getClass)
@@ -51,7 +50,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
         } // Sort before translating to drop down format.
       case None =>
         // Handle no results
-//        log.debug(s"No results returned for postcode: $postcode") TODO can no longer access postcode
+        //        log.debug(s"No results returned for postcode: $postcode") TODO can no longer access postcode
         Seq.empty
     }
 
@@ -63,11 +62,13 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
     flattenMapResponse match {
       case Some(results) =>
-        val addresses = results.flatMap { _.DPA }
+        val addresses = results.flatMap {
+          _.DPA
+        }
         require(addresses.length >= 1, s"Should be at least one address for the UPRN")
         Some(AddressViewModel(uprn = Some(addresses.head.UPRN.toLong), address = addresses.head.address.split(", "))) // Translate to view model.
       case None =>
-//        log.error(s"No results returned by web service for submitted UPRN: $uprn") TODO can no longer access uprn
+        //        log.error(s"No results returned by web service for submitted UPRN: $uprn") TODO can no longer access uprn
         None
     }
 
@@ -80,12 +81,12 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
     import spray.httpx.PlayJsonSupport._
 
     val pipeline: HttpRequest => Future[OSAddressbaseSearchResponse] = (
-        addCredentials(BasicHttpCredentials(username, password))
+      addCredentials(BasicHttpCredentials(username, password))
         ~> (sendReceive
         ~> unmarshal[OSAddressbaseSearchResponse])
       )
 
-    val endPoint = s"$baseUrl/postcode?postcode=${ postcodeWithNoSpaces(request.postcode) }&dataset=dpa"
+    val endPoint = s"$baseUrl/postcode?postcode=${postcodeWithNoSpaces(request.postcode)}&dataset=dpa"
 
     pipeline {
       Get(endPoint)
@@ -103,7 +104,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
         ~> unmarshal[OSAddressbaseSearchResponse])
       )
 
-    val endPoint = s"$baseUrl/uprn?uprn=${ request.uprn }&dataset=dpa" // TODO add lpi to URL, but need to set orgnaisation as Option on the type.
+    val endPoint = s"$baseUrl/uprn?uprn=${request.uprn}&dataset=dpa" // TODO add lpi to URL, but need to set orgnaisation as Option on the type.
 
     pipeline {
       Get(endPoint)
@@ -120,6 +121,10 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
       resp => {
         PostcodeToAddressResponse(buildUprnAddressPairSeq(Option(resp)))
       }
+    }.recover {
+      case e: Throwable =>
+        log.error(s"Ordnance Survey postcode lookup service error: $e")
+        PostcodeToAddressResponse(Seq.empty)
     }
 
   }
@@ -133,6 +138,10 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
       resp => {
         UprnToAddressResponse(buildAddressViewModel(Option(resp)))
       }
+    }.recover {
+      case e: Throwable =>
+        log.error(s"Ordnance Survey uprn lookup service error: $e")
+        UprnToAddressResponse(None)
     }
 
   }
