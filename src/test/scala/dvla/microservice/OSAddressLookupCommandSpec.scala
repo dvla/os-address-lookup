@@ -66,14 +66,15 @@ class OSAddressLookupCommandSpec extends UnitSpec {
     Seq(result, result, result)
   }
 
-  def osAddressLookupCommandMock(results: Option[Seq[OSAddressbaseResult]]): OSAddressLookupCommand = {
+  def osAddressLookupCommandMock(response: Option[OSAddressbaseSearchResponse]): OSAddressLookupCommand = {
+
     new OSAddressLookupCommand(configuration) {
       override def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[OSAddressbaseSearchResponse]] = {
-        Future.successful(Some(OSAddressbaseSearchResponse(header, results)))
+        Future.successful(response)
       }
 
       override def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[OSAddressbaseSearchResponse]] = {
-        Future.successful(Some(OSAddressbaseSearchResponse(header, results)))
+        Future.successful(response)
       }
     }
   }
@@ -83,7 +84,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
 
     "return a valid sequence of UprnAddressPairs when the postcode is valid and the OS service returns results" in {
 
-      val service = osAddressLookupCommandMock(Some(oSAddressbaseResultsValidDPA))
+      val service = osAddressLookupCommandMock(Some(OSAddressbaseSearchResponse(header, Some(oSAddressbaseResultsValidDPA))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result, Timeout(Span(1, Second))) {
@@ -96,6 +97,18 @@ class OSAddressLookupCommandSpec extends UnitSpec {
 
     "return an empty sequence when the postcode is valid but the OS service returns no results" in {
 
+      val service = osAddressLookupCommandMock(Some(OSAddressbaseSearchResponse(header, None)))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r =>
+          r.addresses shouldBe empty
+      }
+
+    }
+
+    "return empty seq when response status is not 200 OK" in {
+
       val service = osAddressLookupCommandMock(None)
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
@@ -106,20 +119,9 @@ class OSAddressLookupCommandSpec extends UnitSpec {
 
     }
 
-    //    "return empty seq when response status is not 200 OK" in {
-    //      val service = addressServiceMock(response(NOT_FOUND), Some(oSAddressbaseResultsValidDPA))
-    //
-    //      val result = service.fetchAddressesForPostcode(postcodeValid)
-    //
-    //      whenReady(result) {
-    //        _ shouldBe empty
-    //      }
-    //    }
-    //
-
     "return an empty sequence when the postcode is valid but the OS service returns a result with no DPA and no LPI" in {
 
-      val service = osAddressLookupCommandMock(Some(oSAddressbaseResultsEmptyDPAAndLPI))
+      val service = osAddressLookupCommandMock(Some(OSAddressbaseSearchResponse(header, Some(oSAddressbaseResultsEmptyDPAAndLPI))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
@@ -128,28 +130,6 @@ class OSAddressLookupCommandSpec extends UnitSpec {
       }
 
     }
-
-    //    "return empty seq when response throws" in {
-    //      val addressLookupService = addressServiceMock(responseThrows, None)
-    //
-    //      val result = addressLookupService.fetchAddressesForPostcode(postcodeValid)
-    //
-    //      whenReady(result) {
-    //        _ shouldBe empty
-    //      }
-    //    }
-    //
-    //    "return empty seq given invalid json" in {
-    //      val inputAsJson = Json.toJson("INVALID")
-    //      val service = addressServiceMock(response(OK, inputAsJson), Some(oSAddressbaseResultsValidDPA))
-    //
-    //      val result = service.fetchAddressesForPostcode(postcodeValid)
-    //
-    //      whenReady(result) {
-    //        _ shouldBe empty
-    //      }
-    //    }
-    //
 
     "not throw when an address contains a building number that contains letters" in {
 
@@ -163,7 +143,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
       val dpa3 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty AAA", houseNumber = "123A")), LPI = None)
       val oSAddressbaseResultsValidDPA = Seq(dpa1, dpa2, dpa3)
 
-      val service = osAddressLookupCommandMock(Some(oSAddressbaseResultsValidDPA))
+      val service = osAddressLookupCommandMock(Some(OSAddressbaseSearchResponse(header, Some(oSAddressbaseResultsValidDPA))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
@@ -186,7 +166,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
       val dpa3 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty AAA", houseNumber = "123")), LPI = None)
       val oSAddressbaseResultsValidDPA = Seq(dpa1, dpa2, dpa3)
 
-      val service = osAddressLookupCommandMock(Some(oSAddressbaseResultsValidDPA))
+      val service = osAddressLookupCommandMock(Some(OSAddressbaseSearchResponse(header, Some(oSAddressbaseResultsValidDPA))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
@@ -202,7 +182,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
 
     "return a valid AddressViewModel when the uprn is valid and the OS service returns results" in {
 
-      val service = osAddressLookupCommandMock(Some(oSAddressbaseResultsValidDPA))
+      val service = osAddressLookupCommandMock(Some(OSAddressbaseSearchResponse(header, Some(oSAddressbaseResultsValidDPA))))
       val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
       whenReady(result) {
@@ -216,17 +196,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
     }
   }
 
-  //    "return None when response status is not 200 OK" in {
-  //      val service = addressServiceMock(response(NOT_FOUND), Some(oSAddressbaseResultsValidDPA))
-  //
-  //      val result = service.fetchAddressForUprn(osAddressbaseDPA().UPRN)
-  //
-  //      whenReady(result) {
-  //        _ should equal(None)
-  //      }
-  //    }
-
-  "return none when the uprn is valid but the OS service returns no results" in {
+  "return None when response status is not 200 OK" in {
 
     val service = osAddressLookupCommandMock(None)
     val result = service(UprnToAddressLookupRequest(traderUprnValid))
@@ -236,9 +206,9 @@ class OSAddressLookupCommandSpec extends UnitSpec {
     }
   }
 
-  "return none when the result has no DPA and no LPI" in {
+  "return none when the uprn is valid but the OS service returns no results" in {
 
-    val service = osAddressLookupCommandMock(Some(oSAddressbaseResultsEmptyDPAAndLPI))
+    val service = osAddressLookupCommandMock(Some(OSAddressbaseSearchResponse(header, None)))
     val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
     whenReady(result) {
@@ -246,15 +216,14 @@ class OSAddressLookupCommandSpec extends UnitSpec {
     }
   }
 
-  //    "return none when web service throws an exception" in {
-  //      val addressLookupService = addressServiceMock(responseThrows, None)
-  //
-  //      val result = addressLookupService.fetchAddressForUprn(osAddressbaseDPA().UPRN)
-  //
-  //      whenReady(result) {
-  //        _ should equal(None)
-  //      }
-  //    }
-  //  }
+  "return none when the result has no DPA and no LPI" in {
+
+    val service = osAddressLookupCommandMock(Some(OSAddressbaseSearchResponse(header, Some(oSAddressbaseResultsEmptyDPAAndLPI))))
+    val result = service(UprnToAddressLookupRequest(traderUprnValid))
+
+    whenReady(result) {
+      r => r.addressViewModel should be(None)
+    }
+  }
 
 }
