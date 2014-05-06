@@ -14,16 +14,19 @@ import dvla.domain.ordnance_survey.OSAddressbaseSearchResponse
 
 class OSAddressLookupServiceSpec extends RouteSpecBase {
 
+  // test data
   val postcodeValid = "SA11AA"
   val uprnValid = 12345L
   val postocdeToAddressLookupUrl = "/postcode-to-address"
   val uprntoAddressLookupUrl = "/uprn-to-address"
-
-
-  private def testValidAddressViewModel(addressViewModel: AddressViewModel) = {
-    addressViewModel.uprn.get should equal(12345)
-    //TODO test address parts of the the model
-  }
+  val traderUprnValid = 12345L
+  val traderUprnValid2 = 4567L
+  val addressWithUprn = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
+  val fetchedAddressesSeq = Seq(
+    UprnAddressPair(traderUprnValid.toString, addressWithUprn.address.mkString(", ")),
+    UprnAddressPair(traderUprnValid2.toString, addressWithUprn.address.mkString(", "))
+  )
+  val fetchedAddressViewModel = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
 
 
   "The postcode to address lookup service" should {
@@ -32,20 +35,13 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
 
     "return a successful response containing a model for a valid postcode to address lookup request" in {
 
-      val traderUprnValid1 = 12345L
-      val traderUprnValid2 = 4567L
-      val addressWithUprn = AddressViewModel(uprn = Some(traderUprnValid1), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
-      val fetchedAddresses = Seq(
-        UprnAddressPair(traderUprnValid1.toString, addressWithUprn.address.mkString(", ")),
-        UprnAddressPair(traderUprnValid2.toString, addressWithUprn.address.mkString(", "))
-      )
-      val postcodeToAddressResponse = PostcodeToAddressResponse(fetchedAddresses)
+      val postcodeToAddressResponse = PostcodeToAddressResponse(fetchedAddressesSeq)
       when(command.apply(request)).thenReturn(Future.successful(postcodeToAddressResponse))
 
       Post(postocdeToAddressLookupUrl, request) ~> sealRoute(route) ~> check {
         status should equal(OK)
         val resp = responseAs[PostcodeToAddressResponse]
-        resp.addresses(0).uprn should equal("12345")
+        resp.addresses should equal(fetchedAddressesSeq)
       }
     }
 
@@ -66,16 +62,14 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
 
     "return a successful response containing a model for a valid uprn to address lookup request" in {
 
-      val traderUprnValid = 12345L
-      val fetchedAddress = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
-      val uprnToAddressResponse = UprnToAddressResponse(Option(fetchedAddress))
+      val uprnToAddressResponse = UprnToAddressResponse(Option(fetchedAddressViewModel))
       when(command.apply(request)).thenReturn(Future.successful(uprnToAddressResponse))
 
       Post(uprntoAddressLookupUrl, request) ~> sealRoute(route) ~> check {
         status should equal(OK)
         val resp = responseAs[UprnToAddressResponse]
         resp.addressViewModel should be(defined)
-        testValidAddressViewModel(resp.addressViewModel.get)
+        resp.addressViewModel.get should equal(fetchedAddressViewModel)
       }
     }
 

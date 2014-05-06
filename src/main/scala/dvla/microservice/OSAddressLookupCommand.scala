@@ -74,10 +74,10 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
   }
 
-  def checkStatusCodeAndUnmarshal[T](implicit unmarshaller: FromResponseUnmarshaller[T]): Future[HttpResponse] => Future[Option[T]] =
+  def checkStatusCodeAndUnmarshal(implicit unmarshaller: FromResponseUnmarshaller[OSAddressbaseSearchResponse]): Future[HttpResponse] => Future[Option[OSAddressbaseSearchResponse]] =
     (futRes: Future[HttpResponse]) => futRes.map {
       res =>
-        if (res.status == StatusCodes.OK) Some(unmarshal[T](unmarshaller)(res))
+        if (res.status == StatusCodes.OK) Some(unmarshal[OSAddressbaseSearchResponse](unmarshaller)(res))
         else None
     }
 
@@ -88,7 +88,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
     val pipeline: HttpRequest => Future[Option[OSAddressbaseSearchResponse]] = (
       addCredentials(BasicHttpCredentials(username, password))
         ~> (sendReceive
-        ~> checkStatusCodeAndUnmarshal[OSAddressbaseSearchResponse])
+        ~> checkStatusCodeAndUnmarshal)
       )
 
     val endPoint = s"$baseUrl/postcode?postcode=${postcodeWithNoSpaces(request.postcode)}&dataset=dpa"
@@ -106,7 +106,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
     val pipeline: HttpRequest => Future[Option[OSAddressbaseSearchResponse]] = (
       addCredentials(BasicHttpCredentials(username, password))
         ~> (sendReceive
-        ~> checkStatusCodeAndUnmarshal[OSAddressbaseSearchResponse])
+        ~> checkStatusCodeAndUnmarshal)
       )
 
     val endPoint = s"$baseUrl/uprn?uprn=${request.uprn}&dataset=dpa" // TODO add lpi to URL, but need to set orgnaisation as Option on the type.
