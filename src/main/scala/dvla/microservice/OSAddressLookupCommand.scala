@@ -7,14 +7,14 @@ import akka.event.Logging
 import dvla.domain.address_lookup._
 import spray.client.pipelining._
 
-import spray.http.{HttpRequest, BasicHttpCredentials}
-import spray.http.HttpRequest
+import spray.http.{HttpResponse, StatusCodes, HttpRequest, BasicHttpCredentials}
 import dvla.domain.address_lookup.PostcodeToAddressResponse
 import dvla.domain.address_lookup.UprnAddressPair
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 import scala.Some
 import dvla.domain.ordnance_survey.{OSAddressbaseSearchResponse, OSAddressbaseDPA}
 import dvla.domain.address_lookup.AddressViewModel
+import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
 class OSAddressLookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
@@ -74,16 +74,22 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
   }
 
+  private def checkStatusCodeAndUnmarshal[T](implicit unmarshaller: FromResponseUnmarshaller[T]): Future[HttpResponse] => Future[Option[T]] =
+    (futRes: Future[HttpResponse]) => futRes.map {
+      res =>
+        if (res.status == StatusCodes.OK) Some(unmarshal[T](unmarshaller)(res))
+        else None
+    }
 
   // TODO extract common code from the below two methods?
-  def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[OSAddressbaseSearchResponse] = {
+  def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[OSAddressbaseSearchResponse]] = {
 
     import spray.httpx.PlayJsonSupport._
 
-    val pipeline: HttpRequest => Future[OSAddressbaseSearchResponse] = (
+    val pipeline: HttpRequest => Future[Option[OSAddressbaseSearchResponse]] = (
       addCredentials(BasicHttpCredentials(username, password))
         ~> (sendReceive
-        ~> unmarshal[OSAddressbaseSearchResponse])
+        ~> checkStatusCodeAndUnmarshal[OSAddressbaseSearchResponse])
       )
 
     val endPoint = s"$baseUrl/postcode?postcode=${postcodeWithNoSpaces(request.postcode)}&dataset=dpa"
@@ -94,14 +100,14 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
   }
 
-  def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[OSAddressbaseSearchResponse] = {
+  def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[OSAddressbaseSearchResponse]] = {
 
     import spray.httpx.PlayJsonSupport._
 
-    val pipeline: HttpRequest => Future[OSAddressbaseSearchResponse] = (
+    val pipeline: HttpRequest => Future[Option[OSAddressbaseSearchResponse]] = (
       addCredentials(BasicHttpCredentials(username, password))
         ~> (sendReceive
-        ~> unmarshal[OSAddressbaseSearchResponse])
+        ~> checkStatusCodeAndUnmarshal[OSAddressbaseSearchResponse])
       )
 
     val endPoint = s"$baseUrl/uprn?uprn=${request.uprn}&dataset=dpa" // TODO add lpi to URL, but need to set orgnaisation as Option on the type.
@@ -119,7 +125,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
     callPostcodeToAddressOSWebService(request).map {
       resp => {
-        PostcodeToAddressResponse(buildUprnAddressPairSeq(Option(resp)))
+        PostcodeToAddressResponse(buildUprnAddressPairSeq(resp))
       }
     }.recover {
       case e: Throwable =>
@@ -136,7 +142,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
     callUprnToAddressOSWebService(request).map {
       resp => {
-        UprnToAddressResponse(buildAddressViewModel(Option(resp)))
+        UprnToAddressResponse(buildAddressViewModel(resp))
       }
     }.recover {
       case e: Throwable =>

@@ -51,7 +51,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
 
     "return an unsuccessful response containing a Service Unavailable status code when the command throws an exception" in {
 
-    when(command.apply(request)).thenReturn(Future.failed(new RuntimeException))
+      when(command.apply(request)).thenReturn(Future.failed(new RuntimeException))
 
       Post(postocdeToAddressLookupUrl, request) ~> sealRoute(route) ~> check {
         status should equal(ServiceUnavailable)
