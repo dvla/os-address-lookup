@@ -36,7 +36,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
     })
   }
 
-  def buildUprnAddressPairSeq(resp: Option[OSAddressbaseSearchResponse]): Seq[UprnAddressPair] = {
+  def buildUprnAddressPairSeq(postcode: String, resp: Option[OSAddressbaseSearchResponse]): Seq[UprnAddressPair] = {
 
     val flattenMapResponse = resp.flatMap(_.results)
 
@@ -50,13 +50,13 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
         } // Sort before translating to drop down format.
       case None =>
         // Handle no results
-        //        log.debug(s"No results returned for postcode: $postcode") TODO can no longer access postcode
+        log.debug(s"No results returned for postcode: $postcode")
         Seq.empty
     }
 
   }
 
-  def buildAddressViewModel(resp: Option[OSAddressbaseSearchResponse]): Option[AddressViewModel] = {
+  def buildAddressViewModel(uprn: Long, resp: Option[OSAddressbaseSearchResponse]): Option[AddressViewModel] = {
 
     val flattenMapResponse = resp.flatMap(_.results)
 
@@ -68,20 +68,19 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
         require(addresses.length >= 1, s"Should be at least one address for the UPRN")
         Some(AddressViewModel(uprn = Some(addresses.head.UPRN.toLong), address = addresses.head.address.split(", "))) // Translate to view model.
       case None =>
-        //        log.error(s"No results returned by web service for submitted UPRN: $uprn") TODO can no longer access uprn
+        log.error(s"No results returned by web service for submitted UPRN: $uprn")
         None
     }
 
   }
 
-  private def checkStatusCodeAndUnmarshal[T](implicit unmarshaller: FromResponseUnmarshaller[T]): Future[HttpResponse] => Future[Option[T]] =
+  def checkStatusCodeAndUnmarshal[T](implicit unmarshaller: FromResponseUnmarshaller[T]): Future[HttpResponse] => Future[Option[T]] =
     (futRes: Future[HttpResponse]) => futRes.map {
       res =>
         if (res.status == StatusCodes.OK) Some(unmarshal[T](unmarshaller)(res))
         else None
     }
 
-  // TODO extract common code from the below two methods?
   def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[OSAddressbaseSearchResponse]] = {
 
     import spray.httpx.PlayJsonSupport._
@@ -125,7 +124,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
     callPostcodeToAddressOSWebService(request).map {
       resp => {
-        PostcodeToAddressResponse(buildUprnAddressPairSeq(resp))
+        PostcodeToAddressResponse(buildUprnAddressPairSeq(request.postcode, resp))
       }
     }.recover {
       case e: Throwable =>
@@ -142,7 +141,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
     callUprnToAddressOSWebService(request).map {
       resp => {
-        UprnToAddressResponse(buildAddressViewModel(resp))
+        UprnToAddressResponse(buildAddressViewModel(request.uprn, resp))
       }
     }.recover {
       case e: Throwable =>

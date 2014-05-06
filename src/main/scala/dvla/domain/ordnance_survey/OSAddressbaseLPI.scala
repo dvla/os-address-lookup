@@ -18,8 +18,7 @@ case class OSAddressbaseLPI(UPRN: String,
                             PAO_END_SUFFIX: Option[String],
                             STREET_DESCRIPTION: String,
                             LOCALITY_NAME: Option[String],
-                            TOWN_NAME: Option[String]
-                             )
+                            TOWN_NAME: Option[String])
 
 object OSAddressbaseLPI {
   implicit val readsOSAddressbaseLPI = Json.format[OSAddressbaseLPI]

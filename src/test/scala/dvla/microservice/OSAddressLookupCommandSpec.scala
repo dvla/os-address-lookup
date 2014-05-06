@@ -150,6 +150,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
     //      }
     //    }
     //
+
     "not throw when an address contains a building number that contains letters" in {
 
       val expected = PostcodeToAddressResponse(Seq(
