@@ -6,7 +6,7 @@ import java.net.URI
 import org.scalatest.time.Span
 import org.scalatest.time.Second
 import dvla.domain.ordnance_survey.{OSAddressbaseHeader, OSAddressbaseDPA, OSAddressbaseResult, OSAddressbaseSearchResponse}
-import dvla.domain.address_lookup.{UprnToAddressLookupRequest, UprnAddressPair, PostcodeToAddressLookupRequest}
+import dvla.domain.address_lookup.{PostcodeToAddressResponse, UprnToAddressLookupRequest, UprnAddressPair, PostcodeToAddressLookupRequest}
 import dvla.helpers.UnitSpec
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import scala.Some
@@ -91,6 +91,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
           r.addresses.length should equal(oSAddressbaseResultsValidDPA.length)
           r.addresses should equal(oSAddressbaseResultsValidDPA.map(i => UprnAddressPair(i.DPA.get.UPRN, i.DPA.get.address)))
       }
+
     }
 
     "return an empty sequence when the postcode is valid but the OS service returns no results" in {
@@ -102,6 +103,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
         r =>
           r.addresses shouldBe empty
       }
+
     }
 
     //    "return empty seq when response status is not 200 OK" in {
@@ -124,6 +126,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
         r =>
           r.addresses shouldBe empty
       }
+
     }
 
     //    "return empty seq when response throws" in {
@@ -147,51 +150,51 @@ class OSAddressLookupCommandSpec extends UnitSpec {
     //      }
     //    }
     //
-    //    "not throw when an address contains a building number that contains letters" in {
-    //      val expected = Seq(
-    //        (traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid"),
-    //        (traderUprnValid.toString, s"presentationProperty BBB, 123B, property stub, street stub, town stub, area stub, $postcodeValid"),
-    //        (traderUprnValid.toString, s"presentationProperty stub, 789C, property stub, street stub, town stub, area stub, $postcodeValid")
-    //      )
-    //      val dpa1 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseNumber = "789C")), LPI = None)
-    //      val dpa2 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty BBB", houseNumber = "123B")), LPI = None)
-    //      val dpa3 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty AAA", houseNumber = "123A")), LPI = None)
-    //      val oSAddressbaseResultsValidDPA = Seq(dpa1, dpa2, dpa3)
-    //
-    //      val input = OSAddressbaseSearchResponse(header = header, results = Some(oSAddressbaseResultsValidDPA))
-    //      val service = addressServiceMock(response(OK, input), Some(oSAddressbaseResultsValidDPA))
-    //
-    //      val result = service.fetchAddressesForPostcode(postcodeValid)
-    //
-    //      whenReady(result) {
-    //        r =>
-    //          r.length should equal(oSAddressbaseResultsValidDPA.length)
-    //          r shouldBe expected
-    //      }
-    //    }
-    //
-    //    "return seq of (uprn, address) sorted by building number then building name" in {
-    //      val expected = Seq(
-    //        (traderUprnValid.toString, s"presentationProperty AAA, 123, property stub, street stub, town stub, area stub, $postcodeValid"),
-    //        (traderUprnValid.toString, s"presentationProperty BBB, 123, property stub, street stub, town stub, area stub, $postcodeValid"),
-    //        (traderUprnValid.toString, s"presentationProperty stub, 789, property stub, street stub, town stub, area stub, $postcodeValid")
-    //      )
-    //      val dpa1 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseNumber = "789")), LPI = None)
-    //      val dpa2 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty BBB", houseNumber = "123")), LPI = None)
-    //      val dpa3 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty AAA", houseNumber = "123")), LPI = None)
-    //      val oSAddressbaseResultsValidDPA = Seq(dpa1, dpa2, dpa3)
-    //
-    //      val input = OSAddressbaseSearchResponse(header = header, results = Some(oSAddressbaseResultsValidDPA))
-    //      val service = addressServiceMock(response(OK, input), Some(oSAddressbaseResultsValidDPA))
-    //
-    //      val result = service.fetchAddressesForPostcode(postcodeValid)
-    //
-    //      whenReady(result) {
-    //        r =>
-    //          r.length should equal(oSAddressbaseResultsValidDPA.length)
-    //          r shouldBe expected
-    //      }
-    //    }
+        "not throw when an address contains a building number that contains letters" in {
+
+          val expected = PostcodeToAddressResponse(Seq(
+            UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid"),
+            UprnAddressPair(traderUprnValid.toString, s"presentationProperty BBB, 123B, property stub, street stub, town stub, area stub, $postcodeValid"),
+            UprnAddressPair(traderUprnValid.toString, s"presentationProperty stub, 789C, property stub, street stub, town stub, area stub, $postcodeValid"))
+          )
+          val dpa1 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseNumber = "789C")), LPI = None)
+          val dpa2 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty BBB", houseNumber = "123B")), LPI = None)
+          val dpa3 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty AAA", houseNumber = "123A")), LPI = None)
+          val oSAddressbaseResultsValidDPA = Seq(dpa1, dpa2, dpa3)
+
+          val service = osAddressLookupCommandMock(Some(oSAddressbaseResultsValidDPA))
+          val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+          whenReady(result) {
+            r =>
+              r.addresses.length should equal(oSAddressbaseResultsValidDPA.length)
+              r shouldBe expected
+          }
+
+        }
+
+        "return seq of (uprn, address) sorted by building number then building name" in {
+
+          val expected = PostcodeToAddressResponse(Seq(
+            UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123, property stub, street stub, town stub, area stub, $postcodeValid"),
+            UprnAddressPair(traderUprnValid.toString, s"presentationProperty BBB, 123, property stub, street stub, town stub, area stub, $postcodeValid"),
+            UprnAddressPair(traderUprnValid.toString, s"presentationProperty stub, 789, property stub, street stub, town stub, area stub, $postcodeValid"))
+          )
+          val dpa1 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseNumber = "789")), LPI = None)
+          val dpa2 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty BBB", houseNumber = "123")), LPI = None)
+          val dpa3 = OSAddressbaseResult(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty AAA", houseNumber = "123")), LPI = None)
+          val oSAddressbaseResultsValidDPA = Seq(dpa1, dpa2, dpa3)
+
+          val service = osAddressLookupCommandMock(Some(oSAddressbaseResultsValidDPA))
+          val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+          whenReady(result) {
+            r =>
+              r.addresses.length should equal(oSAddressbaseResultsValidDPA.length)
+              r shouldBe expected
+          }
+        }
+
   }
 
   "callUprnToAddressOSWebService" should {

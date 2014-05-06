@@ -9,6 +9,7 @@ import org.scalatest.Matchers
 import org.scalatest.mock.MockitoSugar
 
 class RouteSpecBase extends WordSpec with ScalatestRouteTest with Matchers with OSAddressLookupService with MockitoSugar {
+
   def actorRefFactory = system
   def sendRequest(request: HttpRequest)(implicit timeout: akka.util.Timeout): Future[Any] = ???
   val log = NoLogging
@@ -18,5 +19,6 @@ class RouteSpecBase extends WordSpec with ScalatestRouteTest with Matchers with 
   val osRequestTimeout = 0
   override val configuration = Configuration(osUsername, osPassword, osBaseUrl, osRequestTimeout)
 
-  override val command: CannedAddressLookupCommand = new CannedAddressLookupCommand(configuration)
+  override val command = mock[OSAddressLookupCommand]
+
 }
