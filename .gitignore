@@ -38,9 +38,11 @@ dist
 *.settings
 *.target
 
+os-address-lookup.conf
 vehiclesServices.conf
 
 vagrant_ansible_inventory_default
+os-address-lookup.conf
 vehiclesServices.conf
 .vagrant/
 workdir
