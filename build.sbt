@@ -12,6 +12,7 @@ scalaVersion := "2.10.3"
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 resolvers ++= Seq(
+  "typesafe repo" at "http://repo.typesafe.com/typesafe/releases",
   "local nexus snapshots" at "http://rep002-01.skyscape.preview-dvla.co.uk:8081/nexus/content/repositories/snapshots",
   "local nexus releases" at "http://rep002-01.skyscape.preview-dvla.co.uk:8081/nexus/content/repositories/releases"
 )
