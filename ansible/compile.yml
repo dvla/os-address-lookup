@@ -50,7 +50,3 @@
   tags:
     - sbt-dist
 
-- name: run jenkins_job_make_rpm
-  shell: cd /vagrant && export WORKSPACE=$PWD && bash jenkins_job_make_rpm
-  tags:
-    - jenkins_job_make_rpm

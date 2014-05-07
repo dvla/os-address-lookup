@@ -22,7 +22,7 @@ sysV_services.each do |item|
 end
 
 
-ports = [ 8080 ]
+ports = [ 8083 ]
 
 ports.each do |item|
   describe command('netstat -anl | grep LISTEN | grep -v ING') do
