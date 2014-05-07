@@ -17,8 +17,8 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
   // test data
   val postcodeValid = "SA11AA"
   val uprnValid = 12345L
-  val postocdeToAddressLookupUrl = "/postcode-to-address"
-  val uprntoAddressLookupUrl = "/uprn-to-address"
+  val postcodeToAddressLookupUrl = "/postcode-to-address"
+  val uprnToAddressLookupUrl = "/uprn-to-address"
   val traderUprnValid = 12345L
   val traderUprnValid2 = 4567L
   val addressWithUprn = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
@@ -38,7 +38,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       val postcodeToAddressResponse = PostcodeToAddressResponse(fetchedAddressesSeq)
       when(command.apply(request)).thenReturn(Future.successful(postcodeToAddressResponse))
 
-      Post(postocdeToAddressLookupUrl, request) ~> sealRoute(route) ~> check {
+      Get(s"${postcodeToAddressLookupUrl}?postcode=${postcodeValid}") ~> sealRoute(route) ~> check {
         status should equal(OK)
         val resp = responseAs[PostcodeToAddressResponse]
         resp.addresses should equal(fetchedAddressesSeq)
@@ -49,7 +49,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
 
       when(command.apply(request)).thenReturn(Future.failed(new RuntimeException))
 
-      Post(postocdeToAddressLookupUrl, request) ~> sealRoute(route) ~> check {
+      Get(s"${postcodeToAddressLookupUrl}?postcode=${postcodeValid}") ~> sealRoute(route) ~> check {
         status should equal(ServiceUnavailable)
       }
     }
@@ -65,7 +65,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       val uprnToAddressResponse = UprnToAddressResponse(Option(fetchedAddressViewModel))
       when(command.apply(request)).thenReturn(Future.successful(uprnToAddressResponse))
 
-      Post(uprntoAddressLookupUrl, request) ~> sealRoute(route) ~> check {
+      Get(s"${uprnToAddressLookupUrl}?uprn=${uprnValid}") ~> sealRoute(route) ~> check {
         status should equal(OK)
         val resp = responseAs[UprnToAddressResponse]
         resp.addressViewModel should be(defined)
@@ -77,7 +77,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
 
       when(command.apply(request)).thenReturn(Future.failed(new RuntimeException))
 
-      Post(uprntoAddressLookupUrl, request) ~> sealRoute(route) ~> check {
+      Get(s"${uprnToAddressLookupUrl}?uprn=${uprnValid}") ~> sealRoute(route) ~> check {
         status should equal(ServiceUnavailable)
       }
     }

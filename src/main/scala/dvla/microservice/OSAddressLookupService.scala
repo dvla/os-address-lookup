@@ -24,20 +24,19 @@ trait OSAddressLookupService extends HttpService {
   // TODO Work out if we want to dispatch soap requests on a different dispatcher
   private implicit def executionContext = actorRefFactory.dispatcher
 
-  // TODO these should really be a GET not a POST
   val route = {
-    post {
+    get {
       pathPrefix("postcode-to-address") {
-          entity(as[PostcodeToAddressLookupRequest]) { postcodeToAddressResponse =>
-            onComplete(lookupAddress(postcodeToAddressResponse)) {
+        parameter('postcode) { postcode =>
+            onComplete(lookupAddress(PostcodeToAddressLookupRequest(postcode))) {
               case Success(resp) => complete(resp)
               case Failure(_) => complete(ServiceUnavailable)
             }
           }
       } ~
       pathPrefix("uprn-to-address") {
-        entity(as[UprnToAddressLookupRequest]) { uprnToAddressResponse =>
-          onComplete(lookupAddress(uprnToAddressResponse)) {
+        parameter('uprn) { uprn =>
+          onComplete(lookupAddress(UprnToAddressLookupRequest(uprn.toLong))) {
             case Success(resp) => complete(resp)
             case Failure(_) => complete(ServiceUnavailable)
           }
