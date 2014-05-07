@@ -10,7 +10,9 @@
 # source ~/.bashrc
 # vagrant plugin install ansible
 # vagrant plugin install vagrant-serverspec
+# Make sure you have a local NFS server running
 # vagrant up
+# vagrat provision
 
 Vagrant.require_plugin "ansible"
 Vagrant.require_plugin "vagrant-serverspec"
@@ -30,11 +32,13 @@ Vagrant.configure("2") do |config|
   # Create a forwarded port mapping which allows access to a specific port
   # within the machine from a port on the host machine. In the example below,
   # accessing "localhost:8080" will access port 80 on the guest machine.
-  config.vm.network :forwarded_port, guest: 8080, host: 8080
+  # config.vm.network :forwarded_port, guest: 8080, host: 8080
 
+
+  config.vm.synced_folder "./", "/vagrant", :nfs => true
   # Create a private network, which allows host-only access to the machine
   # using a specific IP.
-  # config.vm.network :private_network, ip: "10.11.12.13"
+  config.vm.network :private_network, ip: "10.11.12.13"
 
   # Create a public network, which generally matched to bridged network.
   # Bridged networks make the machine appear as another physical device on
@@ -71,6 +75,9 @@ Vagrant.configure("2") do |config|
   # information on available options.
 
   #config.vm.provision :shell, :path => "ansible-bootstrap.sh", :keepcolor => true
+  config.vm.provision :shell, :inline => '(rpm -qa | grep epel-release) || rpm -i http://mirrors.coreix.net/fedora-epel/6/i386/epel-release-6-8.noarch.rpm && yum install ansible -y'
+  config.vm.provision :shell, :inline => '(rpm -qa | grep nfs-utils) || yum install nfs-utils -y'
+  config.vm.provision :shell, :inline => '(rpm -qa | grep portmap) || yum install portmap -y'
 
   config.vm.provision :ansible do |ansible|
     ansible.verbose = "v"
