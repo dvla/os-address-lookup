@@ -18,17 +18,13 @@ object Boot extends App {
   val osRequestTimeout = conf.getInt("ordnancesurvey.requesttimeout")
   val configuration = Configuration(osUsername, osPassword, osBaseUrl, osRequestTimeout)
 
-  val callOSWebService = conf.getBoolean("callOSWebService")
-
-
   // we need an ActorSystem to host our application in
   implicit val system = ActorSystem("on-spray-can")
   val log = Logging(system, getClass)
 
   implicit val commandExecutionContext = system.dispatcher
 
-  // TODO: add soap implementation once we have the wsdl
-  implicit val command = if (callOSWebService) new OSAddressLookupCommand(configuration) else new CannedAddressLookupCommand(configuration)
+  implicit val command = new OSAddressLookupCommand(configuration)
   val creationProperties = Props(new SprayOSAddressLookupService(configuration))
 
   // create and start our service actor
@@ -41,11 +37,7 @@ object Boot extends App {
 
   private def logStartupConfiguration = {
     log.debug(s"Listening for HTTP on port = ${serverPort}")
-    callOSWebService match {
-      case true  =>
-        log.debug("Micro service configured to call ordnance survey web service")
-        log.debug(s"Timeout = ${osRequestTimeout} millis")
-      case false => log.debug("Micro service configured to return canned data")
-    }
+    log.debug("Micro service configured to call ordnance survey web service")
+    log.debug(s"Timeout = ${osRequestTimeout} millis")
   }
 }

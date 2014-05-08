@@ -16,17 +16,11 @@ import spray.util.Utils
 
 class OSAddressLookupCommandSpec extends UnitSpec {
 
-  def testConfigSource: String = ""
-
   def testConfig: Config = {
-    val source = testConfigSource
-    val config = if (source.isEmpty) ConfigFactory.empty() else ConfigFactory.parseString(source)
-    config.withFallback(ConfigFactory.load())
+    ConfigFactory.empty().withFallback(ConfigFactory.load())
   }
 
   implicit val system = ActorSystem(Utils.actorSystemNameFrom(getClass), testConfig)
-
-  def actorRefFactory = system
 
   val header = OSAddressbaseHeader(uri = new URI(""),
     query = "",

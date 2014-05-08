@@ -15,7 +15,5 @@ object JsonFormats extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val uprnAddressPairFormat = jsonFormat2(UprnAddressPair)
   implicit val postcodeToAddressResponseFormat = jsonFormat1(PostcodeToAddressResponse)
   implicit val uprnToAddressResponseFormat = jsonFormat1(UprnToAddressResponse)
-  implicit val postcodeToAddressLookupRequestFormat = jsonFormat1(PostcodeToAddressLookupRequest)
-  implicit val uprnToAddressLookupRequestFormat = jsonFormat1(UprnToAddressLookupRequest)
 
 }
