@@ -1,10 +1,10 @@
 require_relative './spec_helper.rb'
 
-describe file('/opt/qas-address-lookup/vehiclesServices.conf') do
+describe file('/opt/os-address-lookup/vehiclesServices.conf') do
   its(:content) { should include 'vss.baseurl'  }
  end
 
-upstart_services = [ 'qas-address-lookup' ]
+upstart_services = [ 'os-address-lookup' ]
 
 upstart_services.each do |item|
   describe command("initctl status #{item}") do

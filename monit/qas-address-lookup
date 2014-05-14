@@ -1,6 +1,0 @@
-check process qas-address-lookup
-  matching qas-address-lookup
-  start program = "/sbin/start qas-address-lookup"
-  stop program = "/sbin/stop qas-address-lookup"
-  if failed host 127.0.0.1 port 8083 then restart
-
