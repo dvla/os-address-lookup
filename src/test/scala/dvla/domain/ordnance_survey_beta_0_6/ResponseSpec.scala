@@ -8,11 +8,12 @@ import dvla.helpers.UnitSpec
 class ResponseSpec extends UnitSpec {
 
   "Response Parser loading json for ec1a 4jq" should {
+    val path = "ordnance_survey_beta_0_6/"
 
     def getResource(name: String) = Source.fromURL(this.getClass.getResource(s"/$name")).mkString("")
 
     "populate the header given json with header but 0 results" in {
-      val resp = getResource("OSAddressbase_Lookup_EmptyResult.json")
+      val resp = getResource(path + "Empty_Result_Response.json")
 
       val poso = Json.parse(resp).as[Response]
 
@@ -21,7 +22,7 @@ class ResponseSpec extends UnitSpec {
     }
 
     "populate the the results given json with 0 result" in {
-      val resp = getResource("OSAddressbase_Lookup_EmptyResult.json")
+      val resp = getResource(path + "Empty_Result_Response.json")
 
       val poso = Json.parse(resp).as[Response]
 
@@ -32,7 +33,7 @@ class ResponseSpec extends UnitSpec {
     }
 
     "populate the header given json with header and 1 result DPA only" in {
-      val resp = getResource("OSAddressbase_Lookup_oneResult.json")
+      val resp = getResource(path + "One_DPA_Result_Response.json")
 
       val poso = Json.parse(resp).as[Response]
 
@@ -41,7 +42,7 @@ class ResponseSpec extends UnitSpec {
     }
 
     "populate the the results given json with 1 result DPA only" in {
-      val resp = getResource("OSAddressbase_Lookup_oneResult.json")
+      val resp = getResource(path + "One_DPA_Result_Response.json")
 
       val poso = Json.parse(resp).as[Response]
 
@@ -52,7 +53,7 @@ class ResponseSpec extends UnitSpec {
     }
 
     "populate the header given json with header and multiple results" in {
-      val resp = getResource("OSAddressbase_Lookup_EC1A_4JQ.json")
+      val resp = getResource(path + "Multiple_Result_Response.json")
 
       val poso = Json.parse(resp).as[Response]
 
@@ -61,7 +62,7 @@ class ResponseSpec extends UnitSpec {
     }
 
     "populate the the results given json with multiple results" in {
-      val resp = getResource("OSAddressbase_Lookup_EC1A_4JQ.json")
+      val resp = getResource(path + "Multiple_Result_Response.json")
 
       val poso = Json.parse(resp).as[Response]
 
@@ -72,7 +73,7 @@ class ResponseSpec extends UnitSpec {
     }
 
     "populate the header given json with header and 1 result DPA and LPI" in {
-      val resp = getResource("OSAddressbase_Lookup_PostcodeExampleResponse.json")
+      val resp = getResource(path + "One_DPA_And_LPI_Result_Response.json")
 
       val poso = Json.parse(resp).as[Response]
 
@@ -81,7 +82,7 @@ class ResponseSpec extends UnitSpec {
     }
 
     "populate the the results given json with 1 result DPA and LPI" in {
-      val resp = getResource("OSAddressbase_Lookup_PostcodeExampleResponse.json")
+      val resp = getResource(path + "One_DPA_And_LPI_Result_Response.json")
 
       val poso = Json.parse(resp).as[Response]
 
