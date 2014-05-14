@@ -1,11 +1,11 @@
 RPM_VERSION="$(date +'%Y%m%d%H%M%S')"
-RPM_NAME="qas-address-lookup"
+RPM_NAME="os-address-lookup"
 RPM_OWNER="jenkins@dvla"
-RPM_DESCRIPTION="QAS Address Lookup"
+RPM_DESCRIPTION="Ordnance Survey Address Lookup"
 RPM_URL="http://example.dotcom.com"
 RPM_LICENSE="MIT"
 RPM_VENDOR="DVLA"
-RPM_PREFIX="/opt/qas-address-lookup/"
+RPM_PREFIX="/opt/os-address-lookup/"
 RPM_TARGETDIR="$WORKSPACE/target/" #grab the jenkins WORKSPACE working dir
 MONIT_FILES_DIR="monit/"
 UPSTART_FILES_DIR="upstart/"
@@ -28,7 +28,7 @@ mkdir -p workdir/etc/monit.d
 # copy objects to workdir directory
 (
   cd workdir/$RPM_PREFIX/
-  cp  $WORKSPACE/target/scala-2.10/*-assembly-0.1.jar qas-address-lookup.jar
+  cp  $WORKSPACE/target/scala-2.10/*-assembly-0.1.jar os-address-lookup.jar
   cd -
 )
 
