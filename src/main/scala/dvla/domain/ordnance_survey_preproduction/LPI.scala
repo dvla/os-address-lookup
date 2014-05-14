@@ -13,10 +13,10 @@ case class LPI(UPRN: String,
                             AREA_NAME: String,
                             POSTCODE_LOCATOR: String,
                             RPC: String,
-                            X_COORDINATE: String,
-                            Y_COORDINATE: String,
+                            X_COORDINATE: Float,
+                            Y_COORDINATE: Float,
                             STATUS: String,
-                            MATCH: String,
+                            MATCH: Float,
                             MATCH_DESCRIPTION: String)
 
 object LPI {

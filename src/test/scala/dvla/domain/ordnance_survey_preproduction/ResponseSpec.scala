@@ -31,66 +31,66 @@ class ResponseSpec extends UnitSpec {
         case _ => fail("expected results")
       }
     }
-//
-//    "populate the header given json with header and 1 result DPA only" in {
-//      val resp = getResource(path + "One_DPA_Result_Response.json")
-//
-//      val poso = Json.parse(resp).as[Response]
-//
-//      poso.header.uri should equal(new URI("https://addressapi.ordnancesurvey.co.uk/postcode?&postcode=EC1A+4JQ&dataset=dpa&_=1392379157908"))
-//      poso.header.totalresults should equal(1)
-//    }
-//
-//    "populate the the results given json with 1 result DPA only" in {
-//      val resp = getResource(path + "One_DPA_Result_Response.json")
-//
-//      val poso = Json.parse(resp).as[Response]
-//
-//      poso.results match {
-//        case Some(results) => results.length should equal(1)
-//        case _ => fail("expected results")
-//      }
-//    }
-//
-//    "populate the header given json with header and multiple results" in {
-//      val resp = getResource(path + "Multiple_Result_Response.json")
-//
-//      val poso = Json.parse(resp).as[Response]
-//
-//      poso.header.uri should equal(new URI("https://addressapi.ordnancesurvey.co.uk/postcode?&postcode=EC1A+4JQ&dataset=dpa&_=1392379157908"))
-//      poso.header.totalresults should equal(13)
-//    }
-//
-//    "populate the the results given json with multiple results" in {
-//      val resp = getResource(path + "Multiple_Result_Response.json")
-//
-//      val poso = Json.parse(resp).as[Response]
-//
-//      poso.results match {
-//        case Some(results) => results.length should equal(13)
-//        case _ => fail("expected results")
-//      }
-//    }
-//
-//    "populate the header given json with header and 1 result DPA and LPI" in {
-//      val resp = getResource(path + "One_DPA_And_LPI_Result_Response.json")
-//
-//      val poso = Json.parse(resp).as[Response]
-//
-//      poso.header.uri should equal(new URI("http://addressapi.ordnancesurvey.co.uk/postcode?postcode=SO16%200AS&dataset=dpa,lpi"))
-//      poso.header.totalresults should equal(2)
-//    }
-//
-//    "populate the the results given json with 1 result DPA and LPI" in {
-//      val resp = getResource(path + "One_DPA_And_LPI_Result_Response.json")
-//
-//      val poso = Json.parse(resp).as[Response]
-//
-//      poso.results match {
-//        case Some(results) => results.length should equal(2)
-//        case _ => fail("expected results")
-//      }
-//    }
+
+    "populate the header given json with header and 1 result DPA only" in {
+      val resp = getResource(path + "One_DPA_Result_Response.json")
+
+      val poso = Json.parse(resp).as[Response]
+
+      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/uprn?uprn=200010019924&key=[INSERT_USER_API_KEY_HERE]"))
+      poso.header.totalresults should equal(1)
+    }
+
+    "populate the the results given json with 1 result DPA only" in {
+      val resp = getResource(path + "One_DPA_Result_Response.json")
+
+      val poso = Json.parse(resp).as[Response]
+
+      poso.results match {
+        case Some(results) => results.length should equal(1)
+        case _ => fail("expected results")
+      }
+    }
+
+    "populate the header given json with header and multiple results" in {
+      val resp = getResource(path + "Multiple_Result_Response.json")
+
+      val poso = Json.parse(resp).as[Response]
+
+      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/uprn?uprn=200010019924&key=[INSERT_USER_API_KEY_HERE]"))
+      poso.header.totalresults should equal(3)
+    }
+
+    "populate the the results given json with multiple results" in {
+      val resp = getResource(path + "Multiple_Result_Response.json")
+
+      val poso = Json.parse(resp).as[Response]
+
+      poso.results match {
+        case Some(results) => results.length should equal(3)
+        case _ => fail("expected results")
+      }
+    }
+
+    "populate the header given json with header and 1 result DPA and LPI" in {
+      val resp = getResource(path + "One_DPA_And_LPI_Result_Response.json")
+
+      val poso = Json.parse(resp).as[Response]
+
+      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/uprn?uprn=200010019924&key=[INSERT_USER_API_KEY_HERE]"))
+      poso.header.totalresults should equal(2)
+    }
+
+    "populate the the results given json with 1 result DPA and LPI" in {
+      val resp = getResource(path + "One_DPA_And_LPI_Result_Response.json")
+
+      val poso = Json.parse(resp).as[Response]
+
+      poso.results match {
+        case Some(results) => results.length should equal(2)
+        case _ => fail("expected results")
+      }
+    }
   }
 }
 

@@ -1,0 +1,49 @@
+{
+    "header" : {
+        "uri" : "https://api.ordnancesurvey.co.uk/places/v1/addresses/uprn?uprn=200010019924&key=[INSERT_USER_API_KEY_HERE]",
+        "query" : "uprn=200010019924",
+        "offset" : 0,
+        "totalresults" : 2,
+        "format" : "JSON",
+        "dataset" : "DPA,LPI",
+        "maxresults" : 100
+    },
+    "results" : [ {
+        "LPI" : {
+            "UPRN" : "200010019924",
+            "ADDRESS" : "4, ADANAC DRIVE, NURSLING, HAMPSHIRE, SO16 0AS",
+            "USRN" : "40020087",
+            "LPI_KEY" : "1760L000063833",
+            "PAO_START_NUMBER" : "4",
+            "STREET_DESCRIPTION" : "ADANAC DRIVE",
+            "TOWN_NAME" : "NURSLING",
+            "ADMINISTRATIVE_AREA" : "HAMPSHIRE",
+            "AREA_NAME" : "HAMPSHIRE",
+            "POSTCODE_LOCATOR" : "SO16 0AS",
+            "RPC" : "2",
+            "X_COORDINATE" : 437318.0,
+            "Y_COORDINATE" : 115539.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 0.8,
+            "MATCH_DESCRIPTION" : "GOOD"
+            }
+        },
+        {
+        "DPA" : {
+            "UPRN" : "200010019924",
+            "ADDRESS" : "ORDNANCE SURVEY, 4, ADANAC DRIVE, NURSLING, SOUTHAMPTON, SO160AS",
+            "ORGANISATION_NAME" : "ORDNANCE SURVEY",
+            "BUILDING_NUMBER" : "4",
+            "THOROUGHFARE_NAME" : "ADANAC DRIVE",
+            "DEPENDENT_LOCALITY" : "NURSLING",
+            "POST_TOWN" : "SOUTHAMPTON",
+            "POSTCODE" : "SO16 0AS",
+            "RPC" : "2",
+            "X_COORDINATE" : 437318.0,
+            "Y_COORDINATE" : 115539.0,
+            "STATUS" : "APPROVED",
+            "MATCH" : 1.0,
+            "MATCH_DESCRIPTION" : "EXACT"
+        }
+    }]
+}
