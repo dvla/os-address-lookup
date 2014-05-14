@@ -1,6 +1,5 @@
-package dvla.microservice
+package dvla.microservice.ordnance_survey_beta_0_6
 
-import scala.util.Failure
 import akka.actor.ActorSystem
 import scala.concurrent._
 import akka.event.Logging
@@ -15,8 +14,9 @@ import scala.Some
 import dvla.domain.ordnance_survey_beta_0_6.{Response, DPA}
 import dvla.domain.address_lookup.AddressViewModel
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
+import dvla.microservice.{AddressLookupCommand, Configuration}
 
-class OSAddressLookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
+class LookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
   val username = s"${configuration.ordnanceSurveyUsername}"
   val password = s"${configuration.ordnanceSurveyPassword}"

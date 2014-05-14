@@ -33,7 +33,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
 
     val request = PostcodeToAddressLookupRequest(postcodeValid)
 
-    "return a successful response containing a model for a valid postcode to address lookup request" in {
+    "return ordnancesurveya successful response containing ordnancesurveya model for ordnancesurveya valid postcode to address lookup request" in {
 
       val postcodeToAddressResponse = PostcodeToAddressResponse(fetchedAddressesSeq)
       when(command.apply(request)).thenReturn(Future.successful(postcodeToAddressResponse))
@@ -45,7 +45,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       }
     }
 
-    "return an unsuccessful response containing a Service Unavailable status code when the command throws an exception" in {
+    "return an unsuccessful response containing ordnancesurveya Service Unavailable status code when the command throws an exception" in {
 
       when(command.apply(request)).thenReturn(Future.failed(new RuntimeException))
 
@@ -60,7 +60,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
 
     val request = UprnToAddressLookupRequest(uprnValid)
 
-    "return a successful response containing a model for a valid uprn to address lookup request" in {
+    "return ordnancesurveya successful response containing ordnancesurveya model for ordnancesurveya valid uprn to address lookup request" in {
 
       val uprnToAddressResponse = UprnToAddressResponse(Option(fetchedAddressViewModel))
       when(command.apply(request)).thenReturn(Future.successful(uprnToAddressResponse))
@@ -73,7 +73,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       }
     }
 
-    "return an unsuccessful response containing a Service Unavailable status code when the command throws an exception" in {
+    "return an unsuccessful response containing ordnancesurveya Service Unavailable status code when the command throws an exception" in {
 
       when(command.apply(request)).thenReturn(Future.failed(new RuntimeException))
 

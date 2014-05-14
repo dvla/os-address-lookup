@@ -1,4 +1,4 @@
-package dvla.microservice
+package dvla.microservice.ordnancesurveya
 
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
@@ -13,8 +13,10 @@ import scala.Some
 import com.typesafe.config.{ConfigFactory, Config}
 import akka.actor.ActorSystem
 import spray.util.Utils
+import dvla.microservice.ordnance_survey_beta_0_6.LookupCommand
+import dvla.microservice.Configuration
 
-class OSAddressLookupCommandSpec extends UnitSpec {
+class LookupCommandSpec extends UnitSpec {
 
   def testConfig: Config = {
     ConfigFactory.empty().withFallback(ConfigFactory.load())
@@ -60,9 +62,9 @@ class OSAddressLookupCommandSpec extends UnitSpec {
     Seq(result, result, result)
   }
 
-  def osAddressLookupCommandMock(response: Option[Response]): OSAddressLookupCommand = {
+  def osAddressLookupCommandMock(response: Option[Response]): LookupCommand = {
 
-    new OSAddressLookupCommand(configuration) {
+    new LookupCommand(configuration) {
       override def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
         Future.successful(response)
       }
@@ -76,7 +78,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
 
   "callPostcodeToAddressOSWebService" should {
 
-    "return a valid sequence of UprnAddressPairs when the postcode is valid and the OS service returns results" in {
+    "return ordnancesurveya valid sequence of UprnAddressPairs when the postcode is valid and the OS service returns results" in {
 
       val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsValidDPA))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
@@ -113,7 +115,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
 
     }
 
-    "return an empty sequence when the postcode is valid but the OS service returns a result with no DPA and no LPI" in {
+    "return an empty sequence when the postcode is valid but the OS service returns ordnancesurveya result with no DPA and no LPI" in {
 
       val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsEmptyDPAAndLPI))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
@@ -125,7 +127,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
 
     }
 
-    "not throw when an address contains a building number that contains letters" in {
+    "not throw when an address contains ordnancesurveya building number that contains letters" in {
 
       val expected = PostcodeToAddressResponse(Seq(
         UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid"),
@@ -174,7 +176,7 @@ class OSAddressLookupCommandSpec extends UnitSpec {
 
   "callUprnToAddressOSWebService" should {
 
-    "return a valid AddressViewModel when the uprn is valid and the OS service returns results" in {
+    "return ordnancesurveya valid AddressViewModel when the uprn is valid and the OS service returns results" in {
 
       val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsValidDPA))))
       val result = service(UprnToAddressLookupRequest(traderUprnValid))
