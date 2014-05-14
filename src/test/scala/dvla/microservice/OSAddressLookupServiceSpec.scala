@@ -10,7 +10,7 @@ import dvla.domain.address_lookup.AddressViewModel
 import dvla.domain.address_lookup.UprnToAddressResponse
 import scala.Some
 import scala.concurrent.Future
-import dvla.domain.ordnance_survey.OSAddressbaseSearchResponse
+import dvla.domain.ordnance_survey_beta_0_6.Response
 
 class OSAddressLookupServiceSpec extends RouteSpecBase {
 

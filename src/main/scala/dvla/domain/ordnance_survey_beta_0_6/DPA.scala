@@ -1,9 +1,9 @@
-package dvla.domain.ordnance_survey
+package dvla.domain.ordnance_survey_beta_0_6
 
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-case class OSAddressbaseDPA(UPRN: String,
+case class DPA(UPRN: String,
                             address: String,
                             poBoxNumber: Option[String] = None,
                             organisationName: Option[String] = None,
@@ -24,8 +24,8 @@ case class OSAddressbaseDPA(UPRN: String,
                             matchScore: Float,
                             matchDescription: String)
 
-object OSAddressbaseDPA {
-  implicit val reads: Reads[OSAddressbaseDPA] = (
+object DPA {
+  implicit val readsDPA: Reads[DPA] = (
     (__ \ "UPRN").read[String] and
       (__ \ "ADDRESS").read[String] and
       (__ \ "PO_BOX_NUMBER").readNullable[String] and
@@ -46,29 +46,29 @@ object OSAddressbaseDPA {
       (__ \ "STATUS").read[String] and
       (__ \ "MATCH").read[Float] and
       (__ \ "MATCH_DESCRIPTION").read[String]
-    )(OSAddressbaseDPA.apply _)
+    )(DPA.apply _)
 
-  implicit val implicitWrites = new Writes[OSAddressbaseDPA] {
-    def writes(osAddressbaseDPA: OSAddressbaseDPA): JsValue = Json.obj(
-      "UPRN" -> osAddressbaseDPA.UPRN,
-      "ADDRESS" -> osAddressbaseDPA.address,
-      "PO_BOX_NUMBER" -> osAddressbaseDPA.poBoxNumber,
-      "ORGANISATION_NAME" -> osAddressbaseDPA.organisationName,
-      "DEPARTMEMT_NAME" -> osAddressbaseDPA.departmentName,
-      "SUB_BUILDING_NAME" -> osAddressbaseDPA.subBuildingName,
-      "BUILDING_NAME" -> osAddressbaseDPA.buildingName,
-      "BUILDING_NUMBER" -> osAddressbaseDPA.buildingNumber,
-      "DEPENDENT_THOROUGHFARE_NAME" -> osAddressbaseDPA.dependentThoroughfareName,
-      "THOROUGHFARE_NAME" -> osAddressbaseDPA.thoroughfareName,
-      "DOUBLE_DEPENDENT_LOCALITY" -> osAddressbaseDPA.doubleDependentLocality,
-      "DEPENDENT_LOCALITY" -> osAddressbaseDPA.dependentLocality,
-      "POST_TOWN" -> osAddressbaseDPA.postTown,
-      "POSTCODE" -> osAddressbaseDPA.postCode,
-      "RPC" -> osAddressbaseDPA.RPC,
-      "X_COORDINATE" -> osAddressbaseDPA.xCoordinate,
-      "Y_COORDINATE" -> osAddressbaseDPA.yCoordinate,
-      "STATUS" -> osAddressbaseDPA.status,
-      "MATCH" -> osAddressbaseDPA.matchScore,
-      "MATCH_DESCRIPTION" -> osAddressbaseDPA.matchDescription)
+  implicit val writesDPA = new Writes[DPA] {
+    def writes(dpa: DPA): JsValue = Json.obj(
+      "UPRN" -> dpa.UPRN,
+      "ADDRESS" -> dpa.address,
+      "PO_BOX_NUMBER" -> dpa.poBoxNumber,
+      "ORGANISATION_NAME" -> dpa.organisationName,
+      "DEPARTMEMT_NAME" -> dpa.departmentName,
+      "SUB_BUILDING_NAME" -> dpa.subBuildingName,
+      "BUILDING_NAME" -> dpa.buildingName,
+      "BUILDING_NUMBER" -> dpa.buildingNumber,
+      "DEPENDENT_THOROUGHFARE_NAME" -> dpa.dependentThoroughfareName,
+      "THOROUGHFARE_NAME" -> dpa.thoroughfareName,
+      "DOUBLE_DEPENDENT_LOCALITY" -> dpa.doubleDependentLocality,
+      "DEPENDENT_LOCALITY" -> dpa.dependentLocality,
+      "POST_TOWN" -> dpa.postTown,
+      "POSTCODE" -> dpa.postCode,
+      "RPC" -> dpa.RPC,
+      "X_COORDINATE" -> dpa.xCoordinate,
+      "Y_COORDINATE" -> dpa.yCoordinate,
+      "STATUS" -> dpa.status,
+      "MATCH" -> dpa.matchScore,
+      "MATCH_DESCRIPTION" -> dpa.matchDescription)
   }
 }

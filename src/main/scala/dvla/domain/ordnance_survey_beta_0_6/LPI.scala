@@ -1,8 +1,8 @@
-package dvla.domain.ordnance_survey
+package dvla.domain.ordnance_survey_beta_0_6
 
 import play.api.libs.json.Json
 
-case class OSAddressbaseLPI(UPRN: String,
+case class LPI(UPRN: String,
                             ADDRESS: String,
                             USRN: String,
                             LPI_KEY: String,
@@ -20,6 +20,6 @@ case class OSAddressbaseLPI(UPRN: String,
                             LOCALITY_NAME: Option[String],
                             TOWN_NAME: Option[String])
 
-object OSAddressbaseLPI {
-  implicit val readsOSAddressbaseLPI = Json.format[OSAddressbaseLPI]
+object LPI {
+  implicit val formatLPI = Json.format[LPI]
 }

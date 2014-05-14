@@ -12,7 +12,7 @@ import dvla.domain.address_lookup.PostcodeToAddressResponse
 import dvla.domain.address_lookup.UprnAddressPair
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 import scala.Some
-import dvla.domain.ordnance_survey.{OSAddressbaseSearchResponse, OSAddressbaseDPA}
+import dvla.domain.ordnance_survey_beta_0_6.{Response, DPA}
 import dvla.domain.address_lookup.AddressViewModel
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
@@ -27,7 +27,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
   def postcodeWithNoSpaces(postcode: String): String = postcode.filter(_ != ' ')
 
-  def sort(addresses: Seq[OSAddressbaseDPA]) = {
+  def sort(addresses: Seq[DPA]) = {
 
     addresses.sortBy(addressDpa => {
       val buildingNumber = addressDpa.buildingNumber.getOrElse("0")
@@ -36,7 +36,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
     })
   }
 
-  def buildUprnAddressPairSeq(postcode: String, resp: Option[OSAddressbaseSearchResponse]): Seq[UprnAddressPair] = {
+  def buildUprnAddressPairSeq(postcode: String, resp: Option[Response]): Seq[UprnAddressPair] = {
 
     val flattenMapResponse = resp.flatMap(_.results)
 
@@ -56,7 +56,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
   }
 
-  def buildAddressViewModel(uprn: Long, resp: Option[OSAddressbaseSearchResponse]): Option[AddressViewModel] = {
+  def buildAddressViewModel(uprn: Long, resp: Option[Response]): Option[AddressViewModel] = {
 
     val flattenMapResponse = resp.flatMap(_.results)
 
@@ -74,18 +74,18 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
   }
 
-  def checkStatusCodeAndUnmarshal(implicit unmarshaller: FromResponseUnmarshaller[OSAddressbaseSearchResponse]): Future[HttpResponse] => Future[Option[OSAddressbaseSearchResponse]] =
+  def checkStatusCodeAndUnmarshal(implicit unmarshaller: FromResponseUnmarshaller[Response]): Future[HttpResponse] => Future[Option[Response]] =
     (futRes: Future[HttpResponse]) => futRes.map {
       res =>
-        if (res.status == StatusCodes.OK) Some(unmarshal[OSAddressbaseSearchResponse](unmarshaller)(res))
+        if (res.status == StatusCodes.OK) Some(unmarshal[Response](unmarshaller)(res))
         else None
     }
 
-  def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[OSAddressbaseSearchResponse]] = {
+  def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
 
     import spray.httpx.PlayJsonSupport._
 
-    val pipeline: HttpRequest => Future[Option[OSAddressbaseSearchResponse]] = (
+    val pipeline: HttpRequest => Future[Option[Response]] = (
       addCredentials(BasicHttpCredentials(username, password))
         ~> (sendReceive
         ~> checkStatusCodeAndUnmarshal)
@@ -99,11 +99,11 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
   }
 
-  def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[OSAddressbaseSearchResponse]] = {
+  def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
 
     import spray.httpx.PlayJsonSupport._
 
-    val pipeline: HttpRequest => Future[Option[OSAddressbaseSearchResponse]] = (
+    val pipeline: HttpRequest => Future[Option[Response]] = (
       addCredentials(BasicHttpCredentials(username, password))
         ~> (sendReceive
         ~> checkStatusCodeAndUnmarshal)

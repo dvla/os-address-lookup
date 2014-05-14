@@ -1,9 +1,9 @@
-package dvla.domain.ordnance_survey
+package dvla.domain.ordnance_survey_beta_0_6
 
 import java.net.URI
 import play.api.libs.json._
 
-case class OSAddressbaseHeader(uri: URI,
+case class Header(uri: URI,
                                query: String,
                                offset: Int,
                                totalresults: Int,
@@ -11,7 +11,7 @@ case class OSAddressbaseHeader(uri: URI,
                                dataset: String,
                                maxresults: Int)
 
-object OSAddressbaseHeader {
+object Header {
   implicit val uriReads: Reads[URI] = new Reads[URI] {
     override def reads(json: JsValue) = JsSuccess(new URI(json.as[String]))
   }
@@ -19,5 +19,5 @@ object OSAddressbaseHeader {
     override def writes(uri: URI) = JsString(uri.toString)
   }
 
-  implicit val readsOSAddressbaseHeader = Json.format[OSAddressbaseHeader]
+  implicit val formatHeader = Json.format[Header]
 }
