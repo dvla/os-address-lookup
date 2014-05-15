@@ -1,6 +1,5 @@
-package dvla.microservice
+package dvla.microservice.ordnance_survey_beta_0_6
 
-import scala.util.Failure
 import akka.actor.ActorSystem
 import scala.concurrent._
 import akka.event.Logging
@@ -15,20 +14,20 @@ import scala.Some
 import dvla.domain.ordnance_survey_beta_0_6.{Response, DPA}
 import dvla.domain.address_lookup.AddressViewModel
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
+import dvla.microservice.{AddressLookupCommand, Configuration}
 
-class OSAddressLookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
+class LookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
-  val username = s"${configuration.ordnanceSurveyUsername}"
-  val password = s"${configuration.ordnanceSurveyPassword}"
-  val baseUrl = s"${configuration.ordnanceSurveyBaseUrl}"
-  val requestTimeout = configuration.ordnanceSurveyRequestTimeout.toInt
+  private val username = s"${configuration.ordnanceSurveyUsername}"
+  private val password = s"${configuration.ordnanceSurveyPassword}"
+  private val baseUrl = s"${configuration.ordnanceSurveyBaseUrl}"
+  private val requestTimeout = configuration.ordnanceSurveyRequestTimeout.toInt
 
-  final lazy val log = Logging(system, this.getClass)
+  private final lazy val log = Logging(system, this.getClass)
 
-  def postcodeWithNoSpaces(postcode: String): String = postcode.filter(_ != ' ')
+  private def postcodeWithNoSpaces(postcode: String): String = postcode.filter(_ != ' ')
 
-  def sort(addresses: Seq[DPA]) = {
-
+  private def sort(addresses: Seq[DPA]) = {
     addresses.sortBy(addressDpa => {
       val buildingNumber = addressDpa.buildingNumber.getOrElse("0")
       val buildingNumberSanitised = buildingNumber.replaceAll("[^0-9]", "") // Sanitise building number as it could contain letters which would cause toInt to throw e.g. 107a.
@@ -36,8 +35,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
     })
   }
 
-  def buildUprnAddressPairSeq(postcode: String, resp: Option[Response]): Seq[UprnAddressPair] = {
-
+  private def buildUprnAddressPairSeq(postcode: String, resp: Option[Response]): Seq[UprnAddressPair] = {
     val flattenMapResponse = resp.flatMap(_.results)
 
     flattenMapResponse match {
@@ -56,8 +54,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
   }
 
-  def buildAddressViewModel(uprn: Long, resp: Option[Response]): Option[AddressViewModel] = {
-
+  private def buildAddressViewModel(uprn: Long, resp: Option[Response]): Option[AddressViewModel] = {
     val flattenMapResponse = resp.flatMap(_.results)
 
     flattenMapResponse match {
@@ -74,7 +71,7 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
 
   }
 
-  def checkStatusCodeAndUnmarshal(implicit unmarshaller: FromResponseUnmarshaller[Response]): Future[HttpResponse] => Future[Option[Response]] =
+  private def checkStatusCodeAndUnmarshal(implicit unmarshaller: FromResponseUnmarshaller[Response]): Future[HttpResponse] => Future[Option[Response]] =
     (futRes: Future[HttpResponse]) => futRes.map {
       res =>
         if (res.status == StatusCodes.OK) Some(unmarshal[Response](unmarshaller)(res))
@@ -82,7 +79,6 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
     }
 
   def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
-
     import spray.httpx.PlayJsonSupport._
 
     val pipeline: HttpRequest => Future[Option[Response]] = (
@@ -148,8 +144,6 @@ class OSAddressLookupCommand(val configuration: Configuration)(implicit system: 
         log.error(s"Ordnance Survey uprn lookup service error: $e")
         UprnToAddressResponse(None)
     }
-
   }
-
 }
 

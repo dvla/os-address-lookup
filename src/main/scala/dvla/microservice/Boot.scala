@@ -5,6 +5,7 @@ import akka.io.IO
 import spray.can.Http
 import com.typesafe.config.ConfigFactory
 import akka.event.Logging
+import dvla.microservice.ordnance_survey_beta_0_6.LookupCommand
 
 object Boot extends App {
 
@@ -24,7 +25,7 @@ object Boot extends App {
 
   implicit val commandExecutionContext = system.dispatcher
 
-  implicit val command = new OSAddressLookupCommand(configuration)
+  implicit val command = new LookupCommand(configuration)
   val creationProperties = Props(new SprayOSAddressLookupService(configuration))
 
   // create and start our service actor
@@ -32,7 +33,7 @@ object Boot extends App {
 
   logStartupConfiguration
 
-  // start a new HTTP server on the port specified in configuration with our service actor as the handler
+  // start ordnance_survey new HTTP server on the port specified in configuration with our service actor as the handler
   IO(Http) ! Http.Bind(service, interface = "localhost", port = serverPort)
 
   private def logStartupConfiguration = {

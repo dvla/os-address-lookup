@@ -21,7 +21,7 @@ trait OSAddressLookupService extends HttpService {
   val command: AddressLookupCommand
 
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our Futures and Scheduler
-  // TODO Work out if we want to dispatch requests on a different dispatcher
+  // TODO Work out if we want to dispatch requests on ordnance_survey different dispatcher
   private implicit def executionContext = actorRefFactory.dispatcher
 
   val route = {
