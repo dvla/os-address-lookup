@@ -30,7 +30,8 @@ class LookupCommandSpec extends UnitSpec {
 
   implicit val system = ActorSystem("LookupCommandSpecPreProduction", testConfig)
 
-  val header = Header(uri = new URI(""),
+  val header = Header(
+    uri = new URI(""),
     query = "",
     offset = 0,
     totalresults = 2,
@@ -74,29 +75,20 @@ class LookupCommandSpec extends UnitSpec {
 
   def lookupCommandMock(response: Option[Response]): LookupCommand = {
     new LookupCommand(configuration) {
-      override def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
-        Future.successful(response)
-      }
+      override def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = Future.successful(response)
 
-      override def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
-        Future.successful(response)
-      }
+      override def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[Response]] = Future.successful(response)
     }
   }
 
   def lookupCommandMock(
-                         postcodeResponse: PostcodeToAddressResponse =
-                         PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid"))),
-                         uprnResponse: UprnToAddressResponse = UprnToAddressResponse(addressViewModel = None)): LookupCommand = {
+    postcodeResponse: PostcodeToAddressResponse = PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid"))),
+    uprnResponse: UprnToAddressResponse = UprnToAddressResponse(addressViewModel = None)): LookupCommand = {
 
     new LookupCommand(configuration) {
-      override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
-        Future.successful(postcodeResponse)
-      }
+      override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = Future.successful(postcodeResponse)
 
-      override def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
-        Future.successful(uprnResponse)
-      }
+      override def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = Future.successful(uprnResponse)
     }
   }
 
@@ -108,9 +100,8 @@ class LookupCommandSpec extends UnitSpec {
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result, Timeout(Span(1, Second))) {
-        r =>
-          r.addresses.length should equal(validDPANoLPI.length)
-          r.addresses.foreach(a => a.uprn should equal(traderUprnValid.toString))
+        r => r.addresses.length should equal(validDPANoLPI.length)
+             r.addresses.foreach(a => a.uprn should equal(traderUprnValid.toString))
       }
     }
 
@@ -120,8 +111,7 @@ class LookupCommandSpec extends UnitSpec {
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
-        r =>
-          r.addresses shouldBe empty
+        r => r.addresses shouldBe empty
       }
     }
 
@@ -131,8 +121,7 @@ class LookupCommandSpec extends UnitSpec {
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
-        r =>
-          r.addresses shouldBe empty
+        r => r.addresses shouldBe empty
       }
     }
 
@@ -142,8 +131,7 @@ class LookupCommandSpec extends UnitSpec {
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
-        r =>
-          r.addresses shouldBe empty
+        r => r.addresses shouldBe empty
       }
 
     }
