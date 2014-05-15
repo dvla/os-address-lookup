@@ -13,10 +13,10 @@ object Boot extends App {
 
   val serverPort = conf.getInt("port")
 
-  val osUsername = conf.getString("ordnance_survey.username")
-  val osPassword = conf.getString("ordnance_survey.password")
-  val osBaseUrl = conf.getString("ordnance_survey.baseurl")
-  val osRequestTimeout = conf.getInt("ordnance_survey.requesttimeout")
+  val osUsername = conf.getString("ordnancesurvey.username")
+  val osPassword = conf.getString("ordnancesurvey.password")
+  val osBaseUrl = conf.getString("ordnancesurvey.baseurl")
+  val osRequestTimeout = conf.getInt("ordnancesurvey.requesttimeout")
   val configuration = Configuration(osUsername, osPassword, osBaseUrl, osRequestTimeout)
 
   // we need an ActorSystem to host our application in
