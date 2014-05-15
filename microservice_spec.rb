@@ -1,6 +1,6 @@
 require_relative './spec_helper.rb'
 
-describe file('/opt/os-address-lookup/vehiclesServices.conf') do
+describe file('/opt/os-address-lookup/os-address-lookup.conf') do
   its(:content) { should include 'vss.baseurl'  }
  end
 
