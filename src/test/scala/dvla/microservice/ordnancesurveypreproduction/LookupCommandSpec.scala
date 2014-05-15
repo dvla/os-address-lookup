@@ -78,7 +78,7 @@ class LookupCommandSpec extends UnitSpec {
 //
 //   "callPostcodeToAddressOSWebService" should {
 //
-//     "return ordnancesurveya valid sequence of UprnAddressPairs when the postcode is valid and the OS service returns results" in {
+//     "return ordnance_survey valid sequence of UprnAddressPairs when the postcode is valid and the OS service returns results" in {
 //
 //       val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsValidDPA))))
 //       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
@@ -115,7 +115,7 @@ class LookupCommandSpec extends UnitSpec {
 //
 //     }
 //
-//     "return an empty sequence when the postcode is valid but the OS service returns ordnancesurveya result with no DPA and no LPI" in {
+//     "return an empty sequence when the postcode is valid but the OS service returns ordnance_survey result with no DPA and no LPI" in {
 //
 //       val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsEmptyDPAAndLPI))))
 //       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
@@ -127,7 +127,7 @@ class LookupCommandSpec extends UnitSpec {
 //
 //     }
 //
-//     "not throw when an address contains ordnancesurveya building number that contains letters" in {
+//     "not throw when an address contains ordnance_survey building number that contains letters" in {
 //
 //       val expected = PostcodeToAddressResponse(Seq(
 //         UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid"),
@@ -176,7 +176,7 @@ class LookupCommandSpec extends UnitSpec {
 //
 //   "callUprnToAddressOSWebService" should {
 //
-//     "return ordnancesurveya valid AddressViewModel when the uprn is valid and the OS service returns results" in {
+//     "return ordnance_survey valid AddressViewModel when the uprn is valid and the OS service returns results" in {
 //
 //       val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsValidDPA))))
 //       val result = service(UprnToAddressLookupRequest(traderUprnValid))

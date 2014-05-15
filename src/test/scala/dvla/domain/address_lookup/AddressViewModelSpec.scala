@@ -7,7 +7,7 @@ class AddressViewModelSpec extends UnitSpec {
 
   "AddressViewModel - model" should {
 
-    "handle ordnancesurveya uprn of the correct size" in {
+    "handle ordnance_survey uprn of the correct size" in {
       val keeperUprnValid = 10123456789L
       val address = AddressViewModel(uprn = Some(keeperUprnValid), address = Seq("line1", "line2", "line2"))
 

@@ -13,10 +13,10 @@ object Boot extends App {
 
   val serverPort = conf.getInt("port")
 
-  val osUsername = conf.getString("ordnancesurveya.username")
-  val osPassword = conf.getString("ordnancesurveya.password")
-  val osBaseUrl = conf.getString("ordnancesurveya.baseurl")
-  val osRequestTimeout = conf.getInt("ordnancesurveya.requesttimeout")
+  val osUsername = conf.getString("ordnance_survey.username")
+  val osPassword = conf.getString("ordnance_survey.password")
+  val osBaseUrl = conf.getString("ordnance_survey.baseurl")
+  val osRequestTimeout = conf.getInt("ordnance_survey.requesttimeout")
   val configuration = Configuration(osUsername, osPassword, osBaseUrl, osRequestTimeout)
 
   // we need an ActorSystem to host our application in
@@ -33,7 +33,7 @@ object Boot extends App {
 
   logStartupConfiguration
 
-  // start ordnancesurveya new HTTP server on the port specified in configuration with our service actor as the handler
+  // start ordnance_survey new HTTP server on the port specified in configuration with our service actor as the handler
   IO(Http) ! Http.Bind(service, interface = "localhost", port = serverPort)
 
   private def logStartupConfiguration = {
