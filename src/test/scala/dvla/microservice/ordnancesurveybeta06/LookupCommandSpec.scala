@@ -1,4 +1,4 @@
-package dvla.microservice.ordnancesurveya
+package dvla.microservice.ordnancesurveybeta06
 
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
