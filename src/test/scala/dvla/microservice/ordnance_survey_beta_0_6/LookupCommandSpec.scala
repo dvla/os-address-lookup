@@ -1,4 +1,4 @@
-package dvla.microservice.ordnancesurveybeta06
+package dvla.microservice.ordnance_survey_beta_0_6
 
 import scala.concurrent.{ExecutionContext, Future}
 import ExecutionContext.Implicits.global
@@ -13,7 +13,6 @@ import scala.Some
 import com.typesafe.config.{ConfigFactory, Config}
 import akka.actor.ActorSystem
 import spray.util.Utils
-import dvla.microservice.ordnance_survey_beta_0_6.LookupCommand
 import dvla.microservice.Configuration
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import dvla.domain.address_lookup.UprnToAddressLookupRequest
@@ -29,7 +28,7 @@ class LookupCommandSpec extends UnitSpec {
     ConfigFactory.empty().withFallback(ConfigFactory.load())
   }
 
-  implicit val system = ActorSystem(Utils.actorSystemNameFrom(getClass), testConfig)
+  implicit val system = ActorSystem("LookupCommandSpec06", testConfig)
 
   val header = Header(uri = new URI(""),
     query = "",
