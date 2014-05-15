@@ -1,3 +1,6 @@
 package dvla.microservice
 
-case class Configuration(ordnanceSurveyUsername: String, ordnanceSurveyPassword: String, ordnanceSurveyBaseUrl : String, ordnanceSurveyRequestTimeout: Int)
+case class Configuration(username: String = "",
+                         password: String = "",
+                         baseUrl: String = "",
+                         apiKey: String = "")

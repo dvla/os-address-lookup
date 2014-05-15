@@ -5,8 +5,7 @@ import scala.concurrent._
 import akka.event.Logging
 import dvla.domain.address_lookup._
 import spray.client.pipelining._
-
-import spray.http.{HttpResponse, StatusCodes, HttpRequest, BasicHttpCredentials}
+import spray.http.{HttpResponse, StatusCodes, HttpRequest}
 import dvla.domain.address_lookup.PostcodeToAddressResponse
 import dvla.domain.address_lookup.UprnAddressPair
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
@@ -18,10 +17,8 @@ import dvla.microservice.{AddressLookupCommand, Configuration}
 
 class LookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
-  private val username = s"${configuration.ordnanceSurveyUsername}"
-  private val password = s"${configuration.ordnanceSurveyPassword}"
-  private val baseUrl = s"${configuration.ordnanceSurveyBaseUrl}"
-  private val requestTimeout = configuration.ordnanceSurveyRequestTimeout.toInt
+  private val apiKey = configuration.apiKey
+  private val baseUrl = configuration.baseUrl
 
   private final lazy val log = Logging(system, this.getClass)
 
@@ -81,13 +78,9 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
   def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
     import spray.httpx.PlayJsonSupport._
 
-    val pipeline: HttpRequest => Future[Option[Response]] = (
-      addCredentials(BasicHttpCredentials(username, password))
-        ~> (sendReceive
-        ~> checkStatusCodeAndUnmarshal)
-      )
+    val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
 
-    val endPoint = s"$baseUrl/postcode?postcode=${postcodeWithNoSpaces(request.postcode)}&dataset=dpa"
+    val endPoint = s"$baseUrl/postcode?postcode=${postcodeWithNoSpaces(request.postcode)}&dataset=dpa&key=$apiKey"
 
     pipeline {
       Get(endPoint)
@@ -99,13 +92,9 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
 
     import spray.httpx.PlayJsonSupport._
 
-    val pipeline: HttpRequest => Future[Option[Response]] = (
-      addCredentials(BasicHttpCredentials(username, password))
-        ~> (sendReceive
-        ~> checkStatusCodeAndUnmarshal)
-      )
+    val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
 
-    val endPoint = s"$baseUrl/uprn?uprn=${request.uprn}&dataset=dpa" // TODO add lpi to URL, but need to set orgnaisation as Option on the type.
+    val endPoint = s"$baseUrl/uprn?uprn=${request.uprn}&dataset=dpa&key=$apiKey"
 
     pipeline {
       Get(endPoint)

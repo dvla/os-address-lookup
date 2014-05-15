@@ -21,6 +21,7 @@ import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 class LookupCommandSpec extends UnitSpec {
 
   "callPostcodeToAddressOSWebService" should {
+
     "return ordnance_survey valid sequence of UprnAddressPairs when the postcode is valid and the OS service returns results" in {
       val service = lookupCommandMock(postcodeResponse = PostcodeToAddressResponse(threeAddressPairs))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
@@ -154,7 +155,7 @@ class LookupCommandSpec extends UnitSpec {
     matchDescription = "f"
   )
 
-  val configuration = Configuration("", "", "", 0)
+  val configuration = Configuration("", "", "")
 
   val validDPANoLPI = {
     val result = Result(DPA = Some(osAddressbaseDPA()), LPI = None)

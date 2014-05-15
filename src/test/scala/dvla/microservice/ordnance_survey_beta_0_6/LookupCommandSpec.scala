@@ -52,7 +52,6 @@ class LookupCommandSpec extends UnitSpec {
       whenReady(result) {
         r => r.addresses shouldBe empty
       }
-
     }
 
     "return an empty sequence when the postcode is valid but the OS service returns ordnance_survey result with no DPA and no LPI" in {
@@ -62,7 +61,6 @@ class LookupCommandSpec extends UnitSpec {
       whenReady(result) {
         r => r.addresses shouldBe empty
       }
-
     }
 
     "not throw when an address contains ordnance_survey building number that contains letters" in {
@@ -74,7 +72,6 @@ class LookupCommandSpec extends UnitSpec {
           r.addresses.length should equal(oSAddressbaseResultsValidDPA("a").length)
           r shouldBe expected("a")
       }
-
     }
 
     "return seq of (uprn, address) sorted by building number then building name" in {
@@ -165,7 +162,7 @@ class LookupCommandSpec extends UnitSpec {
     matchDescription = "f"
   )
 
-  val configuration = Configuration("", "", "", 0)
+  val configuration = Configuration("", "", "")
 
   val validDPANoLPI = {
     val result = Result(DPA = Some(osAddressbaseDPA()), LPI = None)
