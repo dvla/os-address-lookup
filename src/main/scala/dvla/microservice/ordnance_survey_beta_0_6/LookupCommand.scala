@@ -18,17 +18,16 @@ import dvla.microservice.{AddressLookupCommand, Configuration}
 
 class LookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
-  val username = s"${configuration.ordnanceSurveyUsername}"
-  val password = s"${configuration.ordnanceSurveyPassword}"
-  val baseUrl = s"${configuration.ordnanceSurveyBaseUrl}"
-  val requestTimeout = configuration.ordnanceSurveyRequestTimeout.toInt
+  private val username = s"${configuration.ordnanceSurveyUsername}"
+  private val password = s"${configuration.ordnanceSurveyPassword}"
+  private val baseUrl = s"${configuration.ordnanceSurveyBaseUrl}"
+  private val requestTimeout = configuration.ordnanceSurveyRequestTimeout.toInt
 
-  final lazy val log = Logging(system, this.getClass)
+  private final lazy val log = Logging(system, this.getClass)
 
-  def postcodeWithNoSpaces(postcode: String): String = postcode.filter(_ != ' ')
+  private def postcodeWithNoSpaces(postcode: String): String = postcode.filter(_ != ' ')
 
-  def sort(addresses: Seq[DPA]) = {
-
+  private def sort(addresses: Seq[DPA]) = {
     addresses.sortBy(addressDpa => {
       val buildingNumber = addressDpa.buildingNumber.getOrElse("0")
       val buildingNumberSanitised = buildingNumber.replaceAll("[^0-9]", "") // Sanitise building number as it could contain letters which would cause toInt to throw e.g. 107a.
@@ -36,8 +35,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
     })
   }
 
-  def buildUprnAddressPairSeq(postcode: String, resp: Option[Response]): Seq[UprnAddressPair] = {
-
+  private def buildUprnAddressPairSeq(postcode: String, resp: Option[Response]): Seq[UprnAddressPair] = {
     val flattenMapResponse = resp.flatMap(_.results)
 
     flattenMapResponse match {
@@ -56,8 +54,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
 
   }
 
-  def buildAddressViewModel(uprn: Long, resp: Option[Response]): Option[AddressViewModel] = {
-
+  private def buildAddressViewModel(uprn: Long, resp: Option[Response]): Option[AddressViewModel] = {
     val flattenMapResponse = resp.flatMap(_.results)
 
     flattenMapResponse match {
@@ -74,15 +71,14 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
 
   }
 
-  def checkStatusCodeAndUnmarshal(implicit unmarshaller: FromResponseUnmarshaller[Response]): Future[HttpResponse] => Future[Option[Response]] =
+  private def checkStatusCodeAndUnmarshal(implicit unmarshaller: FromResponseUnmarshaller[Response]): Future[HttpResponse] => Future[Option[Response]] =
     (futRes: Future[HttpResponse]) => futRes.map {
       res =>
         if (res.status == StatusCodes.OK) Some(unmarshal[Response](unmarshaller)(res))
         else None
     }
 
-  def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
-
+  private def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
     import spray.httpx.PlayJsonSupport._
 
     val pipeline: HttpRequest => Future[Option[Response]] = (
@@ -99,7 +95,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
 
   }
 
-  def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
+  private def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
 
     import spray.httpx.PlayJsonSupport._
 
@@ -148,8 +144,6 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         log.error(s"Ordnance Survey uprn lookup service error: $e")
         UprnToAddressResponse(None)
     }
-
   }
-
 }
 
