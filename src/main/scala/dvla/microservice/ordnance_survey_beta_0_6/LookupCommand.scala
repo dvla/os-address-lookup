@@ -78,7 +78,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         else None
     }
 
-  private def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
+  def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
     import spray.httpx.PlayJsonSupport._
 
     val pipeline: HttpRequest => Future[Option[Response]] = (
@@ -95,7 +95,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
 
   }
 
-  private def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
+  def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
 
     import spray.httpx.PlayJsonSupport._
 
