@@ -59,23 +59,22 @@ class LookupCommandSpec extends UnitSpec {
 
   val configuration = Configuration("", "", "", 0)
 
-  val oSAddressbaseResultsValidDPA = {
+  val validDPANoLPI = {
     val result = Result(DPA = Some(osAddressbaseDPA()), LPI = None)
     Seq(result, result, result)
   }
 
-  val oSAddressbaseResultsValidDPANew = {
+  val threeAddressPairs = {
     val result = UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid")
     Seq(result, result, result)
   }
 
-  val oSAddressbaseResultsEmptyDPAAndLPI = {
+  val emptyDPAandLPI = {
     val result = Result(DPA = None, LPI = None)
     Seq(result, result, result)
   }
 
-  def osAddressLookupCommandMock(response: Option[Response]): LookupCommand = {
-
+  def lookupCommandMock(response: Option[Response]): LookupCommand = {
     new LookupCommand(configuration) {
       override def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
         Future.successful(response)
@@ -87,7 +86,7 @@ class LookupCommandSpec extends UnitSpec {
     }
   }
 
-  def osAddressLookupCommandMockNew(
+  def lookupCommandMock(
                 postcodeResponse: PostcodeToAddressResponse =
                   PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid"))),
                 uprnResponse: UprnToAddressResponse = UprnToAddressResponse(addressViewModel = None)): LookupCommand = {
@@ -107,19 +106,19 @@ class LookupCommandSpec extends UnitSpec {
 
     "return ordnance_survey valid sequence of UprnAddressPairs when the postcode is valid and the OS service returns results" in {
 
-      val service = osAddressLookupCommandMockNew(postcodeResponse = PostcodeToAddressResponse(oSAddressbaseResultsValidDPANew))
+      val service = lookupCommandMock(postcodeResponse = PostcodeToAddressResponse(threeAddressPairs))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result, Timeout(Span(1, Second))) {
         r =>
-          r.addresses.length should equal(oSAddressbaseResultsValidDPA.length)
+          r.addresses.length should equal(validDPANoLPI.length)
           r.addresses.foreach(a => a.uprn should equal(traderUprnValid.toString))
       }
     }
 
     "return an empty sequence when the postcode is valid but the OS service returns no results" in {
 
-      val service = osAddressLookupCommandMockNew(postcodeResponse = PostcodeToAddressResponse(Seq.empty))
+      val service = lookupCommandMock(postcodeResponse = PostcodeToAddressResponse(Seq.empty))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
@@ -130,7 +129,7 @@ class LookupCommandSpec extends UnitSpec {
 
     "return empty seq when response status is not 200 OK" in {
 
-      val service = osAddressLookupCommandMock(None)
+      val service = lookupCommandMock(None)
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
@@ -142,7 +141,7 @@ class LookupCommandSpec extends UnitSpec {
 
     "return an empty sequence when the postcode is valid but the OS service returns ordnance_survey result with no DPA and no LPI" in {
 
-      val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsEmptyDPAAndLPI))))
+      val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
@@ -164,7 +163,7 @@ class LookupCommandSpec extends UnitSpec {
       val dpa3 = Result(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty AAA", houseNumber = "123A")), LPI = None)
       val oSAddressbaseResultsValidDPA = Seq(dpa1, dpa2, dpa3)
 
-      val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsValidDPA))))
+      val service = lookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsValidDPA))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
@@ -187,7 +186,7 @@ class LookupCommandSpec extends UnitSpec {
       val dpa3 = Result(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty AAA", houseNumber = "123")), LPI = None)
       val oSAddressbaseResultsValidDPA = Seq(dpa1, dpa2, dpa3)
 
-      val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsValidDPA))))
+      val service = lookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsValidDPA))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) {
@@ -202,7 +201,7 @@ class LookupCommandSpec extends UnitSpec {
 
     "return ordnance_survey valid AddressViewModel when the uprn is valid and the OS service returns results" in {
 
-      val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsValidDPA))))
+      val service = lookupCommandMock(Some(Response(header, Some(validDPANoLPI))))
       val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
       whenReady(result) {
@@ -218,7 +217,7 @@ class LookupCommandSpec extends UnitSpec {
 
   "return None when response status is not 200 OK" in {
 
-    val service = osAddressLookupCommandMock(None)
+    val service = lookupCommandMock(None)
     val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
     whenReady(result) {
@@ -228,7 +227,7 @@ class LookupCommandSpec extends UnitSpec {
 
   "return none when the uprn is valid but the OS service returns no results" in {
 
-    val service = osAddressLookupCommandMock(Some(Response(header, None)))
+    val service = lookupCommandMock(Some(Response(header, None)))
     val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
     whenReady(result) {
@@ -238,7 +237,7 @@ class LookupCommandSpec extends UnitSpec {
 
   "return none when the result has no DPA and no LPI" in {
 
-    val service = osAddressLookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsEmptyDPAAndLPI))))
+    val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
     val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
     whenReady(result) {
