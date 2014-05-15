@@ -17,7 +17,7 @@ class RouteSpecBase extends WordSpec with ScalatestRouteTest with Matchers with 
   val osPassword = "password"
   val osBaseUrl = "http://localhost/testurl"
   val osRequestTimeout = 0
-  override val configuration = Configuration(osUsername, osPassword, osBaseUrl, osRequestTimeout)
+  override val configuration = Configuration(osUsername, osPassword, osBaseUrl)
   override val command = mock[LookupCommand]
 
 }

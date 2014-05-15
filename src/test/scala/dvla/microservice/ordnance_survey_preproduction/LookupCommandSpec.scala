@@ -55,7 +55,7 @@ class LookupCommandSpec extends UnitSpec {
     matchDescription = "f"
   )
 
-  val configuration = Configuration("", "", "", 0)
+  val configuration = Configuration("", "", "")
 
   val validDPANoLPI = {
     val result = Result(DPA = Some(osAddressbaseDPA()), LPI = None)

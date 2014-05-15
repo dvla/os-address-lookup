@@ -18,10 +18,9 @@ import dvla.microservice.{AddressLookupCommand, Configuration}
 
 class LookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
-  private val username = s"${configuration.ordnanceSurveyUsername}"
-  private val password = s"${configuration.ordnanceSurveyPassword}"
-  private val baseUrl = s"${configuration.ordnanceSurveyBaseUrl}"
-  private val requestTimeout = configuration.ordnanceSurveyRequestTimeout.toInt
+  private val username = s"${configuration.username}"
+  private val password = s"${configuration.password}"
+  private val baseUrl = s"${configuration.baseUrl}"
 
   private final lazy val log = Logging(system, this.getClass)
 
