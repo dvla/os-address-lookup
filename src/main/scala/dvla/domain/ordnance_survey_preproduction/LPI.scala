@@ -3,7 +3,7 @@ package dvla.domain.ordnance_survey_preproduction
 import play.api.libs.json.Json
 
 case class LPI(UPRN: String,
-                            ADDRESS: String,
+                            ADDRESS: String/*,
                             USRN: String,
                             LPI_KEY: String,
                             PAO_START_NUMBER: String,
@@ -17,7 +17,7 @@ case class LPI(UPRN: String,
                             Y_COORDINATE: Float,
                             STATUS: String,
                             MATCH: Float,
-                            MATCH_DESCRIPTION: String)
+                            MATCH_DESCRIPTION: String*/)
 
 object LPI {
   implicit val formatLPI = Json.reads[LPI]
