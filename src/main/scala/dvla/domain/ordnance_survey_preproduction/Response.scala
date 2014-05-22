@@ -6,5 +6,5 @@ case class Response(header: Header,
                     results: Option[Seq[Result]])
 
 object Response {
-  implicit val formatResponse = Json.format[Response]
+  implicit val formatResponse = Json.reads[Response]
 }

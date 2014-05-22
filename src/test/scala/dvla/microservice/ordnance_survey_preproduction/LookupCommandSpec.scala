@@ -144,15 +144,7 @@ class LookupCommandSpec extends UnitSpec {
   def osAddressbaseDPA(uprn: String = traderUprnValid.toString, houseName: String = "presentationProperty stub", houseNumber: String = "123") = DPA(
     UPRN = uprn,
     address = s"$houseName, $houseNumber, property stub, street stub, town stub, area stub, $postcodeValid",
-    buildingNumber = Some(houseNumber),
-    postTown = "b",
-    postCode = "c",
-    RPC = "d",
-    xCoordinate = 1f,
-    yCoordinate = 2f,
-    status = "e",
-    matchScore = 3f,
-    matchDescription = "f"
+    buildingNumber = Some(houseNumber)
   )
 
   val configuration = Configuration("", "", "")

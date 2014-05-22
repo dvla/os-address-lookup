@@ -20,5 +20,5 @@ case class LPI(UPRN: String,
                             MATCH_DESCRIPTION: String)
 
 object LPI {
-  implicit val formatLPI = Json.format[LPI]
+  implicit val formatLPI = Json.reads[LPI]
 }

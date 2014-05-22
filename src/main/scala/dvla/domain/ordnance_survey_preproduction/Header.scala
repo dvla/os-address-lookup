@@ -15,9 +15,6 @@ object Header {
   implicit val uriReads: Reads[URI] = new Reads[URI] {
     override def reads(json: JsValue) = JsSuccess(new URI(json.as[String]))
   }
-  implicit val uriWrites: Writes[URI] = new Writes[URI] {
-    override def writes(uri: URI) = JsString(uri.toString)
-  }
 
-  implicit val formatHeader = Json.format[Header]
+  implicit val formatHeader = Json.reads[Header]
 }

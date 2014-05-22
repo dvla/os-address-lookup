@@ -6,5 +6,5 @@ case class Result(DPA: Option[DPA],
                                LPI: Option[LPI])
 
 object Result {
-  implicit val formatResult = Json.format[Result]
+  implicit val formatResult = Json.reads[Result]
 }
