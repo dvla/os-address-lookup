@@ -18,11 +18,11 @@ import dvla.microservice.{AddressLookupCommand, Configuration}
 
 class LookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
-  private val username = s"${configuration.username}"
-  private val password = s"${configuration.password}"
-  private val baseUrl = s"${configuration.baseUrl}"
+  private val username = configuration.username
+  private val password = configuration.password
+  private val baseUrl = configuration.baseUrl
 
-  private final lazy val log = Logging(system, this.getClass)
+  private lazy val log = Logging(system, this.getClass)
 
   private def postcodeWithNoSpaces(postcode: String): String = postcode.filter(_ != ' ')
 
