@@ -13,10 +13,10 @@ class RouteSpecBase extends WordSpec with ScalatestRouteTest with Matchers with 
 
   def actorRefFactory = system
   val log = NoLogging
-  val osUsername = "username"
-  val osPassword = "password"
-  val osBaseUrl = "http://localhost/testurl"
-  val osRequestTimeout = 0
+  final val osUsername = "username"
+  final val osPassword = "password"
+  final val osBaseUrl = "http://localhost/testurl"
+  final val osRequestTimeout = 0
   override val configuration = Configuration(osUsername, osPassword, osBaseUrl)
   override val command = mock[LookupCommand]
 

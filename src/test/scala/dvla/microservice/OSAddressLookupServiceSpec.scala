@@ -12,21 +12,21 @@ import scala.Some
 import scala.concurrent.Future
 import dvla.domain.ordnance_survey_beta_0_6.Response
 
-class OSAddressLookupServiceSpec extends RouteSpecBase {
+final class OSAddressLookupServiceSpec extends RouteSpecBase {
 
   // test data
-  val postcodeValid = "SA11AA"
-  val uprnValid = 12345L
-  val postcodeToAddressLookupUrl = "/postcode-to-address"
-  val uprnToAddressLookupUrl = "/uprn-to-address"
-  val traderUprnValid = 12345L
-  val traderUprnValid2 = 4567L
-  val addressWithUprn = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
-  val fetchedAddressesSeq = Seq(
+  private final val postcodeValid = "SA11AA"
+  private final val uprnValid = 12345L
+  private final val postcodeToAddressLookupUrl = "/postcode-to-address"
+  private final val uprnToAddressLookupUrl = "/uprn-to-address"
+  private final val traderUprnValid = 12345L
+  private final val traderUprnValid2 = 4567L
+  private val addressWithUprn = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
+  private val fetchedAddressesSeq = Seq(
     UprnAddressPair(traderUprnValid.toString, addressWithUprn.address.mkString(", ")),
     UprnAddressPair(traderUprnValid2.toString, addressWithUprn.address.mkString(", "))
   )
-  val fetchedAddressViewModel = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
+  private val fetchedAddressViewModel = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
 
 
   "The postcode to address lookup service" should {

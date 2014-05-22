@@ -22,7 +22,7 @@ import dvla.microservice.Configuration
 import dvla.domain.address_lookup.UprnAddressPair
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 
-class LookupCommandSpec extends UnitSpec {
+final class LookupCommandSpec extends UnitSpec {
 
   "callPostcodeToAddressOSWebService" should {
 
@@ -129,13 +129,13 @@ class LookupCommandSpec extends UnitSpec {
     }
   }
 
-  def testConfig: Config = {
+  private def testConfig: Config = {
     ConfigFactory.empty().withFallback(ConfigFactory.load())
   }
 
-  implicit val system = ActorSystem("LookupCommandSpec06", testConfig)
+  private implicit val system = ActorSystem("LookupCommandSpec06", testConfig)
 
-  val header = Header(
+  private val header = Header(
     uri = new URI(""),
     query = "",
     offset = 0,
@@ -144,10 +144,10 @@ class LookupCommandSpec extends UnitSpec {
     dataset = "",
     maxresults = 2)
 
-  val postcodeValid = "CM81QJ"
-  val traderUprnValid = 12345L
+  private final val postcodeValid = "CM81QJ"
+  private final val traderUprnValid = 12345L
 
-  def osAddressbaseDPA(uprn: String = traderUprnValid.toString, houseName: String = "presentationProperty stub", houseNumber: String = "123") = DPA(
+  private def osAddressbaseDPA(uprn: String = traderUprnValid.toString, houseName: String = "presentationProperty stub", houseNumber: String = "123") = DPA(
     UPRN = uprn,
     address = s"$houseName, $houseNumber, property stub, street stub, town stub, area stub, $postcodeValid",
     buildingName = Some(houseName),
@@ -162,24 +162,24 @@ class LookupCommandSpec extends UnitSpec {
     matchDescription = "f"
   )
 
-  val configuration = Configuration("", "", "")
+  private val configuration = Configuration("", "", "")
 
-  val validDPANoLPI = {
+  private val validDPANoLPI = {
     val result = Result(DPA = Some(osAddressbaseDPA()), LPI = None)
     Seq(result, result, result)
   }
 
-  val threeAddressPairs = {
+  private val threeAddressPairs = {
     val result = UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid")
     Seq(result, result, result)
   }
 
-  val emptyDPAandLPI = {
+  private val emptyDPAandLPI = {
     val result = Result(DPA = None, LPI = None)
     Seq(result, result, result)
   }
 
-  def lookupCommandMock(response: Option[Response]): LookupCommand = {
+  private def lookupCommandMock(response: Option[Response]): LookupCommand = {
     new LookupCommand(configuration) {
       override def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = Future.successful(response)
 
@@ -187,7 +187,7 @@ class LookupCommandSpec extends UnitSpec {
     }
   }
 
-  def lookupCommandMock(
+  private def lookupCommandMock(
     postcodeResponse: PostcodeToAddressResponse = PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid"))),
     uprnResponse: UprnToAddressResponse = UprnToAddressResponse(addressViewModel = None)): LookupCommand = {
 

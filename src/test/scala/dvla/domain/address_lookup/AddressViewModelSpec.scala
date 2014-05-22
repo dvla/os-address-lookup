@@ -3,7 +3,7 @@ package dvla.domain.address_lookup
 import dvla.helpers.UnitSpec
 
 
-class AddressViewModelSpec extends UnitSpec {
+final class AddressViewModelSpec extends UnitSpec {
 
   "AddressViewModel - model" should {
 

@@ -5,11 +5,9 @@ import java.net.URI
 import play.api.libs.json._
 import dvla.helpers.UnitSpec
 
-class ResponseSpec extends UnitSpec {
+final class ResponseSpec extends UnitSpec {
 
   "Response Parser loading json for ec1a 4jq" should {
-    val path = "ordnance_survey_beta_0_6/"
-
     def getResource(name: String) = Source.fromURL(this.getClass.getResource(s"/$name")).mkString("")
 
     "populate the header given json with header but 0 results" in {
@@ -92,5 +90,7 @@ class ResponseSpec extends UnitSpec {
       }
     }
   }
+
+  private final val path = "ordnance_survey_beta_0_6/"
 }
 
