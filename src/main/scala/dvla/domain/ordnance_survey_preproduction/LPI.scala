@@ -2,7 +2,7 @@ package dvla.domain.ordnance_survey_preproduction
 
 import play.api.libs.json.Json
 
-case class LPI(UPRN: String,
+final case class LPI(UPRN: String,
                             ADDRESS: String/*,
                             USRN: String,
                             LPI_KEY: String,

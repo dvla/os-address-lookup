@@ -2,7 +2,7 @@ package dvla.domain.ordnance_survey_beta_0_6
 
 import play.api.libs.json.Json
 
-case class Response(header: Header,
+final case class Response(header: Header,
                     results: Option[Seq[Result]])
 
 object Response {

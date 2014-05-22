@@ -11,7 +11,7 @@ import dvla.common.microservice.SprayHttpService
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class SprayOSAddressLookupService(val configuration: Configuration)(implicit val command: AddressLookupCommand) extends SprayHttpService with OSAddressLookupService
+final class SprayOSAddressLookupService(val configuration: Configuration)(implicit val command: AddressLookupCommand) extends SprayHttpService with OSAddressLookupService
 
 // this trait defines our service behavior independently from the service actor
 trait OSAddressLookupService extends HttpService {

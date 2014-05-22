@@ -3,7 +3,7 @@ package dvla.domain.ordnance_survey_preproduction
 import java.net.URI
 import play.api.libs.json._
 
-case class Header(uri: URI,
+final case class Header(uri: URI,
                                /*query: String,*/
                                offset: Int,
                                totalresults: Int/*,
