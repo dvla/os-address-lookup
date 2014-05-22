@@ -131,12 +131,8 @@ class LookupCommandSpec extends UnitSpec {
 
   val header = Header(
     uri = new URI(""),
-    query = "",
     offset = 0,
-    totalresults = 2,
-    format = "",
-    dataset = "",
-    maxresults = 2)
+    totalresults = 2)
 
   val postcodeValid = "CM81QJ"
   val traderUprnValid = 12345L

@@ -4,12 +4,12 @@ import java.net.URI
 import play.api.libs.json._
 
 case class Header(uri: URI,
-                               query: String,
+                               /*query: String,*/
                                offset: Int,
-                               totalresults: Int,
+                               totalresults: Int/*,
                                format: String,
                                dataset: String,
-                               maxresults: Int)
+                               maxresults: Int*/)
 
 object Header {
   implicit val uriReads: Reads[URI] = new Reads[URI] {
