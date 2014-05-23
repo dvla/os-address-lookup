@@ -78,6 +78,26 @@ final class LookupCommandSpec extends UnitSpec {
              r shouldBe expected()
       }
     }
+
+    "return seq of (uprn, address) sorted by building number when building numbers have different numbers of characters" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(houseNumber = "20")), LPI = None)
+        val dpa2 = Result(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty BBB", houseNumber = "10")), LPI = None)
+        val dpa3 = Result(DPA = Some(osAddressbaseDPA(houseName = "presentationProperty AAA", houseNumber = "8")), LPI = None)
+        Seq(dpa1, dpa2, dpa3)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(
+            UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 8, property stub, street stub, town stub, area stub, $postcodeValid"),
+            UprnAddressPair(traderUprnValid.toString, s"presentationProperty BBB, 10, property stub, street stub, town stub, area stub, $postcodeValid"),
+            UprnAddressPair(traderUprnValid.toString, s"presentationProperty stub, 20, property stub, street stub, town stub, area stub, $postcodeValid")))
+      }
+    }
   }
 
   "callUprnToAddressOSWebService" should {

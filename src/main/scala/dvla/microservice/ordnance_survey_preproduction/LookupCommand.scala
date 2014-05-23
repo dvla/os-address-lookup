@@ -27,7 +27,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
   private def sort(addresses: Seq[DPA]) = {
     addresses.sortBy(addressDpa => {
       val buildingNumber = addressDpa.buildingNumber.getOrElse("0")
-      val buildingNumberSanitised = buildingNumber.replaceAll("[^0-9]", "") // Sanitise building number as it could contain letters which would cause toInt to throw e.g. 107a.
+      val buildingNumberSanitised = buildingNumber.replaceAll("[^0-9]", "").toInt // Sanitise building number as it could contain letters which would cause toInt to throw e.g. 107a.
       (buildingNumberSanitised, addressDpa.address) // TODO check with BAs how they would want to sort the list
     })
   }
