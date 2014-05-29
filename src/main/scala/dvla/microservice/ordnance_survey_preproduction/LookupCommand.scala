@@ -45,8 +45,11 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         }
         sort(addresses) map {
           address => UprnAddressPair(address.UPRN,
-                                  addressRulePicker(address.poBoxNumber, address.buildingNumber, address.buildingName, address.subBuildingName, address.dependentThoroughfareName, address.thoroughfareName, address.dependentLocality, address.postTown, address.postCode))
-        } // Sort before translating to drop down format.
+                                     addressRulePicker(address.poBoxNumber, address.buildingNumber, address.buildingName, address.subBuildingName,
+                                                       address.dependentThoroughfareName, address.thoroughfareName, address.dependentLocality, address.postTown,
+                                                       address.postCode))
+        }
+        // Sort before translating to drop down format.
       case None =>
         // Handle no results
         log.debug(s"No results returned for postcode: $postcode")
@@ -61,6 +64,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
 
     val(line1, line2, line3) =
       (poBoxNumber, buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName, dependentLocality) match {
+        case (None,None,Some(_),Some(_),None,Some(_),None) => rule8(buildingName, subBuildingName, thoroughfareName)
         case (None,Some(_),None,None,None,Some(_),Some(_)) => rule7(buildingNumber,thoroughfareName,dependentLocality)
         case (Some(_),_,_,_,_,_,_) => rule1(poBoxNumber, thoroughfareName, dependentLocality)
         case (_,None,_,None,_,_,None) => rule2(buildingName, dependentThoroughfareName, thoroughfareName)
@@ -104,6 +108,10 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
 
   private def rule7(buildingNumber: Option[String],thoroughfareName: Option[String],dependentLocality: Option[String]): (String, String, String) = {
     (lineBuild(Seq(buildingNumber,thoroughfareName)), lineBuild(Seq(dependentLocality)), nothing)
+  }
+
+  private def rule8(buildingName: Option[String], subBuildingName : Option[String],thoroughfareName: Option[String]): (String, String, String) = {
+    (lineBuild(Seq(subBuildingName)), lineBuild(Seq(buildingName)), lineBuild(Seq(thoroughfareName)))
   }
 
   private def lineBuild (addressPart: Seq[Option[String]], accumulatedLine: String = nothing): String = {

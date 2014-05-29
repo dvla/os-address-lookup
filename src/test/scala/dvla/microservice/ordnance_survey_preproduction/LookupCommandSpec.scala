@@ -76,15 +76,23 @@ final class LookupCommandSpec extends UnitSpec {
     }
 
     //ToDo - Reimplement tests below
-//    "return seq of (uprn, address) sorted by building number then building name" in {
-//      val service = lookupCommandMock(Some(Response(header, Some(oSAddressbaseResultsValidDPA()))))
-//      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-//
-//      whenReady(result) {
-//        r => r.addresses.length should equal(oSAddressbaseResultsValidDPA().length)
-//             r shouldBe expected()
-//      }
-//    }
+    "return seq of (uprn, address) sorted by building number then building name" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingName = Some("FAKE HOUSE"), thoroughfareName = Some("FAKE ROAD"), postTown = "FAKE TOWN", postCode = "EX8 1SN")), LPI = None)
+        val dpa2 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("50"), thoroughfareName = Some("FAKE ROAD"), postTown = "FAKE TOWN", postCode = "EX8 1SN")), LPI = None)
+        Seq(dpa1,dpa2)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(
+            UprnAddressPair(traderUprnValid.toString, s"50, FAKE ROAD, FAKE TOWN, EX8 1SN"),
+            UprnAddressPair(traderUprnValid.toString, s"FAKE HOUSE, FAKE ROAD, FAKE TOWN, EX8 1SN")))
+      }
+    }
 
 //    "return seq of (uprn, address) sorted by building number when building numbers have different numbers of characters" in {
 //      val dpa = {
@@ -122,7 +130,7 @@ final class LookupCommandSpec extends UnitSpec {
     }
   }
 
-  "FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP should return in the format FLAT 1 MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP" in {
+  "FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP should return in the format FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP" in {
     val dpa = {
       val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT 1"), buildingName = Some("MONTPELLIER COURT"), thoroughfareName = Some("MONTPELLIER ROAD"), postTown = "EXMOUTH", postCode = "EX8 1JP")), LPI = None)
       Seq(dpa1)
@@ -133,7 +141,22 @@ final class LookupCommandSpec extends UnitSpec {
 
     whenReady(result) {
       r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1 MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP")))
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP")))
+    }
+  }
+
+  "FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB should return in the format FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB" in {
+    val dpa = {
+      val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT 1"), buildingName = Some("13A"), thoroughfareName = Some("CRANLEY GARDENS"), postTown = "LONDON", postCode = "SW7 3BB")), LPI = None)
+      Seq(dpa1)
+    }
+
+    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+    whenReady(result) {
+      r => r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB")))
     }
   }
 
@@ -300,36 +323,14 @@ final class LookupCommandSpec extends UnitSpec {
   private final val postcodeValid = "CM81QJ"
   private final val emptyString = ""
 
-  private def osAddressbaseDPA(uprn: String = traderUprnValid.toString,
-                               address: String = emptyString,
-                               poBoxNumber: Option[String] = None,
-                               buildingName: Option[String] = None,
-                               subBuildingName: Option[String] = None,
-                               buildingNumber: Option[String] = None,
-                               thoroughfareName: Option[String] = None,
-                               dependentThoroughfareName: Option[String] = None,
-                               dependentLocality: Option[String] = None,
-                               postTown: String = emptyString,
-                               postCode: String = emptyString) =
-    DPA(
-        UPRN = uprn,
-        address = address,
-        poBoxNumber = poBoxNumber,
-        buildingName = buildingName,
-        subBuildingName = subBuildingName,
-        buildingNumber = buildingNumber,
-        thoroughfareName = thoroughfareName,
-        dependentThoroughfareName = dependentThoroughfareName,
-        dependentLocality = dependentLocality,
-        postTown = postTown,
-        postCode = postCode,
-        RPC = emptyString,
-        xCoordinate = 0,
-        yCoordinate = 0,
-        status = emptyString,
-        matchScore = 0,
-        matchDescription = emptyString
-    )
+  private def osAddressbaseDPA(uprn: String = traderUprnValid.toString, address: String = emptyString, poBoxNumber: Option[String] = None,
+                               buildingName: Option[String] = None, subBuildingName: Option[String] = None, buildingNumber: Option[String] = None,
+                               thoroughfareName: Option[String] = None, dependentThoroughfareName: Option[String] = None, dependentLocality: Option[String] = None,
+                               postTown: String = emptyString, postCode: String = emptyString) =
+
+    DPA(UPRN = uprn, address = address, poBoxNumber = poBoxNumber, buildingName = buildingName, subBuildingName = subBuildingName, buildingNumber = buildingNumber,
+        thoroughfareName = thoroughfareName, dependentThoroughfareName = dependentThoroughfareName, dependentLocality = dependentLocality, postTown = postTown,
+        postCode = postCode, RPC = emptyString, xCoordinate = 0, yCoordinate = 0, status = emptyString, matchScore = 0, matchDescription = emptyString)
 
   private val configuration = Configuration("", "", "")
 
