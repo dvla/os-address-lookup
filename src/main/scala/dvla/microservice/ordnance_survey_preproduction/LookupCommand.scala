@@ -31,7 +31,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
     addresses.sortBy(addressDpa => {
       val buildingNumber = addressDpa.buildingNumber.getOrElse("0")
       val buildingNumberSanitised = buildingNumber.replaceAll("[^0-9]", "").toInt
-       // Sanitise building number as it could contain letters which would cause toInt to throw e.g. 107a.
+      // Sanitise building number as it could contain letters which would cause toInt to throw e.g. 107a.
       (buildingNumberSanitised, addressDpa.address) // TODO check with BAs how they would want to sort the list
     })
   }
@@ -46,11 +46,11 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         }
         sort(addresses) map {
           address => UprnAddressPair(address.UPRN,
-                                     addressRulePicker(address.poBoxNumber, address.buildingNumber, address.buildingName, address.subBuildingName,
-                                                       address.dependentThoroughfareName, address.thoroughfareName, address.dependentLocality, address.postTown,
-                                                       address.postCode))
+            addressRulePicker(address.poBoxNumber, address.buildingNumber, address.buildingName, address.subBuildingName,
+              address.dependentThoroughfareName, address.thoroughfareName, address.dependentLocality, address.postTown,
+              address.postCode))
         }
-        // Sort before translating to drop down format.
+      // Sort before translating to drop down format.
       case None =>
         // Handle no results
         log.debug(s"No results returned for postcode: $postcode")
@@ -59,27 +59,27 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
   }
 
   private def addressRulePicker(poBoxNumber: Option[String] = None, buildingNumber: Option[String] = None, buildingName: Option[String] = None,
-                             subBuildingName: Option[String] = None, dependentThoroughfareName: Option[String], thoroughfareName: Option[String] = None,
-                             dependentLocality: Option[String] = None, postTown: String, postCode: String):String = {
+                                subBuildingName: Option[String] = None, dependentThoroughfareName: Option[String], thoroughfareName: Option[String] = None,
+                                dependentLocality: Option[String] = None, postTown: String, postCode: String): String = {
     //println(s"PO Box Number $poBoxNumber, Building number $buildingNumber, Building name $buildingName, Sub building name $subBuildingName, Dependant thoroughfare name $dependentThoroughfareName, Thoroughfare name $thoroughfareName, Dependent locality $dependentLocality, Post town $postTown, Postcode $postCode")
 
-    val(line1, line2, line3) =
+    val (line1, line2, line3) =
       (poBoxNumber, buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName, dependentLocality) match {
-        case (None,None,Some(_),Some(_),None,Some(_),None) => rule8(buildingName, subBuildingName, thoroughfareName)
-        case (None,Some(_),None,None,None,Some(_),Some(_)) => rule7(buildingNumber,thoroughfareName,dependentLocality)
-        case (Some(_),_,_,_,_,_,_) => rule1(poBoxNumber, thoroughfareName, dependentLocality)
-        case (_,None,_,None,_,_,None) => rule2(buildingName, dependentThoroughfareName, thoroughfareName)
-        case (_,_,None,None,_,_,_) => rule3(buildingNumber, dependentThoroughfareName,thoroughfareName, dependentLocality)
-        case (_,None,_,None,_,_,_) => rule4(buildingName, dependentThoroughfareName, thoroughfareName, dependentLocality)
-        case (_,Some(_),_,_,_,Some(_),_) => rule6(buildingNumber, buildingName, subBuildingName, dependentThoroughfareName,thoroughfareName, dependentLocality)
-        case (_,_,_,_,_,_,None) => rule5(buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName)
+        case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(buildingName, subBuildingName, thoroughfareName)
+        case (None, Some(_), None, None, None, Some(_), Some(_)) => rule7(buildingNumber, thoroughfareName, dependentLocality)
+        case (Some(_), _, _, _, _, _, _) => rule1(poBoxNumber, thoroughfareName, dependentLocality)
+        case (_, None, _, None, _, _, None) => rule2(buildingName, dependentThoroughfareName, thoroughfareName)
+        case (_, _, None, None, _, _, _) => rule3(buildingNumber, dependentThoroughfareName, thoroughfareName, dependentLocality)
+        case (_, None, _, None, _, _, _) => rule4(buildingName, dependentThoroughfareName, thoroughfareName, dependentLocality)
+        case (_, Some(_), _, _, _, Some(_), _) => rule6(buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName, dependentLocality)
+        case (_, _, _, _, _, _, None) => rule5(buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName)
         case _ => rule6(buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName, dependentLocality)
       }
     line1 + line2 + line3 + postTown + separator + postCode
   }
 
   //rule methods will build and return three strings for address line1, line2 and line3
-  private def rule1(poBoxNumber: Option[String], thoroughfareName : Option[String], dependentLocality : Option[String]) : (String, String, String)  = {
+  private def rule1(poBoxNumber: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String]): (String, String, String) = {
     (lineBuild(Seq(poBoxNumber)), lineBuild(Seq(thoroughfareName)), lineBuild(Seq(dependentLocality)))
   }
 
@@ -88,7 +88,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
   }
 
   private def rule3(buildingNumber: Option[String], dependentThoroughfareName: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String])
-                  : (String, String, String) = {
+                    : (String, String, String) = {
     (lineBuild(Seq(buildingNumber, dependentThoroughfareName)), lineBuild(Seq(thoroughfareName)), lineBuild(Seq(dependentLocality)))
   }
 
@@ -107,20 +107,20 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
     (lineBuild(Seq(subBuildingName, buildingName)), lineBuild(Seq(buildingNumber, dependentThoroughfareName, thoroughfareName)), lineBuild(Seq(dependentLocality)))
   }
 
-  private def rule7(buildingNumber: Option[String],thoroughfareName: Option[String],dependentLocality: Option[String]): (String, String, String) = {
-    (lineBuild(Seq(buildingNumber,thoroughfareName)), lineBuild(Seq(dependentLocality)), nothing)
+  private def rule7(buildingNumber: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String]): (String, String, String) = {
+    (lineBuild(Seq(buildingNumber, thoroughfareName)), lineBuild(Seq(dependentLocality)), nothing)
   }
 
-  private def rule8(buildingName: Option[String], subBuildingName : Option[String],thoroughfareName: Option[String]): (String, String, String) = {
+  private def rule8(buildingName: Option[String], subBuildingName: Option[String], thoroughfareName: Option[String]): (String, String, String) = {
     (lineBuild(Seq(subBuildingName)), lineBuild(Seq(buildingName)), lineBuild(Seq(thoroughfareName)))
   }
 
-  private def lineBuild (addressPart: Seq[Option[String]], accumulatedLine: String = nothing): String = {
+  private def lineBuild(addressPart: Seq[Option[String]], accumulatedLine: String = nothing): String = {
     if (addressPart.size == 1) lastItemInList(addressPart.head, accumulatedLine, separator)
     else lineBuild(addressPart.tail, accumulateLine(addressPart.head, accumulatedLine, space))
   }
 
-  private def accumulateLine(currentItem: Option[String], accumulatedLine: String, lastChar: String):String = {
+  private def accumulateLine(currentItem: Option[String], accumulatedLine: String, lastChar: String): String = {
     currentItem match {
       case Some(currentItem) => accumulatedLine + currentItem + lastChar
       case _ => accumulatedLine
@@ -132,7 +132,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
     lastItem match {
       case Some(lastItem) => accumulatedLine + lastItem + lastChar
       case _ => if (currentAddressLine + lastChar == lastChar) nothing
-                else currentAddressLine + lastChar
+      else currentAddressLine + lastChar
     }
   }
 
