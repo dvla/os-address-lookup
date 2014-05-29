@@ -30,7 +30,8 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
   private def sort(addresses: Seq[DPA]) = {
     addresses.sortBy(addressDpa => {
       val buildingNumber = addressDpa.buildingNumber.getOrElse("0")
-      val buildingNumberSanitised = buildingNumber.replaceAll("[^0-9]", "").toInt // Sanitise building number as it could contain letters which would cause toInt to throw e.g. 107a.
+      val buildingNumberSanitised = buildingNumber.replaceAll("[^0-9]", "").toInt
+       // Sanitise building number as it could contain letters which would cause toInt to throw e.g. 107a.
       (buildingNumberSanitised, addressDpa.address) // TODO check with BAs how they would want to sort the list
     })
   }
@@ -60,7 +61,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
   private def addressRulePicker(poBoxNumber: Option[String] = None, buildingNumber: Option[String] = None, buildingName: Option[String] = None,
                              subBuildingName: Option[String] = None, dependentThoroughfareName: Option[String], thoroughfareName: Option[String] = None,
                              dependentLocality: Option[String] = None, postTown: String, postCode: String):String = {
-    println(s"PO Box Number $poBoxNumber, Building number $buildingNumber, Building name $buildingName, Sub building name $subBuildingName, Dependant thoroughfare name $dependentThoroughfareName, Thoroughfare name $thoroughfareName, Dependent locality $dependentLocality, Post town $postTown, Postcode $postCode")
+    //println(s"PO Box Number $poBoxNumber, Building number $buildingNumber, Building name $buildingName, Sub building name $subBuildingName, Dependant thoroughfare name $dependentThoroughfareName, Thoroughfare name $thoroughfareName, Dependent locality $dependentLocality, Post town $postTown, Postcode $postCode")
 
     val(line1, line2, line3) =
       (poBoxNumber, buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName, dependentLocality) match {

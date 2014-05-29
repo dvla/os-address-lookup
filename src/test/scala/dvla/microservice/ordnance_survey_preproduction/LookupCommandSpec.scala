@@ -59,7 +59,6 @@ final class LookupCommandSpec extends UnitSpec {
       }
     }
 
-
     "not throw when an address contains ordnance_survey building number that contains letters" in {
       val dpa = {
         val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("50ABC"), thoroughfareName = Some("FAKE ROAD"), postTown = "FAKE TOWN", postCode = "EX8 1SN")), LPI = None)
@@ -74,45 +73,6 @@ final class LookupCommandSpec extends UnitSpec {
           r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"50ABC, FAKE ROAD, FAKE TOWN, EX8 1SN")))
       }
     }
-
-    //ToDo - Reimplement tests below
-    "return seq of (uprn, address) sorted by building number then building name" in {
-      val dpa = {
-        val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingName = Some("FAKE HOUSE"), thoroughfareName = Some("FAKE ROAD"), postTown = "FAKE TOWN", postCode = "EX8 1SN")), LPI = None)
-        val dpa2 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("50"), thoroughfareName = Some("FAKE ROAD"), postTown = "FAKE TOWN", postCode = "EX8 1SN")), LPI = None)
-        Seq(dpa1,dpa2)
-      }
-
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(
-            UprnAddressPair(traderUprnValid.toString, s"50, FAKE ROAD, FAKE TOWN, EX8 1SN"),
-            UprnAddressPair(traderUprnValid.toString, s"FAKE HOUSE, FAKE ROAD, FAKE TOWN, EX8 1SN")))
-      }
-    }
-
-//    "return seq of (uprn, address) sorted by building number when building numbers have different numbers of characters" in {
-//      val dpa = {
-//        val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = "20")), LPI = None)
-//        val dpa2 = Result(DPA = Some(osAddressbaseDPA(buildingName = "presentationProperty BBB", buildingNumber = "10")), LPI = None)
-//        val dpa3 = Result(DPA = Some(osAddressbaseDPA(buildingName = "presentationProperty AAA", buildingNumber = "8")), LPI = None)
-//        Seq(dpa1, dpa2, dpa3)
-//      }
-//
-//      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-//      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-//
-//      whenReady(result) {
-//        r => r.addresses.length should equal(dpa.length)
-//          r shouldBe PostcodeToAddressResponse(Seq(
-//            UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 8, property stub, street stub, town stub, area stub, $postcodeValid"),
-//            UprnAddressPair(traderUprnValid.toString, s"presentationProperty BBB, 10, property stub, street stub, town stub, area stub, $postcodeValid"),
-//            UprnAddressPair(traderUprnValid.toString, s"presentationProperty stub, 20, property stub, street stub, town stub, area stub, $postcodeValid")))
-//      }
-//    }
   }
 
   "FLAT 1, 52, SALISBURY ROAD, EXMOUTH, EX8 1SN should return in the format FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN" in {
