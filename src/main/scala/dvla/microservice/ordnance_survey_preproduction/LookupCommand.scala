@@ -61,7 +61,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
   private def addressRulePicker(poBoxNumber: Option[String] = None, buildingNumber: Option[String] = None, buildingName: Option[String] = None,
                                 subBuildingName: Option[String] = None, dependentThoroughfareName: Option[String], thoroughfareName: Option[String] = None,
                                 dependentLocality: Option[String] = None, postTown: String, postCode: String): String = {
-    println(s"PO Box Number $poBoxNumber, Building number $buildingNumber, Building name $buildingName, Sub building name $subBuildingName, Dependant thoroughfare name $dependentThoroughfareName, Thoroughfare name $thoroughfareName, Dependent locality $dependentLocality, Post town $postTown, Postcode $postCode")
+    //println(s"PO Box Number $poBoxNumber, Building number $buildingNumber, Building name $buildingName, Sub building name $subBuildingName, Dependant thoroughfare name $dependentThoroughfareName, Thoroughfare name $thoroughfareName, Dependent locality $dependentLocality, Post town $postTown, Postcode $postCode")
 
     val (line1, line2, line3) =
       (poBoxNumber, buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName, dependentLocality) match {
@@ -80,46 +80,46 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
 
   //rule methods will build and return three strings for address line1, line2 and line3
   private def rule1(poBoxNumber: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String]): (String, String, String) = {
-    println("Rule 1")
+    //println("Rule 1")
     (lineBuild(Seq(poBoxNumber)), lineBuild(Seq(thoroughfareName)), lineBuild(Seq(dependentLocality)))
   }
 
   private def rule2(buildingName: Option[String], dependentThoroughfareName: Option[String], thoroughfareName: Option[String]): (String, String, String) = {
-    println("Rule 2")
+    //println("Rule 2")
     (lineBuild(Seq(buildingName)), lineBuild(Seq(dependentThoroughfareName)), lineBuild(Seq(thoroughfareName)))
   }
 
   private def rule3(buildingNumber: Option[String], dependentThoroughfareName: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String])
                     : (String, String, String) = {
-    println("Rule 3")
+    //println("Rule 3")
     (lineBuild(Seq(buildingNumber, dependentThoroughfareName)), lineBuild(Seq(thoroughfareName)), lineBuild(Seq(dependentLocality)))
   }
 
   private def rule4(buildingName: Option[String], dependentThoroughfareName: Option[String], thoroughfareName: Option[String],
                     dependentLocality: Option[String]): (String, String, String) = {
-    println("Rule 4")
+    //println("Rule 4")
     (lineBuild(Seq(buildingName, dependentThoroughfareName)), lineBuild(Seq(thoroughfareName)), lineBuild(Seq(dependentLocality)))
   }
 
   private def rule5(buildingNumber: Option[String], buildingName: Option[String], subBuildingName: Option[String],
                     dependentThoroughfareName: Option[String], thoroughfareName: Option[String]): (String, String, String) = {
-    println("Rule 5")
+   //println("Rule 5")
     (lineBuild(Seq(subBuildingName, buildingName)), lineBuild(Seq(buildingNumber, dependentThoroughfareName)), lineBuild(Seq(thoroughfareName)))
   }
 
   private def rule6(buildingNumber: Option[String], buildingName: Option[String], subBuildingName: Option[String],
                     dependentThoroughfareName: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String]): (String, String, String) = {
-    println("Rule 6")
+    //println("Rule 6")
     (lineBuild(Seq(subBuildingName, buildingName)), lineBuild(Seq(buildingNumber, dependentThoroughfareName, thoroughfareName)), lineBuild(Seq(dependentLocality)))
   }
 
   private def rule7(buildingNumber: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String]): (String, String, String) = {
-    println("Rule 7")
+    //println("Rule 7")
     (lineBuild(Seq(buildingNumber, thoroughfareName)), lineBuild(Seq(dependentLocality)), nothing)
   }
 
   private def rule8(buildingName: Option[String], subBuildingName: Option[String], thoroughfareName: Option[String]): (String, String, String) = {
-    println("Rule 8")
+    //println("Rule 8")
     (lineBuild(Seq(subBuildingName)), lineBuild(Seq(buildingName)), lineBuild(Seq(thoroughfareName)))
   }
 
