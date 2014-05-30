@@ -70,7 +70,7 @@ final class LookupCommandSpec extends UnitSpec {
 
       whenReady(result) {
         r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"50ABC, FAKE ROAD, FAKE TOWN, EX8 1SN")))
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"50ABC FAKE ROAD, FAKE TOWN, EX8 1SN")))
       }
     }
   }
@@ -222,6 +222,36 @@ final class LookupCommandSpec extends UnitSpec {
     whenReady(result) {
       r => r.addresses.length should equal(dpa.length)
         r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN")))
+    }
+  }
+
+  "4, LYNDHURST ROAD, EXMOUTH, EX8 3DT should return in the format 4 LYNDHURST ROAD, EXMOUTH, EX8 3DT" in {
+    val dpa = {
+      val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber=Some("4"), thoroughfareName = Some("LYNDHURST ROAD"), postTown = "EXMOUTH", postCode = "EX8 3DT")), LPI = None)
+      Seq(dpa1)
+    }
+
+    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+    whenReady(result) {
+      r => r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"4 LYNDHURST ROAD, EXMOUTH, EX8 3DT")))
+    }
+  }
+
+  "ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ should return in the format ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ" in {
+    val dpa = {
+      val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingName=Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")), LPI = None)
+      Seq(dpa1)
+    }
+
+    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+    whenReady(result) {
+      r => r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ")))
     }
   }
 
