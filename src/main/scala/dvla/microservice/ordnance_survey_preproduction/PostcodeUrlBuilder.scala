@@ -1,9 +1,9 @@
 package dvla.microservice.ordnance_survey_preproduction
 
-import dvla.microservice.Configuration
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
+import dvla.microservice.Configuration
 
-final class PostcodeUrlBuilder(val configuration: Configuration){
+final class PostcodeUrlBuilder(val configuration: Configuration) {
   private val apiKey = configuration.apiKey
   private val baseUrl = configuration.baseUrl
 
@@ -12,10 +12,11 @@ final class PostcodeUrlBuilder(val configuration: Configuration){
       case Some(lang) => "&lr=" + lang
       case None => ""
     }
-    s"$baseUrl/postcode?postcode=${postcodeWithNoSpaces(request.postcode)}" +
-    s"&dataset=dpa" +
-    languageCode +
-    s"&key=$apiKey"
+    s"$baseUrl/postcode?" +
+      s"postcode=${postcodeWithNoSpaces(request.postcode)}" +
+      s"&dataset=dpa" +
+      languageCode +
+      s"&key=$apiKey"
   }
 
   private def postcodeWithNoSpaces(postcode: String): String = postcode.filter(_ != ' ')
