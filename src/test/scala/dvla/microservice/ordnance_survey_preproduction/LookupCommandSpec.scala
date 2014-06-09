@@ -334,7 +334,7 @@ final class LookupCommandSpec extends UnitSpec {
       thoroughfareName = thoroughfareName, dependentThoroughfareName = dependentThoroughfareName, dependentLocality = dependentLocality, postTown = postTown,
       postCode = postCode, RPC = emptyString, xCoordinate = 0, yCoordinate = 0, status = emptyString, matchScore = 0, matchDescription = emptyString)
 
-  private val configuration = Configuration("", "", "")
+  private val configuration = Configuration()
   private val postcodeUrlBuilder = new PostcodeUrlBuilder(configuration = configuration)
   private val uprnUrlBuilder = new UprnUrlBuilder(configuration = configuration)
 
