@@ -2,7 +2,7 @@ package dvla.microservice.ordnance_survey_beta_0_6
 
 import akka.actor.ActorSystem
 import scala.concurrent._
-import akka.event.Logging
+import akka.event.{LoggingAdapter, Logging}
 import dvla.domain.address_lookup._
 import spray.client.pipelining._
 
@@ -22,7 +22,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
   private val password = configuration.password
   private val baseUrl = configuration.baseUrl
 
-  private lazy val log = Logging(system, this.getClass)
+  private lazy val log: LoggingAdapter = Logging(system, this.getClass)
 
   private def postcodeWithNoSpaces(postcode: String): String = postcode.filter(_ != ' ')
 
@@ -30,7 +30,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
     addresses.sortBy(addressDpa => {
       val buildingNumber = addressDpa.buildingNumber.getOrElse("0")
       val buildingNumberSanitised = buildingNumber.replaceAll("[^0-9]", "") // Sanitise building number as it could contain letters which would cause toInt to throw e.g. 107a.
-      (buildingNumberSanitised, addressDpa.buildingName) // TODO check with BAs how they would want to sort the list
+      (buildingNumberSanitised, addressDpa.buildingName)
     })
   }
 
@@ -104,7 +104,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         ~> checkStatusCodeAndUnmarshal)
       )
 
-    val endPoint = s"$baseUrl/uprn?uprn=${request.uprn}&dataset=dpa" // TODO add lpi to URL, but need to set orgnaisation as Option on the type.
+    val endPoint = s"$baseUrl/uprn?uprn=${request.uprn}&dataset=dpa"
 
     pipeline {
       Get(endPoint)
