@@ -27,16 +27,16 @@ trait OSAddressLookupService extends HttpService {
   val route = {
     get {
       pathPrefix("postcode-to-address") {
-        parameter('postcode) { postcode =>
-            onComplete(lookupAddress(PostcodeToAddressLookupRequest(postcode))) {
+        parameterMap { params =>
+            onComplete(lookupAddress(PostcodeToAddressLookupRequest(params.get("postcode").get, params.get("languageCode")))) {
               case Success(resp) => complete(resp)
               case Failure(_) => complete(ServiceUnavailable)
             }
           }
       } ~
       pathPrefix("uprn-to-address") {
-        parameter('uprn) { uprn =>
-          onComplete(lookupAddress(UprnToAddressLookupRequest(uprn.toLong))) {
+        parameterMap { params =>
+          onComplete(lookupAddress(UprnToAddressLookupRequest(params.get("uprn").get.toLong, params.get("languageCode")))) {
             case Success(resp) => complete(resp)
             case Failure(_) => complete(ServiceUnavailable)
           }
@@ -46,12 +46,12 @@ trait OSAddressLookupService extends HttpService {
   }
 
   private def lookupAddress(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
-    log.debug(s"Received post request on postcode-to-address. Request object = ${request}")
+    log.debug(s"Received post request on postcode-to-address. Request object = $request")
     command(request)
   }
 
   private def lookupAddress(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
-    log.debug(s"Received post request on uprn-to-address. Request object = ${request}")
+    log.debug(s"Received post request on uprn-to-address. Request object = $request")
     command(request)
   }
 
