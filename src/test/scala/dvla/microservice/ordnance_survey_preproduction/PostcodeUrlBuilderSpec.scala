@@ -6,23 +6,29 @@ import dvla.microservice.Configuration
 
 final class PostcodeUrlBuilderSpec extends UnitSpec {
   "endPoint" should {
-    "not specify language when none provided on the request" in {
+    "not specify language filter when none provided on the request" in {
       val request = PostcodeToAddressLookupRequest(postcode = postcode)
       val result = postcodeUrlBuilder.endPoint(request)
 
       result should equal(s"test-base-url/postcode?postcode=test-postcode&dataset=dpa&key=test-api-key")
     }
 
-    "specify language 'cy' when provided on the request" in {
+    "specify language filter 'cy' when provided on the request" in {
       val request = PostcodeToAddressLookupRequest(postcode = postcode, languageCode = Some("cy"))
       val result = postcodeUrlBuilder.endPoint(request)
-      result should equal(s"test-base-url/postcode?postcode=test-postcode&dataset=dpa&lr=cy&key=test-api-key")
+      result should equal(s"test-base-url/postcode?postcode=test-postcode&dataset=dpa&lr=CY&key=test-api-key")
     }
 
-    "specify language 'en' when provided on the request" in {
+    "specify language filter 'en' when provided on the request" in {
       val request = PostcodeToAddressLookupRequest(postcode = postcode, languageCode = Some("en"))
       val result = postcodeUrlBuilder.endPoint(request)
-      result should equal(s"test-base-url/postcode?postcode=test-postcode&dataset=dpa&lr=en&key=test-api-key")
+      result should equal(s"test-base-url/postcode?postcode=test-postcode&dataset=dpa&lr=EN&key=test-api-key")
+    }
+
+    "remove regional codes e.g. 'en-us' -> 'EN'" in {
+      val request = PostcodeToAddressLookupRequest(postcode = postcode, languageCode = Some("en-us"))
+      val result = postcodeUrlBuilder.endPoint(request)
+      result should equal(s"test-base-url/postcode?postcode=test-postcode&dataset=dpa&lr=EN&key=test-api-key")
     }
   }
 

@@ -9,7 +9,7 @@ final class PostcodeUrlBuilder(val configuration: Configuration) {
 
   def endPoint(request: PostcodeToAddressLookupRequest) = {
     val languageCode = request.languageCode match {
-      case Some(lang) => "&lr=" + lang
+      case Some(lang) => "&lr=" +  lang.toUpperCase.substring(0,2) // Collapse the many variations of English (e.g. en-us, en-gb) into just the first 2 chars.
       case None => ""
     }
     s"$baseUrl/postcode?" +
