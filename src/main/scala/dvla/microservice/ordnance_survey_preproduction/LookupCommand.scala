@@ -15,6 +15,7 @@ import dvla.domain.address_lookup.AddressViewModel
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import scala.annotation.tailrec
+import dvla.domain.LogFormats
 
 class LookupCommand(override val configuration: Configuration,
                     val postcodeUrlBuilder: PostcodeUrlBuilder,
@@ -50,7 +51,8 @@ class LookupCommand(override val configuration: Configuration,
       // Sort before translating to drop down format.
       case None =>
         // Handle no results
-        log.debug(s"No results returned for postcode: $postcode")
+        val postcodeToLog = LogFormats.anonymize(postcode)
+        log.debug(s"No results returned for postcode: $postcodeToLog")
         Seq.empty
     }
   }
@@ -148,7 +150,7 @@ class LookupCommand(override val configuration: Configuration,
             addresses.head.postTown, addresses.head.postCode).split(", ")
         )) // Translate to view model.
       case None =>
-        log.error(s"No results returned by web service for submitted UPRN: $uprn")
+        log.error(s"No results returned by web service for submitted UPRN: ${LogFormats.anonymize(uprn.toString)}")
         None
     }
   }
@@ -183,13 +185,14 @@ class LookupCommand(override val configuration: Configuration,
     pipeline {
       Get(endPoint)
     }
-
   }
 
   override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
 
-    log.debug("Dealing with the post request on postcode-to-address with OS data response...")
-    log.debug("... for postcode " + request.postcode)
+    //log.debug("Dealing with the post request on postcode-to-address with OS data response...")
+    //log.debug("... for postcode " + request.postcode)
+
+    log.debug(s"Dealing with the post request for ${LogFormats.anonymize(request.postcode)}")
 
     callPostcodeToAddressOSWebService(request).map {
       resp => {
@@ -197,7 +200,7 @@ class LookupCommand(override val configuration: Configuration,
       }
     }.recover {
       case e: Throwable =>
-        log.error(s"Ordnance Survey postcode lookup service error: $e")
+        log.error(s"Ordnance Survey postcode lookup service error: ${e.toString.take(45)}")
         PostcodeToAddressResponse(Seq.empty)
     }
 
@@ -205,8 +208,10 @@ class LookupCommand(override val configuration: Configuration,
 
   override def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
 
-    log.debug("Dealing with the post request on uprn-to-address with OS data response...")
-    log.debug("... for uprn " + request.uprn)
+    //log.debug("Dealing with the post request on uprn-to-address with OS data response...")
+    //log.debug("... for uprn " + request.uprn)
+
+    log.debug(s"Dealing with the post request for ${LogFormats.anonymize(request.uprn.toString)}")
 
     callUprnToAddressOSWebService(request).map {
       resp => {
@@ -214,7 +219,7 @@ class LookupCommand(override val configuration: Configuration,
       }
     }.recover {
       case e: Throwable =>
-        log.error(s"Ordnance Survey uprn lookup service error: $e")
+        log.error(s"Ordnance Survey uprn lookup service error: ${e.toString.take(45)}")
         UprnToAddressResponse(None)
     }
   }

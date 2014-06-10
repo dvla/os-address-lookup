@@ -15,6 +15,7 @@ import dvla.domain.ordnance_survey_beta_0_6.{Response, DPA}
 import dvla.domain.address_lookup.AddressViewModel
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 import dvla.microservice.{AddressLookupCommand, Configuration}
+import dvla.domain.LogFormats
 
 class LookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
