@@ -48,7 +48,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         } // Sort before translating to drop down format.
       case None =>
         // Handle no results
-        log.debug(s"No results returned for postcode: $postcode")
+        log.debug(s"No results returned for postcode: ${LogFormats.anonymize(postcode)}")
         Seq.empty
     }
 
@@ -65,7 +65,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         require(addresses.length >= 1, s"Should be at least one address for the UPRN")
         Some(AddressViewModel(uprn = Some(addresses.head.UPRN.toLong), address = addresses.head.address.split(", "))) // Translate to view model.
       case None =>
-        log.error(s"No results returned by web service for submitted UPRN: $uprn")
+        log.error(s"No results returned by web service for submitted UPRN: ${LogFormats.anonymize(uprn.toString)}")
         None
     }
 
@@ -87,7 +87,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         ~> checkStatusCodeAndUnmarshal)
       )
 
-    val endPoint = s"$baseUrl/postcode?postcode=${postcodeWithNoSpaces(request.postcode)}&dataset=dpa"
+    val endPoint = s"$baseUrl/postcode?postcode=${LogFormats.anonymize(postcodeWithNoSpaces(request.postcode))}&dataset=dpa"
 
     pipeline {
       Get(endPoint)
@@ -105,7 +105,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         ~> checkStatusCodeAndUnmarshal)
       )
 
-    val endPoint = s"$baseUrl/uprn?uprn=${request.uprn}&dataset=dpa"
+    val endPoint = s"$baseUrl/uprn?uprn=${LogFormats.anonymize(request.uprn.toString)}&dataset=dpa"
 
     pipeline {
       Get(endPoint)
@@ -115,8 +115,10 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
 
   override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
 
-    log.debug("Dealing with the post request on postcode-to-address with OS data response...")
-    log.debug("... for postcode " + request.postcode)
+    //log.debug("Dealing with the post request on postcode-to-address with OS data response...")
+    //log.debug("... for postcode " + request.postcode)
+
+    log.info(s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     callPostcodeToAddressOSWebService(request).map {
       resp => {
@@ -124,7 +126,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
       }
     }.recover {
       case e: Throwable =>
-        log.error(s"Ordnance Survey postcode lookup service error: $e")
+        log.info(s"Ordnance Survey postcode lookup service error: ${e.toString.take(45)}")
         PostcodeToAddressResponse(Seq.empty)
     }
 
@@ -132,8 +134,10 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
 
   override def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
 
-    log.debug("Dealing with the post request on uprn-to-address with OS data response...")
-    log.debug("... for uprn " + request.uprn)
+    //log.debug("Dealing with the post request on uprn-to-address with OS data response...")
+    //log.debug("... for uprn " + request.uprn)
+
+    log.info(s"Dealing with the post request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
 
     callUprnToAddressOSWebService(request).map {
       resp => {
@@ -141,7 +145,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
       }
     }.recover {
       case e: Throwable =>
-        log.error(s"Ordnance Survey uprn lookup service error: $e")
+        log.info(s"Ordnance Survey uprn lookup service error: ${e.toString.take(45)}")
         UprnToAddressResponse(None)
     }
   }

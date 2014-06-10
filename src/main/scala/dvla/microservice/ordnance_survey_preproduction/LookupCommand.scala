@@ -51,8 +51,8 @@ class LookupCommand(override val configuration: Configuration,
       // Sort before translating to drop down format.
       case None =>
         // Handle no results
-        val postcodeToLog = LogFormats.anonymize(postcode)
-        log.debug(s"No results returned for postcode: $postcodeToLog")
+
+        log.info(s"No results returned for postcode: ${LogFormats.anonymize(postcode)}")
         Seq.empty
     }
   }
@@ -150,7 +150,7 @@ class LookupCommand(override val configuration: Configuration,
             addresses.head.postTown, addresses.head.postCode).split(", ")
         )) // Translate to view model.
       case None =>
-        log.error(s"No results returned by web service for submitted UPRN: ${LogFormats.anonymize(uprn.toString)}")
+        log.info(s"No results returned by web service for submitted UPRN: ${LogFormats.anonymize(uprn.toString)}")
         None
     }
   }
@@ -192,7 +192,7 @@ class LookupCommand(override val configuration: Configuration,
     //log.debug("Dealing with the post request on postcode-to-address with OS data response...")
     //log.debug("... for postcode " + request.postcode)
 
-    log.debug(s"Dealing with the post request for ${LogFormats.anonymize(request.postcode)}")
+    log.info(s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     callPostcodeToAddressOSWebService(request).map {
       resp => {
@@ -200,7 +200,7 @@ class LookupCommand(override val configuration: Configuration,
       }
     }.recover {
       case e: Throwable =>
-        log.error(s"Ordnance Survey postcode lookup service error: ${e.toString.take(45)}")
+        log.info(s"Ordnance Survey postcode lookup service error: ${e.toString.take(45)}")
         PostcodeToAddressResponse(Seq.empty)
     }
 
@@ -211,7 +211,7 @@ class LookupCommand(override val configuration: Configuration,
     //log.debug("Dealing with the post request on uprn-to-address with OS data response...")
     //log.debug("... for uprn " + request.uprn)
 
-    log.debug(s"Dealing with the post request for ${LogFormats.anonymize(request.uprn.toString)}")
+    log.info(s"Dealing with the post request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
 
     callUprnToAddressOSWebService(request).map {
       resp => {
@@ -219,7 +219,7 @@ class LookupCommand(override val configuration: Configuration,
       }
     }.recover {
       case e: Throwable =>
-        log.error(s"Ordnance Survey uprn lookup service error: ${e.toString.take(45)}")
+        log.info(s"Ordnance Survey uprn lookup service error: ${e.toString.take(45)}")
         UprnToAddressResponse(None)
     }
   }
