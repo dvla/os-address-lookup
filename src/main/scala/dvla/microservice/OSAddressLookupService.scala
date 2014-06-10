@@ -8,6 +8,7 @@ import akka.event.LoggingAdapter
 import dvla.domain.JsonFormats._
 import dvla.domain.address_lookup._
 import dvla.common.microservice.SprayHttpService
+import dvla.domain.LogFormats
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -46,12 +47,12 @@ trait OSAddressLookupService extends HttpService {
   }
 
   private def lookupAddress(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
-    log.debug(s"Received post request on postcode-to-address. Request object = $request")
+    log.debug(s"Received post request on postcode-to-address ${LogFormats.anonymize(request.postcode)}") //Request object = ${request}")
     command(request)
   }
 
   private def lookupAddress(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
-    log.debug(s"Received post request on uprn-to-address. Request object = $request")
+    log.debug(s"Received post request on uprn-to-address ${LogFormats.anonymize(request.uprn.toString)}") //. Request object = ${request}")
     command(request)
   }
 
