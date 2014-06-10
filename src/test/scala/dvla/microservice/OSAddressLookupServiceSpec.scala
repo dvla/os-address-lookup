@@ -90,6 +90,26 @@ final class OSAddressLookupServiceSpec extends RouteSpecBase {
         resp.addressViewModel should equal(None)
       }
     }
+
+    "return address without language filter when no addresses existed for the filtered lookup" in {
+      val noAddressFound = UprnToAddressResponse(addressViewModel = None)
+      val addressFound = UprnToAddressResponse(Option(fetchedAddressViewModel))
+      when(command.apply(uprnValidRequest)).thenReturn(
+        Future.successful(addressFound)
+      )
+      when(command.apply(uprnValidLanguageCyRequest)).thenReturn(
+        Future.successful(noAddressFound)
+      )
+
+      Get(s"$uprnToAddressLookupUrl?uprn=$uprnValid&languageCode=cy") ~> sealRoute(route) ~> check {
+        status should equal(OK)
+        val resp = responseAs[UprnToAddressResponse]
+        resp.addressViewModel should be(defined)
+        resp.addressViewModel.get should equal(fetchedAddressViewModel)
+      }
+    }
+
+
   }
 
   private final val postcodeValid = "SA11AA"
@@ -107,4 +127,5 @@ final class OSAddressLookupServiceSpec extends RouteSpecBase {
   private val postcodeValidRequest = PostcodeToAddressLookupRequest(postcodeValid)
   private val postcodeValidLanguageCyRequest = PostcodeToAddressLookupRequest(postcodeValid, languageCode = Some("cy"))
   private val uprnValidRequest = UprnToAddressLookupRequest(uprnValid)
+  private val uprnValidLanguageCyRequest = UprnToAddressLookupRequest(uprnValid, languageCode = Some("cy"))
 }

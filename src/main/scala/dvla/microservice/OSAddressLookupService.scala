@@ -39,16 +39,18 @@ trait OSAddressLookupService extends HttpService {
       } ~
       pathPrefix("uprn-to-address") {
         parameterMap { params =>
-          onComplete(lookupAddress(UprnToAddressLookupRequest(params.get("uprn").get.toLong, params.get("languageCode")))) {
-            case Success(resp) => complete(resp)
-            case Failure(_) => complete(ServiceUnavailable)
+          val uprn: Long = params.get("uprn").get.toLong
+          val languageCode: Option[String] = params.get("languageCode")
+          languageCode match {
+            case Some(_) => lookupUprn(uprn, languageCode)
+            case None => lookupUprn(uprn)
           }
         }
       }
     }
   }
 
-  def lookupPostcode(postcode: String, languageCode: Option[String]): Route = {
+  private def lookupPostcode(postcode: String, languageCode: Option[String]): Route = {
     val request = PostcodeToAddressLookupRequest(postcode = postcode, languageCode = languageCode)
     onComplete(command(request)) {
       case Success(resp) if resp.addresses.isEmpty => lookupPostcode(postcode)
@@ -57,7 +59,7 @@ trait OSAddressLookupService extends HttpService {
     }
   }
 
-  def lookupPostcode(postcode: String): Route = {
+  private def lookupPostcode(postcode: String): Route = {
     val request = PostcodeToAddressLookupRequest(postcode = postcode)
     onComplete(command(request)) {
       case Success(resp) => complete(resp)
@@ -65,8 +67,20 @@ trait OSAddressLookupService extends HttpService {
     }
   }
 
-  private def lookupAddress(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
-    log.debug(s"Received post request on uprn-to-address ${LogFormats.anonymize(request.uprn.toString)}") //. Request object = ${request}")
-    command(request)
+  private def lookupUprn(uprn: Long, languageCode: Option[String]): Route = {
+    val request: UprnToAddressLookupRequest = UprnToAddressLookupRequest(uprn, languageCode)
+    onComplete(command(request)) {
+      case Success(resp) if resp.addressViewModel.isEmpty => lookupUprn(uprn)
+      case Success(resp) => complete(resp)
+      case Failure(_) => complete(ServiceUnavailable)
+    }
+  }
+
+  private def lookupUprn(uprn: Long): Route = {
+    val request: UprnToAddressLookupRequest = UprnToAddressLookupRequest(uprn)
+    onComplete(command(request)) {
+      case Success(resp) => complete(resp)
+      case Failure(_) => complete(ServiceUnavailable)
+    }
   }
 }
