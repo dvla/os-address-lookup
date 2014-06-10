@@ -1,7 +1,7 @@
 package dvla.microservice
 
-import spray.routing.HttpService
-import scala.concurrent.{ExecutionContext, Future}
+import spray.routing.{Route, HttpService}
+import scala.concurrent.Future
 import spray.http.StatusCodes._
 import scala.util.{Failure, Success}
 import akka.event.LoggingAdapter
@@ -32,8 +32,8 @@ trait OSAddressLookupService extends HttpService {
           val postcode: String = params.get("postcode").get
           val languageCode: Option[String] = params.get("languageCode")
           languageCode match {
-            case Some(l) => lookupWithLanguageFilter(postcode = postcode, languageCode = languageCode) // Language specified so search with filter and if no results then search unfiltered.
-            case None => lookupWithNoLanguageFilter(postcode) // No language specified so go straight to unfiltered search.
+            case Some(_) => lookupPostcode(postcode = postcode, languageCode = languageCode) // Language specified so search with filter and if no results then search unfiltered.
+            case None => lookupPostcode(postcode) // No language specified so go straight to unfiltered search.
           }
         }
       } ~
@@ -48,27 +48,25 @@ trait OSAddressLookupService extends HttpService {
     }
   }
 
-  private def lookupWithLanguageFilter(postcode: String, languageCode: Option[String]) =
-    onComplete(lookupAddress(PostcodeToAddressLookupRequest(postcode, languageCode))) {
-      case Success(resp) if resp.addresses.isEmpty => lookupWithNoLanguageFilter(postcode)
+  def lookupPostcode(postcode: String, languageCode: Option[String]): Route = {
+    val request = PostcodeToAddressLookupRequest(postcode = postcode, languageCode = languageCode)
+    onComplete(command(request)) {
+      case Success(resp) if resp.addresses.isEmpty => lookupPostcode(postcode)
       case Success(resp) => complete(resp)
       case Failure(_) => complete(ServiceUnavailable)
     }
+  }
 
-  private def lookupWithNoLanguageFilter(postcode: String) =
-    onComplete(lookupAddress(PostcodeToAddressLookupRequest(postcode))) {
+  def lookupPostcode(postcode: String): Route = {
+    val request = PostcodeToAddressLookupRequest(postcode = postcode)
+    onComplete(command(request)) {
       case Success(resp) => complete(resp)
       case Failure(_) => complete(ServiceUnavailable)
     }
-
-  private def lookupAddress(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
-    log.debug(s"Received post request on postcode-to-address ${LogFormats.anonymize(request.postcode)}") //Request object = ${request}")
-    command(request)
   }
 
   private def lookupAddress(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
     log.debug(s"Received post request on uprn-to-address ${LogFormats.anonymize(request.uprn.toString)}") //. Request object = ${request}")
     command(request)
   }
-
 }
