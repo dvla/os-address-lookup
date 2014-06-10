@@ -54,6 +54,16 @@ final class OSAddressLookupServiceSpec extends RouteSpecBase {
       }
     }
 
+    "return empty address Seq when that postcode does not exist" in {
+      val postcodeToAddressResponse = PostcodeToAddressResponse(addresses = Seq.empty)
+      when(command.apply(request)).thenReturn(Future.successful(postcodeToAddressResponse))
+
+      Get(s"${postcodeToAddressLookupUrl}?postcode=${postcodeValid}") ~> sealRoute(route) ~> check {
+        status should equal(OK)
+        val resp = responseAs[PostcodeToAddressResponse]
+        resp.addresses should equal(Seq.empty)
+      }
+    }
   }
 
   "The uprn to address lookup service" should {
