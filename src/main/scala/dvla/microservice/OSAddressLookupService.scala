@@ -29,11 +29,13 @@ trait OSAddressLookupService extends HttpService {
     get {
       pathPrefix("postcode-to-address") {
         parameterMap { params =>
-            onComplete(lookupAddress(PostcodeToAddressLookupRequest(params.get("postcode").get, params.get("languageCode")))) {
-              case Success(resp) => complete(resp)
-              case Failure(_) => complete(ServiceUnavailable)
-            }
+          val postcode: String = params.get("postcode").get
+          val languageCode: Option[String] = params.get("languageCode")
+          languageCode match {
+            case Some(l) => lookupWithLanguageFilter(postcode = postcode, languageCode = languageCode) // Language specified so search with filter and if no results then search unfiltered.
+            case None => lookupWithNoLanguageFilter(postcode) // No language specified so go straight to unfiltered search.
           }
+        }
       } ~
       pathPrefix("uprn-to-address") {
         parameterMap { params =>
@@ -45,6 +47,19 @@ trait OSAddressLookupService extends HttpService {
       }
     }
   }
+
+  private def lookupWithLanguageFilter(postcode: String, languageCode: Option[String]) =
+    onComplete(lookupAddress(PostcodeToAddressLookupRequest(postcode, languageCode))) {
+      case Success(resp) if resp.addresses.isEmpty => lookupWithNoLanguageFilter(postcode)
+      case Success(resp) => complete(resp)
+      case Failure(_) => complete(ServiceUnavailable)
+    }
+
+  private def lookupWithNoLanguageFilter(postcode: String) =
+    onComplete(lookupAddress(PostcodeToAddressLookupRequest(postcode))) {
+      case Success(resp) => complete(resp)
+      case Failure(_) => complete(ServiceUnavailable)
+    }
 
   private def lookupAddress(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
     log.debug(s"Received post request on postcode-to-address ${LogFormats.anonymize(request.postcode)}") //Request object = ${request}")
