@@ -15,7 +15,7 @@ import dvla.domain.ordnance_survey_beta_0_6.{Response, DPA}
 import dvla.domain.address_lookup.AddressViewModel
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 import dvla.microservice.{AddressLookupCommand, Configuration}
-import dvla.domain.LogFormats
+import dvla.common.LogFormats
 
 class LookupCommand(val configuration: Configuration)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
@@ -43,6 +43,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         val addresses = results.flatMap {
           _.DPA
         }
+        log.info(s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
         sort(addresses) map {
           address => UprnAddressPair(address.UPRN, address.address)
         } // Sort before translating to drop down format.
@@ -62,6 +63,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         val addresses = results.flatMap {
           _.DPA
         }
+        log.info(s"Returning result for uprn request ${LogFormats.anonymize(uprn.toString)}")
         require(addresses.length >= 1, s"Should be at least one address for the UPRN")
         Some(AddressViewModel(uprn = Some(addresses.head.UPRN.toLong), address = addresses.head.address.split(", "))) // Translate to view model.
       case None =>
@@ -87,7 +89,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         ~> checkStatusCodeAndUnmarshal)
       )
 
-    val endPoint = s"$baseUrl/postcode?postcode=${LogFormats.anonymize(postcodeWithNoSpaces(request.postcode))}&dataset=dpa"
+    val endPoint = s"$baseUrl/postcode?postcode=${postcodeWithNoSpaces(request.postcode)}&dataset=dpa"
 
     pipeline {
       Get(endPoint)
@@ -105,7 +107,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
         ~> checkStatusCodeAndUnmarshal)
       )
 
-    val endPoint = s"$baseUrl/uprn?uprn=${LogFormats.anonymize(request.uprn.toString)}&dataset=dpa"
+    val endPoint = s"$baseUrl/uprn?uprn=${request.uprn}&dataset=dpa"
 
     pipeline {
       Get(endPoint)
@@ -118,7 +120,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
     //log.debug("Dealing with the post request on postcode-to-address with OS data response...")
     //log.debug("... for postcode " + request.postcode)
 
-    log.info(s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
+    log.info(s"Received and handling the request for postcode ${request.postcode}")
 
     callPostcodeToAddressOSWebService(request).map {
       resp => {
@@ -137,7 +139,7 @@ class LookupCommand(val configuration: Configuration)(implicit system: ActorSyst
     //log.debug("Dealing with the post request on uprn-to-address with OS data response...")
     //log.debug("... for uprn " + request.uprn)
 
-    log.info(s"Dealing with the post request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
+    log.info(s"Received and handling the request for uprn ${request.uprn}")
 
     callUprnToAddressOSWebService(request).map {
       resp => {

@@ -8,7 +8,7 @@ import akka.event.LoggingAdapter
 import dvla.domain.JsonFormats._
 import dvla.domain.address_lookup._
 import dvla.common.microservice.SprayHttpService
-import dvla.domain.LogFormats
+import dvla.common.LogFormats
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor

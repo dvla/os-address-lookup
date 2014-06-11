@@ -15,7 +15,7 @@ import dvla.domain.address_lookup.AddressViewModel
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import scala.annotation.tailrec
-import dvla.domain.LogFormats
+import dvla.common.LogFormats
 
 class LookupCommand(override val configuration: Configuration,
                     val postcodeUrlBuilder: PostcodeUrlBuilder,
@@ -42,6 +42,7 @@ class LookupCommand(override val configuration: Configuration,
         val addresses = results.flatMap {
           _.DPA
         }
+        log.info(s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
         sort(addresses) map {
           address => UprnAddressPair(address.UPRN,
             addressRulePicker(address.poBoxNumber, address.buildingNumber, address.buildingName, address.subBuildingName,
@@ -142,6 +143,7 @@ class LookupCommand(override val configuration: Configuration,
         val addresses = results.flatMap {
           _.DPA
         }
+        log.info(s"Returning result for uprn request ${LogFormats.anonymize(uprn.toString)}")
         require(addresses.length >= 1, s"Should be at least one address for the UPRN")
         Some(AddressViewModel(
           uprn = Some(addresses.head.UPRN.toLong),
@@ -189,9 +191,6 @@ class LookupCommand(override val configuration: Configuration,
 
   override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
 
-    //log.debug("Dealing with the post request on postcode-to-address with OS data response...")
-    //log.debug("... for postcode " + request.postcode)
-
     log.info(s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     callPostcodeToAddressOSWebService(request).map {
@@ -207,9 +206,6 @@ class LookupCommand(override val configuration: Configuration,
   }
 
   override def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
-
-    //log.debug("Dealing with the post request on uprn-to-address with OS data response...")
-    //log.debug("... for uprn " + request.uprn)
 
     log.info(s"Dealing with the post request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
 
