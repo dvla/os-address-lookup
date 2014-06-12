@@ -21,6 +21,17 @@
         </encoder>
     </appender>
 
+    <appender name="REQUEST-SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+        <syslogHost>localhost</syslogHost>
+        <facility>LOCAL0</facility>
+        <suffixPattern>%msg</suffixPattern>
+    </appender>
+
+    <logger name="dvla.common.microservice.AccessLogging" level="INFO" additivity="false" >
+        <appender-ref ref="REQUEST-SYSLOG"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
     <logger name="akka" level="INFO" />
 
     <root level="DEBUG">
