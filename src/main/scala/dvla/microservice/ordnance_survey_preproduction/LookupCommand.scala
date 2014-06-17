@@ -25,34 +25,22 @@ class LookupCommand(override val configuration: Configuration,
   private final val space = " "
   private final lazy val log = Logging(system, this.getClass)
 
-  private def sort(addresses: Seq[DPA]) = {
-    addresses.sortBy(addressDpa => {
-      val buildingNumber = addressDpa.buildingNumber.getOrElse("0")
-      val buildingNumberSanitised = buildingNumber.replaceAll("[^0-9]", "").toInt
-      // Sanitise building number as it could contain letters which would cause toInt to throw e.g. 107a.
-      (buildingNumberSanitised, addressDpa.address)
-    })
-  }
-
   private def buildUprnAddressPairSeq(postcode: String, resp: Option[Response]): Seq[UprnAddressPair] = {
-    val flattenMapResponse = resp.flatMap(_.results)
+    val responseResults = resp.flatMap(_.results)
 
-    flattenMapResponse match {
+    responseResults match {
       case Some(results) =>
-        val addresses = results.flatMap {
-          _.DPA
-        }
+        val addresses = results.flatMap (_.DPA)
         log.info(s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
-        sort(addresses) map {
+        val uprnAddressPairs = addresses map {
           address => UprnAddressPair(address.UPRN,
             addressRulePicker(address.poBoxNumber, address.buildingNumber, address.buildingName, address.subBuildingName,
               address.dependentThoroughfareName, address.thoroughfareName, address.dependentLocality, address.postTown,
               address.postCode))
         }
-      // Sort before translating to drop down format.
+        uprnAddressPairs.sortBy(kvp => kvp.address) // Sort after translating to drop down format.
       case None =>
-        // Handle no results
-
+        // Handle no results for this postcode.
         log.info(s"No results returned for postcode: ${LogFormats.anonymize(postcode)}")
         Seq.empty
     }
