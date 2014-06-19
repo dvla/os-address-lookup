@@ -29,7 +29,6 @@
 
     <logger name="dvla.common.microservice.AccessLogging" level="INFO" additivity="false" >
         <appender-ref ref="REQUEST-SYSLOG"/>
-        <appender-ref ref="CONSOLE"/>
     </logger>
 
     <logger name="akka" level="INFO" />
