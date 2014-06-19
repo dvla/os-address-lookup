@@ -218,9 +218,9 @@ class LookupCommand(override val configuration: Configuration,
 
 object LookupCommand {
   // Must be in a valid format yet not exist.
-  final val cannedPostcode = "QQ99QQ"
-  final val cannedAddress = "Not real street, Not real town, QQ9 9QQ"
-  final val cannedUprn = 999999999999L
+  private[ordnance_survey_preproduction] final val cannedPostcode = "QQ99QQ"
+  private[ordnance_survey_preproduction] final val cannedAddress = "Not real street, Not real town, QQ9 9QQ"
+  private[ordnance_survey_preproduction] final val cannedUprn = 999999999999L
   private[ordnance_survey_preproduction] val cannedPostcodeToAddressResponse = PostcodeToAddressResponse(addresses = Seq(UprnAddressPair(cannedUprn.toString, cannedAddress)))
   private[ordnance_survey_preproduction] val cannedUprnToAddressResponse = UprnToAddressResponse(addressViewModel = Some(AddressViewModel(uprn = Some(cannedUprn), address = Seq("Not real street", "Not real town", cannedPostcode))))
 }
