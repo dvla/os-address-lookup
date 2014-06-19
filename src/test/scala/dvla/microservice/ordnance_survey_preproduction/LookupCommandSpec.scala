@@ -12,6 +12,7 @@ import org.scalatest.time.Second
 import org.scalatest.time.Span
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand._
 
 final class LookupCommandSpec extends UnitSpec {
 
@@ -268,10 +269,10 @@ final class LookupCommandSpec extends UnitSpec {
 
     "return canned data for the canned postcode" in {
       val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
-      val result = service(PostcodeToAddressLookupRequest(LookupCommand.cannedPostcode))
+      val result = service(PostcodeToAddressLookupRequest(cannedPostcode))
 
       whenReady(result) {
-        r => r shouldBe PostcodeToAddressResponse(addresses = Seq(UprnAddressPair(LookupCommand.cannedUprn.toString, LookupCommand.cannedAddress)))
+        r => r should equal(cannedPostcodeToAddressResponse)
       }
     }
   }
@@ -322,14 +323,10 @@ final class LookupCommandSpec extends UnitSpec {
 
     "return canned data for the canned uprn" in {
       val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
-      val result = service(UprnToAddressLookupRequest(LookupCommand.cannedUprn))
+      val result = service(UprnToAddressLookupRequest(cannedUprn))
 
       whenReady(result) {
-        r => r.addressViewModel match {
-          case Some(addressViewModel) => addressViewModel.uprn.map(_.toString) should equal(Some(LookupCommand.cannedUprn.toString))
-            addressViewModel.address should equal(Seq(LookupCommand.cannedAddress))
-          case _ => fail("Should have returned Some(AddressViewModel)")
-        }
+        r => r should equal(cannedUprnToAddressResponse)
       }
     }
   }
