@@ -12,6 +12,7 @@ import org.scalatest.time.Second
 import org.scalatest.time.Span
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand._
 
 final class LookupCommandSpec extends UnitSpec {
 
@@ -68,204 +69,215 @@ final class LookupCommandSpec extends UnitSpec {
           r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"50ABC FAKE ROAD, FAKE TOWN, EX8 1SN")))
       }
     }
+
+    "FLAT 1, 52, SALISBURY ROAD, EXMOUTH, EX8 1SN should return in the format FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT 1"), buildingNumber = Some("52"), thoroughfareName = Some("SALISBURY ROAD"), postTown = "EXMOUTH", postCode = "EX8 1SN")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN")))
+      }
+    }
+
+    "FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP should return in the format FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT 1"), buildingName = Some("MONTPELLIER COURT"), thoroughfareName = Some("MONTPELLIER ROAD"), postTown = "EXMOUTH", postCode = "EX8 1JP")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP")))
+      }
+    }
+
+    "FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB should return in the format FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT 1"), buildingName = Some("13A"), thoroughfareName = Some("CRANLEY GARDENS"), postTown = "LONDON", postCode = "SW7 3BB")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB")))
+      }
+    }
+
+    "UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS should return in the format UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingName = Some("UNIT 1-2"), dependentThoroughfareName = Some("DINAN WAY TRADING ESTATE"), thoroughfareName = Some("CONCORDE ROAD"), postTown = "EXMOUTH", postCode = "EX8 4RS")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS")))
+      }
+    }
+
+    "6, BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ should return in the format 6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("6"), dependentThoroughfareName = Some("BRIXINGTON PARADE"), thoroughfareName = Some("CHURCHILL ROAD"), postTown = "EXMOUTH", postCode = "EX8 4RJ")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ")))
+      }
+    }
+
+    "6, PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY should return in the format 6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("6"), dependentThoroughfareName = Some("PARK VIEW"), thoroughfareName = Some("WOTTON LANE"), dependentLocality = Some("LYMPSTONE"), postTown = "EXMOUTH", postCode = "EX8 5LY")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY")))
+      }
+    }
+
+    "7, VILLA MAISON, 4, CYPRUS ROAD, EXMOUTH, EX8 2DZ should return in the format 7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("7"), buildingName = Some("VILLA MAISON"), buildingNumber = Some("4"), thoroughfareName = Some("CYPRUS ROAD"), postTown = "EXMOUTH", postCode = "EX8 2DZ")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ")))
+      }
+    }
+
+    "FLAT 1,HEATHGATE,7,LANSDOWNE ROAD,BUDLEIGH SALTERTON,EX9 6AH should return in the format FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT 1"), buildingName = Some("HEATHGATE"), buildingNumber = Some("7"), thoroughfareName = Some("LANSDOWNE ROAD"), postTown = "BUDLEIGH SALTERTON", postCode = "EX9 6AH")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH")))
+      }
+    }
+
+
+
+    "FLAT, COURTLANDS CROSS SERVICE STATION, 397, EXETER ROAD, EXMOUTH, EX8 3NS should return in the format FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT"), buildingName = Some("COURTLANDS CROSS SERVICE STATION"), buildingNumber = Some("397"), thoroughfareName = Some("EXETER ROAD"), postTown = "EXMOUTH", postCode = "EX8 3NS")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS")))
+      }
+    }
+
+    "2, THE RED LODGE, 11, ELWYN ROAD, EXMOUTH, EX8 2EL should return in the format 2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("2"), buildingName = Some("THE RED LODGE"), buildingNumber = Some("11"), thoroughfareName = Some("ELWYN ROAD"), postTown = "EXMOUTH", postCode = "EX8 2EL")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL")))
+      }
+    }
+
+    "40, SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN should return in the format 40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("40"), thoroughfareName = Some("SKETTY PARK DRIVE"), dependentLocality = Some("SKETTY"), postTown = "SWANSEA", postCode = "SA2 8LN")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN")))
+      }
+    }
+
+    "4, LYNDHURST ROAD, EXMOUTH, EX8 3DT should return in the format 4 LYNDHURST ROAD, EXMOUTH, EX8 3DT" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("4"), thoroughfareName = Some("LYNDHURST ROAD"), postTown = "EXMOUTH", postCode = "EX8 3DT")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"4 LYNDHURST ROAD, EXMOUTH, EX8 3DT")))
+      }
+    }
+
+    "ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ should return in the format ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ" in {
+      val dpa = {
+        val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")), LPI = None)
+        Seq(dpa1)
+      }
+
+      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) {
+        r => r.addresses.length should equal(dpa.length)
+          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ")))
+      }
+    }
+
+    "return canned data for the canned postcode" in {
+      val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
+      val result = service(PostcodeToAddressLookupRequest(cannedPostcode))
+
+      whenReady(result) {
+        r => r should equal(cannedPostcodeToAddressResponse)
+      }
+    }
   }
 
-  "FLAT 1, 52, SALISBURY ROAD, EXMOUTH, EX8 1SN should return in the format FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT 1"), buildingNumber = Some("52"), thoroughfareName = Some("SALISBURY ROAD"), postTown = "EXMOUTH", postCode = "EX8 1SN")), LPI = None)
-      Seq(dpa1)
-    }
 
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN")))
-    }
-  }
-
-  "FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP should return in the format FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT 1"), buildingName = Some("MONTPELLIER COURT"), thoroughfareName = Some("MONTPELLIER ROAD"), postTown = "EXMOUTH", postCode = "EX8 1JP")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP")))
-    }
-  }
-
-  "FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB should return in the format FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT 1"), buildingName = Some("13A"), thoroughfareName = Some("CRANLEY GARDENS"), postTown = "LONDON", postCode = "SW7 3BB")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB")))
-    }
-  }
-
-  "UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS should return in the format UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingName = Some("UNIT 1-2"), dependentThoroughfareName = Some("DINAN WAY TRADING ESTATE"), thoroughfareName = Some("CONCORDE ROAD"), postTown = "EXMOUTH", postCode = "EX8 4RS")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS")))
-    }
-  }
-
-  "6, BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ should return in the format 6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("6"), dependentThoroughfareName = Some("BRIXINGTON PARADE"), thoroughfareName = Some("CHURCHILL ROAD"), postTown = "EXMOUTH", postCode = "EX8 4RJ")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ")))
-    }
-  }
-
-  "6, PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY should return in the format 6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("6"), dependentThoroughfareName = Some("PARK VIEW"), thoroughfareName = Some("WOTTON LANE"), dependentLocality = Some("LYMPSTONE"), postTown = "EXMOUTH", postCode = "EX8 5LY")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY")))
-    }
-  }
-
-  "7, VILLA MAISON, 4, CYPRUS ROAD, EXMOUTH, EX8 2DZ should return in the format 7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("7"), buildingName = Some("VILLA MAISON"), buildingNumber = Some("4"), thoroughfareName = Some("CYPRUS ROAD"), postTown = "EXMOUTH", postCode = "EX8 2DZ")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ")))
-    }
-  }
-
-  "FLAT 1,HEATHGATE,7,LANSDOWNE ROAD,BUDLEIGH SALTERTON,EX9 6AH should return in the format FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT 1"), buildingName = Some("HEATHGATE"), buildingNumber = Some("7"), thoroughfareName = Some("LANSDOWNE ROAD"), postTown = "BUDLEIGH SALTERTON", postCode = "EX9 6AH")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH")))
-    }
-  }
-
-
-
-  "FLAT, COURTLANDS CROSS SERVICE STATION, 397, EXETER ROAD, EXMOUTH, EX8 3NS should return in the format FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("FLAT"), buildingName = Some("COURTLANDS CROSS SERVICE STATION"), buildingNumber = Some("397"), thoroughfareName = Some("EXETER ROAD"), postTown = "EXMOUTH", postCode = "EX8 3NS")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS")))
-    }
-  }
-
-  "2, THE RED LODGE, 11, ELWYN ROAD, EXMOUTH, EX8 2EL should return in the format 2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(subBuildingName = Some("2"), buildingName = Some("THE RED LODGE"), buildingNumber = Some("11"), thoroughfareName = Some("ELWYN ROAD"), postTown = "EXMOUTH", postCode = "EX8 2EL")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL")))
-    }
-  }
-
-  "40, SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN should return in the format 40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("40"), thoroughfareName = Some("SKETTY PARK DRIVE"), dependentLocality = Some("SKETTY"), postTown = "SWANSEA", postCode = "SA2 8LN")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN")))
-    }
-  }
-
-  "4, LYNDHURST ROAD, EXMOUTH, EX8 3DT should return in the format 4 LYNDHURST ROAD, EXMOUTH, EX8 3DT" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingNumber = Some("4"), thoroughfareName = Some("LYNDHURST ROAD"), postTown = "EXMOUTH", postCode = "EX8 3DT")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"4 LYNDHURST ROAD, EXMOUTH, EX8 3DT")))
-    }
-  }
-
-  "ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ should return in the format ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ" in {
-    val dpa = {
-      val dpa1 = Result(DPA = Some(osAddressbaseDPA(buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")), LPI = None)
-      Seq(dpa1)
-    }
-
-    val service = lookupCommandMock(Some(Response(header, Some(dpa))))
-    val result = service(PostcodeToAddressLookupRequest(postcodeValid))
-
-    whenReady(result) {
-      r => r.addresses.length should equal(dpa.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ")))
-    }
-  }
 
   "callUprnToAddressOSWebService" should {
 
@@ -306,6 +318,15 @@ final class LookupCommandSpec extends UnitSpec {
 
       whenReady(result) {
         r => r.addressViewModel should be(None)
+      }
+    }
+
+    "return canned data for the canned uprn" in {
+      val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
+      val result = service(UprnToAddressLookupRequest(cannedUprn))
+
+      whenReady(result) {
+        r => r should equal(cannedUprnToAddressResponse)
       }
     }
   }

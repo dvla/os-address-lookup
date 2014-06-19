@@ -1,21 +1,17 @@
 package dvla.microservice.ordnance_survey_preproduction
 
 import akka.actor.ActorSystem
-import scala.concurrent._
 import akka.event.Logging
-import dvla.domain.address_lookup._
-import spray.client.pipelining._
-import spray.http.{HttpResponse, StatusCodes, HttpRequest}
-import dvla.domain.address_lookup.PostcodeToAddressResponse
-import dvla.domain.address_lookup.UprnAddressPair
-import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
-import scala.Some
-import dvla.domain.ordnance_survey_preproduction.{Response, DPA}
-import dvla.domain.address_lookup.AddressViewModel
-import spray.httpx.unmarshalling.FromResponseUnmarshaller
-import dvla.microservice.{AddressLookupCommand, Configuration}
-import scala.annotation.tailrec
 import dvla.common.LogFormats
+import dvla.domain.address_lookup._
+import dvla.domain.ordnance_survey_preproduction.Response
+import dvla.microservice.{AddressLookupCommand, Configuration}
+import spray.client.pipelining._
+import spray.http.{HttpRequest, HttpResponse, StatusCodes}
+import spray.httpx.unmarshalling.FromResponseUnmarshaller
+import scala.annotation.tailrec
+import scala.concurrent._
+import LookupCommand._
 
 class LookupCommand(override val configuration: Configuration,
                     val postcodeUrlBuilder: PostcodeUrlBuilder,
@@ -30,7 +26,7 @@ class LookupCommand(override val configuration: Configuration,
 
     responseResults match {
       case Some(results) =>
-        val addresses = results.flatMap (_.DPA)
+        val addresses = results.flatMap(_.DPA)
         log.info(s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
         val uprnAddressPairs = addresses map {
           address => UprnAddressPair(address.UPRN,
@@ -74,7 +70,7 @@ class LookupCommand(override val configuration: Configuration,
   }
 
   private def rule3(buildingNumber: Option[String], dependentThoroughfareName: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String])
-                    : (String, String, String) = {
+  : (String, String, String) = {
     (lineBuild(Seq(buildingNumber, dependentThoroughfareName)), lineBuild(Seq(thoroughfareName)), lineBuild(Seq(dependentLocality)))
   }
 
@@ -178,34 +174,53 @@ class LookupCommand(override val configuration: Configuration,
   }
 
   override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
-
     log.info(s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
-    callPostcodeToAddressOSWebService(request).map {
-      resp => {
-        PostcodeToAddressResponse(buildUprnAddressPairSeq(request.postcode, resp))
+    if (request.postcode == cannedPostcode) {
+      Future {
+        cannedPostcodeToAddressResponse
       }
-    }.recover {
-      case e: Throwable =>
-        log.info(s"Ordnance Survey postcode lookup service error: ${e.toString.take(45)}")
-        PostcodeToAddressResponse(Seq.empty)
     }
-
+    else {
+      callPostcodeToAddressOSWebService(request).map {
+        resp => {
+          PostcodeToAddressResponse(buildUprnAddressPairSeq(request.postcode, resp))
+        }
+      }.recover {
+        case e: Throwable =>
+          log.info(s"Ordnance Survey postcode lookup service error: ${e.toString.take(45)}")
+          PostcodeToAddressResponse(Seq.empty)
+      }
+    }
   }
 
   override def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
-
     log.info(s"Dealing with the post request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
 
-    callUprnToAddressOSWebService(request).map {
-      resp => {
-        UprnToAddressResponse(buildAddressViewModel(request.uprn, resp))
+    if (request.uprn == cannedUprn) {
+      Future {
+        cannedUprnToAddressResponse
       }
-    }.recover {
-      case e: Throwable =>
-        log.info(s"Ordnance Survey uprn lookup service error: ${e.toString.take(45)}")
-        UprnToAddressResponse(None)
+    }
+    else {
+      callUprnToAddressOSWebService(request).map {
+        resp => {
+          UprnToAddressResponse(buildAddressViewModel(request.uprn, resp))
+        }
+      }.recover {
+        case e: Throwable =>
+          log.info(s"Ordnance Survey uprn lookup service error: ${e.toString.take(45)}")
+          UprnToAddressResponse(None)
+      }
     }
   }
 }
 
+object LookupCommand {
+  // Must be in a valid format yet not exist.
+  private[ordnance_survey_preproduction] final val cannedPostcode = "QQ99QQ"
+  private[ordnance_survey_preproduction] final val cannedAddress = "Not real street, Not real town, QQ9 9QQ"
+  private[ordnance_survey_preproduction] final val cannedUprn = 999999999999L
+  private[ordnance_survey_preproduction] val cannedPostcodeToAddressResponse = PostcodeToAddressResponse(addresses = Seq(UprnAddressPair(cannedUprn.toString, cannedAddress)))
+  private[ordnance_survey_preproduction] val cannedUprnToAddressResponse = UprnToAddressResponse(addressViewModel = Some(AddressViewModel(uprn = Some(cannedUprn), address = Seq("Not real street", "Not real town", cannedPostcode))))
+}
