@@ -24,7 +24,7 @@
     <appender name="REQUEST-SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
         <syslogHost>localhost</syslogHost>
         <facility>LOCAL0</facility>
-        <suffixPattern>%msg</suffixPattern>
+        <suffixPattern>os-address-lookup: %msg</suffixPattern>
     </appender>
 
     <logger name="dvla.common.microservice.AccessLogging" level="INFO" additivity="false" >
