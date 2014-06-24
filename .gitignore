@@ -47,3 +47,5 @@ vehiclesServices.conf
 .vagrant/
 workdir
 
+.*.swp
+tags

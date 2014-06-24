@@ -1,13 +1,14 @@
 package dvla.microservice
 
-import spray.routing.HttpService
-import scala.concurrent.{ExecutionContext, Future}
+import spray.routing.{Route, HttpService}
+import scala.concurrent.Future
 import spray.http.StatusCodes._
 import scala.util.{Failure, Success}
 import akka.event.LoggingAdapter
 import dvla.domain.JsonFormats._
 import dvla.domain.address_lookup._
 import dvla.common.microservice.SprayHttpService
+import dvla.common.LogFormats
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -27,32 +28,59 @@ trait OSAddressLookupService extends HttpService {
   val route = {
     get {
       pathPrefix("postcode-to-address") {
-        parameter('postcode) { postcode =>
-            onComplete(lookupAddress(PostcodeToAddressLookupRequest(postcode))) {
-              case Success(resp) => complete(resp)
-              case Failure(_) => complete(ServiceUnavailable)
-            }
+        parameterMap { params =>
+          val postcode: String = params.get("postcode").get
+          val languageCode: Option[String] = params.get("languageCode")
+          languageCode match {
+            case Some(_) => lookupPostcode(postcode = postcode, languageCode = languageCode) // Language specified so search with filter and if no results then search unfiltered.
+            case None => lookupPostcode(postcode) // No language specified so go straight to unfiltered search.
           }
+        }
       } ~
       pathPrefix("uprn-to-address") {
-        parameter('uprn) { uprn =>
-          onComplete(lookupAddress(UprnToAddressLookupRequest(uprn.toLong))) {
-            case Success(resp) => complete(resp)
-            case Failure(_) => complete(ServiceUnavailable)
+        parameterMap { params =>
+          val uprn: Long = params.get("uprn").get.toLong
+          val languageCode: Option[String] = params.get("languageCode")
+          languageCode match {
+            case Some(_) => lookupUprn(uprn, languageCode)
+            case None => lookupUprn(uprn)
           }
         }
       }
     }
   }
 
-  private def lookupAddress(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
-    log.debug(s"Received post request on postcode-to-address. Request object = ${request}")
-    command(request)
+  private def lookupPostcode(postcode: String, languageCode: Option[String]): Route = {
+    val request = PostcodeToAddressLookupRequest(postcode = postcode, languageCode = languageCode)
+    onComplete(command(request)) {
+      case Success(resp) if resp.addresses.isEmpty => lookupPostcode(postcode)
+      case Success(resp) => complete(resp)
+      case Failure(_) => complete(ServiceUnavailable)
+    }
   }
 
-  private def lookupAddress(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
-    log.debug(s"Received post request on uprn-to-address. Request object = ${request}")
-    command(request)
+  private def lookupPostcode(postcode: String): Route = {
+    val request = PostcodeToAddressLookupRequest(postcode = postcode)
+    onComplete(command(request)) {
+      case Success(resp) => complete(resp)
+      case Failure(_) => complete(ServiceUnavailable)
+    }
   }
 
+  private def lookupUprn(uprn: Long, languageCode: Option[String]): Route = {
+    val request: UprnToAddressLookupRequest = UprnToAddressLookupRequest(uprn, languageCode)
+    onComplete(command(request)) {
+      case Success(resp) if resp.addressViewModel.isEmpty => lookupUprn(uprn)
+      case Success(resp) => complete(resp)
+      case Failure(_) => complete(ServiceUnavailable)
+    }
+  }
+
+  private def lookupUprn(uprn: Long): Route = {
+    val request: UprnToAddressLookupRequest = UprnToAddressLookupRequest(uprn)
+    onComplete(command(request)) {
+      case Success(resp) => complete(resp)
+      case Failure(_) => complete(ServiceUnavailable)
+    }
+  }
 }
