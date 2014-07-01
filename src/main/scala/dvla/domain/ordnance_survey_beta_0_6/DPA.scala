@@ -1,32 +1,32 @@
 package dvla.domain.ordnance_survey_beta_0_6
 
-import play.api.libs.json._
+import play.api.libs.json.{Reads, Writes, __, JsValue, Json}
 import play.api.libs.functional.syntax._
 
 final case class DPA(UPRN: String,
-                            address: String,
-                            poBoxNumber: Option[String] = None,
-                            organisationName: Option[String] = None,
-                            departmentName: Option[String] = None,
-                            subBuildingName: Option[String] = None,
-                            buildingName: Option[String] = None,
-                            buildingNumber: Option[String] = None,
-                            dependentThoroughfareName: Option[String] = None,
-                            thoroughfareName: Option[String] = None,
-                            doubleDependentLocality: Option[String] = None,
-                            dependentLocality: Option[String] = None,
-                            postTown: String,
-                            postCode: String,
-                            RPC: String,
-                            xCoordinate: Float,
-                            yCoordinate: Float,
-                            status: String,
-                            matchScore: Float,
-                            matchDescription: String)
+                     address: String,
+                     poBoxNumber: Option[String] = None,
+                     organisationName: Option[String] = None,
+                     departmentName: Option[String] = None,
+                     subBuildingName: Option[String] = None,
+                     buildingName: Option[String] = None,
+                     buildingNumber: Option[String] = None,
+                     dependentThoroughfareName: Option[String] = None,
+                     thoroughfareName: Option[String] = None,
+                     doubleDependentLocality: Option[String] = None,
+                     dependentLocality: Option[String] = None,
+                     postTown: String,
+                     postCode: String,
+                     RPC: String,
+                     xCoordinate: Float,
+                     yCoordinate: Float,
+                     status: String,
+                     matchScore: Float,
+                     matchDescription: String)
 
 object DPA {
   implicit val readsDPA: Reads[DPA] = (
-    (__ \ "UPRN").read[String] and
+      (__ \ "UPRN").read[String] and
       (__ \ "ADDRESS").read[String] and
       (__ \ "PO_BOX_NUMBER").readNullable[String] and
       (__ \ "ORGANISATION_NAME").readNullable[String] and
