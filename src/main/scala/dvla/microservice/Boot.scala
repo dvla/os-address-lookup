@@ -37,7 +37,7 @@ object Boot extends App {
 
     implicit val commandExecutionContext = system.dispatcher
 
-    implicit val command =
+    val command =
       if (apiVersion == "beta_0_6") new ordnance_survey_beta_0_6.LookupCommand(configuration)
       else {
         val postcodeUrlBuilder = new PostcodeUrlBuilder(configuration = configuration)
@@ -47,7 +47,7 @@ object Boot extends App {
           uprnUrlBuilder = uprnUrlBuilder)
       }
 
-    val creationProperties = Props(new SprayOSAddressLookupService(configuration))
+    val creationProperties = Props(new SprayOSAddressLookupService(configuration, command))
 
     system.actorOf(creationProperties, "micro-service") // create and start our service actor
   }
