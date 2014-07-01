@@ -9,6 +9,7 @@ import dvla.domain.address_lookup.PostcodeToAddressResponse
 import dvla.domain.address_lookup.UprnAddressPair
 import dvla.domain.address_lookup.UprnToAddressLookupRequest
 import dvla.domain.address_lookup.UprnToAddressResponse
+import dvla.domain.ordnance_survey_preproduction.DPA
 import dvla.domain.ordnance_survey_preproduction.Response
 import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedPostcode
 import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedPostcodeToAddressResponse
@@ -42,17 +43,7 @@ class LookupCommand(override val configuration: Configuration,
         val addresses = results.flatMap(_.DPA)
         log.info(s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
         val uprnAddressPairs = addresses map { address =>
-          val vssAddress = applyVssRules(
-            address.poBoxNumber,
-            address.buildingNumber,
-            address.buildingName,
-            address.subBuildingName,
-            address.dependentThoroughfareName,
-            address.thoroughfareName,
-            address.dependentLocality,
-            address.postTown,
-            address.postCode
-          )
+          val vssAddress = applyVssRules(address)
           UprnAddressPair(address.UPRN, vssAddress)
         }
         uprnAddressPairs.sortBy(kvp => kvp.address) // Sort after translating to drop down format.
@@ -63,72 +54,70 @@ class LookupCommand(override val configuration: Configuration,
     }
   }
 
-  private def applyVssRules(poBoxNumber: Option[String] = None,
-                                buildingNumber: Option[String] = None,
-                                buildingName: Option[String] = None,
-                                subBuildingName: Option[String] = None,
-                                dependentThoroughfareName: Option[String],
-                                thoroughfareName: Option[String] = None,
-                                dependentLocality: Option[String] = None,
-                                postTown: String,
-                                postCode: String): String = {
-    val (line1, line2, line3) =
-      (poBoxNumber,
-       buildingNumber,
-       buildingName,
-       subBuildingName,
-       dependentThoroughfareName,
-       thoroughfareName,
-       dependentLocality) match {
-        case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(buildingName, subBuildingName, thoroughfareName)
-        case (None, Some(_), None, None, None, Some(_), _) => rule7(buildingNumber, thoroughfareName, dependentLocality)
-        case (Some(_), _, _, _, _, _, _) => rule1(poBoxNumber, thoroughfareName, dependentLocality)
-        case (_, None, _, None, _, _, None) => rule2(buildingName, dependentThoroughfareName, thoroughfareName)
-        case (_, _, None, None, _, _, _) => rule3(buildingNumber, dependentThoroughfareName, thoroughfareName, dependentLocality)
-        case (_, None, _, None, _, _, _) => rule4(buildingName, dependentThoroughfareName, thoroughfareName, dependentLocality)
-        case (_, Some(_), _, _, _, Some(_), _) => rule6(buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName, dependentLocality)
-        case (_, _, _, _, _, _, None) => rule5(buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName)
-        case _ => rule6(buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName, dependentLocality)
+  private def applyVssRules(address: DPA): String = {
+    val addressLines =
+      (address.poBoxNumber,
+        address.buildingNumber,
+        address.buildingName,
+        address.subBuildingName,
+        address.dependentThoroughfareName,
+        address.thoroughfareName,
+        address.dependentLocality) match {
+        case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
+        case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
+        case (Some(_), _, _, _, _, _, _) => rule1(address)
+        case (_, None, _, None, _, _, None) => rule2(address)
+        case (_, _, None, None, _, _, _) => rule3(address)
+        case (_, None, _, None, _, _, _) => rule4(address)
+        case (_, Some(_), _, _, _, Some(_), _) => rule6(address)
+        case (_, _, _, _, _, _, None) => rule5(address)
+        case _ => rule6(address)
       }
-    line1 + line2 + line3 + postTown + Separator + postCode
+    addressLines + address.postTown + Separator + address.postCode
   }
 
   //rule methods will build and return three strings for address line1, line2 and line3
-  private def rule1(poBoxNumber: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String]): (String, String, String) = {
-    (lineBuild(Seq(poBoxNumber)), lineBuild(Seq(thoroughfareName)), lineBuild(Seq(dependentLocality)))
-  }
+  private def rule1(address: DPA): String =
+    lineBuild(Seq(address.poBoxNumber)) +
+    lineBuild(Seq(address.thoroughfareName)) +
+    lineBuild(Seq(address.dependentLocality))
 
-  private def rule2(buildingName: Option[String], dependentThoroughfareName: Option[String], thoroughfareName: Option[String]): (String, String, String) = {
-    (lineBuild(Seq(buildingName)), lineBuild(Seq(dependentThoroughfareName)), lineBuild(Seq(thoroughfareName)))
-  }
+  private def rule2(address: DPA): String =
+    lineBuild(Seq(address.buildingName)) +
+    lineBuild(Seq(address.dependentThoroughfareName)) +
+    lineBuild(Seq(address.thoroughfareName))
 
-  private def rule3(buildingNumber: Option[String], dependentThoroughfareName: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String])
-  : (String, String, String) = {
-    (lineBuild(Seq(buildingNumber, dependentThoroughfareName)), lineBuild(Seq(thoroughfareName)), lineBuild(Seq(dependentLocality)))
-  }
+  private def rule3(address: DPA): String =
+    lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName)) +
+    lineBuild(Seq(address.thoroughfareName)) +
+    lineBuild(Seq(address.dependentLocality))
 
-  private def rule4(buildingName: Option[String], dependentThoroughfareName: Option[String], thoroughfareName: Option[String],
-                    dependentLocality: Option[String]): (String, String, String) = {
-    (lineBuild(Seq(buildingName, dependentThoroughfareName)), lineBuild(Seq(thoroughfareName)), lineBuild(Seq(dependentLocality)))
-  }
 
-  private def rule5(buildingNumber: Option[String], buildingName: Option[String], subBuildingName: Option[String],
-                    dependentThoroughfareName: Option[String], thoroughfareName: Option[String]): (String, String, String) = {
-    (lineBuild(Seq(subBuildingName, buildingName)), lineBuild(Seq(buildingNumber, dependentThoroughfareName)), lineBuild(Seq(thoroughfareName)))
-  }
+  private def rule4(address: DPA): String =
+    lineBuild(Seq(address.buildingName, address.dependentThoroughfareName)) +
+    lineBuild(Seq(address.thoroughfareName)) +
+    lineBuild(Seq(address.dependentLocality))
 
-  private def rule6(buildingNumber: Option[String], buildingName: Option[String], subBuildingName: Option[String],
-                    dependentThoroughfareName: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String]): (String, String, String) = {
-    (lineBuild(Seq(subBuildingName, buildingName)), lineBuild(Seq(buildingNumber, dependentThoroughfareName, thoroughfareName)), lineBuild(Seq(dependentLocality)))
-  }
 
-  private def rule7(buildingNumber: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String]): (String, String, String) = {
-    (lineBuild(Seq(buildingNumber, thoroughfareName)), lineBuild(Seq(dependentLocality)), Nothing)
-  }
+  private def rule5(address: DPA): String =
+    lineBuild(Seq(address.subBuildingName, address.buildingName)) +
+    lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName)) +
+    lineBuild(Seq(address.thoroughfareName))
 
-  private def rule8(buildingName: Option[String], subBuildingName: Option[String], thoroughfareName: Option[String]): (String, String, String) = {
-    (lineBuild(Seq(subBuildingName)), lineBuild(Seq(buildingName)), lineBuild(Seq(thoroughfareName)))
-  }
+  private def rule6(address: DPA): String =
+    lineBuild(Seq(address.subBuildingName, address.buildingName)) +
+    lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName, address.thoroughfareName)) +
+    lineBuild(Seq(address.dependentLocality))
+
+  private def rule7(address: DPA): String =
+    lineBuild(Seq(address.buildingNumber, address.thoroughfareName)) +
+    lineBuild(Seq(address.dependentLocality)) +
+    Nothing
+
+  private def rule8(address: DPA): String =
+    lineBuild(Seq(address.subBuildingName)) +
+    lineBuild(Seq(address.buildingName)) +
+    lineBuild(Seq(address.thoroughfareName))
 
   @tailrec
   private def lineBuild(addressPart: Seq[Option[String]], accumulatedLine: String = Nothing): String = {
@@ -157,16 +146,12 @@ class LookupCommand(override val configuration: Configuration,
 
     flattenMapResponse match {
       case Some(results) =>
-        val addresses = results.flatMap {
-          _.DPA
-        }
+        val addresses = results.flatMap(_.DPA)
         log.info(s"Returning result for uprn request ${LogFormats.anonymize(uprn.toString)}")
         require(addresses.length >= 1, s"Should be at least one address for the UPRN")
         Some(AddressViewModel(
           uprn = Some(addresses.head.UPRN.toLong),
-          address = applyVssRules(addresses.head.poBoxNumber, addresses.head.buildingNumber, addresses.head.buildingName, addresses.head.subBuildingName,
-            addresses.head.dependentThoroughfareName, addresses.head.thoroughfareName, addresses.head.dependentLocality,
-            addresses.head.postTown, addresses.head.postCode).split(", ")
+          address = applyVssRules(addresses.head).split(", ")
         )) // Translate to view model.
       case None =>
         log.info(s"No results returned by web service for submitted UPRN: ${LogFormats.anonymize(uprn.toString)}")
