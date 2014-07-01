@@ -188,7 +188,7 @@ class LookupCommand(override val configuration: Configuration,
         }
       }.recover {
         case e: Throwable =>
-          log.info(s"Ordnance Survey postcode lookup service error: ${e.toString.take(45)}")
+          log.info(s"Ordnance Survey postcode lookup service error: ${e.toString}")
           PostcodeToAddressResponse(Seq.empty)
       }
     }
@@ -209,7 +209,7 @@ class LookupCommand(override val configuration: Configuration,
         }
       }.recover {
         case e: Throwable =>
-          log.info(s"Ordnance Survey uprn lookup service error: ${e.toString.take(45)}")
+          log.info(s"Ordnance Survey uprn lookup service error: ${e.toString}")
           UprnToAddressResponse(None)
       }
     }
