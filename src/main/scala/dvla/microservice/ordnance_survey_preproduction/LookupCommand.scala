@@ -3,22 +3,35 @@ package dvla.microservice.ordnance_survey_preproduction
 import akka.actor.ActorSystem
 import akka.event.Logging
 import dvla.common.LogFormats
-import dvla.domain.address_lookup._
+import dvla.domain.address_lookup.AddressViewModel
+import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
+import dvla.domain.address_lookup.PostcodeToAddressResponse
+import dvla.domain.address_lookup.UprnAddressPair
+import dvla.domain.address_lookup.UprnToAddressLookupRequest
+import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.ordnance_survey_preproduction.Response
-import dvla.microservice.{AddressLookupCommand, Configuration}
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedPostcode
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedPostcodeToAddressResponse
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedUprn
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedUprnToAddressResponse
+import dvla.microservice.AddressLookupCommand
+import dvla.microservice.Configuration
 import spray.client.pipelining._
-import spray.http.{HttpRequest, HttpResponse, StatusCodes}
+import spray.http.HttpRequest
+import spray.http.HttpResponse
+import spray.http.StatusCodes
 import spray.httpx.unmarshalling.FromResponseUnmarshaller
+
 import scala.annotation.tailrec
-import scala.concurrent._
-import LookupCommand._
+import scala.concurrent.{ExecutionContext, Future}
 
 class LookupCommand(override val configuration: Configuration,
                     val postcodeUrlBuilder: PostcodeUrlBuilder,
-                    val uprnUrlBuilder: UprnUrlBuilder)(implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
-  private final val separator = ", "
-  private final val nothing = ""
-  private final val space = " "
+                    val uprnUrlBuilder: UprnUrlBuilder)
+                   (implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
+  private final val Separator = ", "
+  private final val Nothing = ""
+  private final val Space = " "
   private final lazy val log = Logging(system, this.getClass)
 
   private def buildUprnAddressPairSeq(postcode: String, resp: Option[Response]): Seq[UprnAddressPair] = {
@@ -28,11 +41,19 @@ class LookupCommand(override val configuration: Configuration,
       case Some(results) =>
         val addresses = results.flatMap(_.DPA)
         log.info(s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
-        val uprnAddressPairs = addresses map {
-          address => UprnAddressPair(address.UPRN,
-            addressRulePicker(address.poBoxNumber, address.buildingNumber, address.buildingName, address.subBuildingName,
-              address.dependentThoroughfareName, address.thoroughfareName, address.dependentLocality, address.postTown,
-              address.postCode))
+        val uprnAddressPairs = addresses map { address =>
+          val vssAddress = applyVssRules(
+            address.poBoxNumber,
+            address.buildingNumber,
+            address.buildingName,
+            address.subBuildingName,
+            address.dependentThoroughfareName,
+            address.thoroughfareName,
+            address.dependentLocality,
+            address.postTown,
+            address.postCode
+          )
+          UprnAddressPair(address.UPRN, vssAddress)
         }
         uprnAddressPairs.sortBy(kvp => kvp.address) // Sort after translating to drop down format.
       case None =>
@@ -42,11 +63,23 @@ class LookupCommand(override val configuration: Configuration,
     }
   }
 
-  private def addressRulePicker(poBoxNumber: Option[String] = None, buildingNumber: Option[String] = None, buildingName: Option[String] = None,
-                                subBuildingName: Option[String] = None, dependentThoroughfareName: Option[String], thoroughfareName: Option[String] = None,
-                                dependentLocality: Option[String] = None, postTown: String, postCode: String): String = {
+  private def applyVssRules(poBoxNumber: Option[String] = None,
+                                buildingNumber: Option[String] = None,
+                                buildingName: Option[String] = None,
+                                subBuildingName: Option[String] = None,
+                                dependentThoroughfareName: Option[String],
+                                thoroughfareName: Option[String] = None,
+                                dependentLocality: Option[String] = None,
+                                postTown: String,
+                                postCode: String): String = {
     val (line1, line2, line3) =
-      (poBoxNumber, buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName, dependentLocality) match {
+      (poBoxNumber,
+       buildingNumber,
+       buildingName,
+       subBuildingName,
+       dependentThoroughfareName,
+       thoroughfareName,
+       dependentLocality) match {
         case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(buildingName, subBuildingName, thoroughfareName)
         case (None, Some(_), None, None, None, Some(_), _) => rule7(buildingNumber, thoroughfareName, dependentLocality)
         case (Some(_), _, _, _, _, _, _) => rule1(poBoxNumber, thoroughfareName, dependentLocality)
@@ -57,7 +90,7 @@ class LookupCommand(override val configuration: Configuration,
         case (_, _, _, _, _, _, None) => rule5(buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName)
         case _ => rule6(buildingNumber, buildingName, subBuildingName, dependentThoroughfareName, thoroughfareName, dependentLocality)
       }
-    line1 + line2 + line3 + postTown + separator + postCode
+    line1 + line2 + line3 + postTown + Separator + postCode
   }
 
   //rule methods will build and return three strings for address line1, line2 and line3
@@ -90,7 +123,7 @@ class LookupCommand(override val configuration: Configuration,
   }
 
   private def rule7(buildingNumber: Option[String], thoroughfareName: Option[String], dependentLocality: Option[String]): (String, String, String) = {
-    (lineBuild(Seq(buildingNumber, thoroughfareName)), lineBuild(Seq(dependentLocality)), nothing)
+    (lineBuild(Seq(buildingNumber, thoroughfareName)), lineBuild(Seq(dependentLocality)), Nothing)
   }
 
   private def rule8(buildingName: Option[String], subBuildingName: Option[String], thoroughfareName: Option[String]): (String, String, String) = {
@@ -98,9 +131,9 @@ class LookupCommand(override val configuration: Configuration,
   }
 
   @tailrec
-  private def lineBuild(addressPart: Seq[Option[String]], accumulatedLine: String = nothing): String = {
-    if (addressPart.size == 1) lastItemInList(addressPart.head, accumulatedLine, separator)
-    else lineBuild(addressPart.tail, accumulateLine(addressPart.head, accumulatedLine, space))
+  private def lineBuild(addressPart: Seq[Option[String]], accumulatedLine: String = Nothing): String = {
+    if (addressPart.size == 1) lastItemInList(addressPart.head, accumulatedLine, Separator)
+    else lineBuild(addressPart.tail, accumulateLine(addressPart.head, accumulatedLine, Space))
   }
 
   private def accumulateLine(currentItem: Option[String], accumulatedLine: String, lastChar: String): String = {
@@ -111,10 +144,10 @@ class LookupCommand(override val configuration: Configuration,
   }
 
   private def lastItemInList(lastItem: Option[String], accumulatedLine: String, lastChar: String): String = {
-    val currentAddressLine = if (accumulatedLine.takeRight(1) == space) accumulatedLine.dropRight(1) else accumulatedLine
+    val currentAddressLine = if (accumulatedLine.takeRight(1) == Space) accumulatedLine.dropRight(1) else accumulatedLine
     lastItem match {
       case Some(item) => accumulatedLine + item + lastChar
-      case _ => if (currentAddressLine + lastChar == lastChar) nothing
+      case _ => if (currentAddressLine + lastChar == lastChar) Nothing
       else currentAddressLine + lastChar
     }
   }
@@ -131,7 +164,7 @@ class LookupCommand(override val configuration: Configuration,
         require(addresses.length >= 1, s"Should be at least one address for the UPRN")
         Some(AddressViewModel(
           uprn = Some(addresses.head.UPRN.toLong),
-          address = addressRulePicker(addresses.head.poBoxNumber, addresses.head.buildingNumber, addresses.head.buildingName, addresses.head.subBuildingName,
+          address = applyVssRules(addresses.head.poBoxNumber, addresses.head.buildingNumber, addresses.head.buildingName, addresses.head.subBuildingName,
             addresses.head.dependentThoroughfareName, addresses.head.thoroughfareName, addresses.head.dependentLocality,
             addresses.head.postTown, addresses.head.postCode).split(", ")
         )) // Translate to view model.

@@ -1,7 +1,7 @@
 package dvla.domain.ordnance_survey_beta_0_6
 
-import play.api.libs.json.{Reads, Writes, __, JsValue, Json}
 import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsValue, Json, Reads, Writes, __}
 
 final case class DPA(UPRN: String,
                      address: String,

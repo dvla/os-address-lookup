@@ -1,7 +1,7 @@
 package dvla.domain.ordnance_survey_preproduction
 
-import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.libs.json.{JsValue, Json, Reads, Writes, __}
 
 case class DPA(UPRN: String,
                address: String,
@@ -66,4 +66,3 @@ object DPA {
       "MATCH_DESCRIPTION" -> dpa.matchDescription)
   }
 }
-
