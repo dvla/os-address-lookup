@@ -11,9 +11,9 @@ import dvla.domain.address_lookup.UprnToAddressLookupRequest
 import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.ordnance_survey_preproduction.DPA
 import dvla.domain.ordnance_survey_preproduction.Response
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedPostcode
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.CannedPostcode
 import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedPostcodeToAddressResponse
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedUprn
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.CannedUprn
 import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedUprnToAddressResponse
 import dvla.microservice.AddressLookupCommand
 import dvla.microservice.Configuration
@@ -159,8 +159,10 @@ class LookupCommand(override val configuration: Configuration,
     }
   }
 
+  type ConvertToOsResponse = Future[HttpResponse] => Future[Option[Response]]
+  type ResponseUnmarshaller = FromResponseUnmarshaller[Response]
 
-  private def checkStatusCodeAndUnmarshal(implicit unmarshaller: FromResponseUnmarshaller[Response]): Future[HttpResponse] => Future[Option[Response]] =
+  private def checkStatusCodeAndUnmarshal(implicit unmarshaller: ResponseUnmarshaller): ConvertToOsResponse =
     (futRes: Future[HttpResponse]) => futRes.map {
       res =>
         if (res.status == StatusCodes.OK) Some(unmarshal[Response](unmarshaller)(res))
@@ -176,11 +178,9 @@ class LookupCommand(override val configuration: Configuration,
     pipeline {
       Get(endPoint)
     }
-
   }
 
   def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
-
     import spray.httpx.PlayJsonSupport._
 
     val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
@@ -194,51 +194,46 @@ class LookupCommand(override val configuration: Configuration,
   override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
     log.info(s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
-    if (request.postcode == cannedPostcode) {
-      Future {
-        cannedPostcodeToAddressResponse
-      }
-    }
-    else {
-      callPostcodeToAddressOSWebService(request).map {
-        resp => {
-          PostcodeToAddressResponse(buildUprnAddressPairSeq(request.postcode, resp))
-        }
+    if (request.postcode == CannedPostcode)
+      Future(cannedPostcodeToAddressResponse)
+    else 
+      callPostcodeToAddressOSWebService(request).map { resp =>
+        PostcodeToAddressResponse(buildUprnAddressPairSeq(request.postcode, resp))
       }.recover {
         case e: Throwable =>
           log.info(s"Ordnance Survey postcode lookup service error: ${e.toString}")
           PostcodeToAddressResponse(Seq.empty)
       }
-    }
   }
 
   override def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
     log.info(s"Dealing with the post request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
 
-    if (request.uprn == cannedUprn) {
-      Future {
-        cannedUprnToAddressResponse
-      }
-    }
-    else {
-      callUprnToAddressOSWebService(request).map {
-        resp => {
-          UprnToAddressResponse(buildAddressViewModel(request.uprn, resp))
-        }
+    if (request.uprn == CannedUprn)
+      Future(cannedUprnToAddressResponse)
+    else
+      callUprnToAddressOSWebService(request).map { resp =>
+        UprnToAddressResponse(buildAddressViewModel(request.uprn, resp))
       }.recover {
         case e: Throwable =>
           log.info(s"Ordnance Survey uprn lookup service error: ${e.toString}")
           UprnToAddressResponse(None)
       }
-    }
   }
 }
 
 object LookupCommand {
   // Must be in a valid format yet not exist.
-  private[ordnance_survey_preproduction] final val cannedPostcode = "QQ99QQ"
-  private[ordnance_survey_preproduction] final val cannedAddress = "Not real street, Not real town, QQ9 9QQ"
-  private[ordnance_survey_preproduction] final val cannedUprn = 999999999999L
-  private[ordnance_survey_preproduction] val cannedPostcodeToAddressResponse = PostcodeToAddressResponse(addresses = Seq(UprnAddressPair(cannedUprn.toString, cannedAddress)))
-  private[ordnance_survey_preproduction] val cannedUprnToAddressResponse = UprnToAddressResponse(addressViewModel = Some(AddressViewModel(uprn = Some(cannedUprn), address = Seq("Not real street", "Not real town", cannedPostcode))))
+  private[ordnance_survey_preproduction] final val CannedPostcode = "QQ99QQ"
+  private[ordnance_survey_preproduction] final val CannedAddress = "Not real street, Not real town, QQ9 9QQ"
+  private[ordnance_survey_preproduction] final val CannedUprn = 999999999999L
+  
+  private[ordnance_survey_preproduction] val cannedPostcodeToAddressResponse = 
+    PostcodeToAddressResponse(addresses = Seq(UprnAddressPair(CannedUprn.toString, CannedAddress)))
+  
+  private[ordnance_survey_preproduction] val cannedUprnToAddressResponse = 
+    UprnToAddressResponse(Some(AddressViewModel(
+      uprn = Some(CannedUprn),
+      address = Seq("Not real street", "Not real town", CannedPostcode)
+    )))
 }

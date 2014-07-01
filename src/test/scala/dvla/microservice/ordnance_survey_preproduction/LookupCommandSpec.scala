@@ -269,7 +269,7 @@ final class LookupCommandSpec extends UnitSpec {
 
     "return canned data for the canned postcode" in {
       val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
-      val result = service(PostcodeToAddressLookupRequest(cannedPostcode))
+      val result = service(PostcodeToAddressLookupRequest(CannedPostcode))
 
       whenReady(result) {
         r => r should equal(cannedPostcodeToAddressResponse)
@@ -323,7 +323,7 @@ final class LookupCommandSpec extends UnitSpec {
 
     "return canned data for the canned uprn" in {
       val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
-      val result = service(UprnToAddressLookupRequest(cannedUprn))
+      val result = service(UprnToAddressLookupRequest(CannedUprn))
 
       whenReady(result) {
         r => r should equal(cannedUprnToAddressResponse)

@@ -77,9 +77,9 @@ class LookupCommand(val configuration: Configuration)
   }
 
   type ConvertToOsResponse = Future[HttpResponse] => Future[Option[Response]]
-  type ResponseMarshaller = FromResponseUnmarshaller[Response]
+  type ResponseUnmarshaller = FromResponseUnmarshaller[Response]
 
-  private def checkStatusCodeAndUnmarshal(implicit unmarshaller: ResponseMarshaller): ConvertToOsResponse =
+  private def checkStatusCodeAndUnmarshal(implicit unmarshaller: ResponseUnmarshaller): ConvertToOsResponse =
     (futRes: Future[HttpResponse]) => futRes.map {
       res =>
         if (res.status == StatusCodes.OK) Some(unmarshal[Response](unmarshaller)(res))
