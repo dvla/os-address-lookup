@@ -18,7 +18,7 @@ final class SprayOSAddressLookupService(val configuration: Configuration, overri
 // this trait defines our service behavior independently from the service actor
 trait OSAddressLookupService extends HttpService {
 
-  val log: LoggingAdapter
+  def log: LoggingAdapter
   val configuration: Configuration
   val command: AddressLookupCommand
 
