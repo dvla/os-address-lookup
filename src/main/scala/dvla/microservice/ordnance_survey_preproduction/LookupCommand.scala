@@ -163,10 +163,12 @@ class LookupCommand(override val configuration: Configuration,
   type ResponseUnmarshaller = FromResponseUnmarshaller[Response]
 
   private def checkStatusCodeAndUnmarshal(implicit unmarshaller: ResponseUnmarshaller): ConvertToOsResponse =
-    (futRes: Future[HttpResponse]) => futRes.map {
-      res =>
-        if (res.status == StatusCodes.OK) Some(unmarshal[Response](unmarshaller)(res))
-        else None
+    (futRes: Future[HttpResponse]) => futRes.map { res =>
+      if (res.status == StatusCodes.OK) Some(unmarshal[Response](unmarshaller)(res))
+      else {
+        log.warning(s"address lookup failed with status code ${res.status.intValue}")
+        None
+      }
     }
 
   def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
