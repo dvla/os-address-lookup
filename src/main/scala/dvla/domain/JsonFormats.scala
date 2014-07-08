@@ -1,13 +1,8 @@
 package dvla.domain
 
+import dvla.domain.address_lookup.{AddressViewModel, PostcodeToAddressResponse, UprnAddressPair, UprnToAddressResponse}
 import spray.httpx.SprayJsonSupport
-import spray.json._
-import dvla.domain.address_lookup.UprnAddressPair
-import dvla.domain.address_lookup.PostcodeToAddressResponse
-import dvla.domain.address_lookup.UprnToAddressLookupRequest
-import dvla.domain.address_lookup.UprnToAddressResponse
-import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
-import dvla.domain.address_lookup.AddressViewModel
+import spray.json.DefaultJsonProtocol
 
 object JsonFormats extends DefaultJsonProtocol with SprayJsonSupport {
 

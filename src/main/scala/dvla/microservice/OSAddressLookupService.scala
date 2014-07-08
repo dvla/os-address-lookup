@@ -1,23 +1,24 @@
 package dvla.microservice
 
-import spray.routing.{Route, HttpService}
-import scala.concurrent.Future
-import spray.http.StatusCodes._
-import scala.util.{Failure, Success}
 import akka.event.LoggingAdapter
-import dvla.domain.JsonFormats._
-import dvla.domain.address_lookup._
 import dvla.common.microservice.SprayHttpService
-import dvla.common.LogFormats
+import dvla.domain.address_lookup.{PostcodeToAddressLookupRequest, UprnToAddressLookupRequest}
+import spray.http.StatusCodes.ServiceUnavailable
+import spray.routing.HttpService
+import spray.routing.Route
+import dvla.domain.JsonFormats._
+
+import scala.util.{Failure, Success}
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-final class SprayOSAddressLookupService(val configuration: Configuration)(implicit val command: AddressLookupCommand) extends SprayHttpService with OSAddressLookupService
+final class SprayOSAddressLookupService(val configuration: Configuration, override val command: AddressLookupCommand)
+  extends SprayHttpService with OSAddressLookupService
 
 // this trait defines our service behavior independently from the service actor
 trait OSAddressLookupService extends HttpService {
 
-  val log: LoggingAdapter
+  def log: LoggingAdapter
   val configuration: Configuration
   val command: AddressLookupCommand
 
@@ -68,7 +69,7 @@ trait OSAddressLookupService extends HttpService {
   }
 
   private def lookupUprn(uprn: Long, languageCode: Option[String]): Route = {
-    val request: UprnToAddressLookupRequest = UprnToAddressLookupRequest(uprn, languageCode)
+    val request = UprnToAddressLookupRequest(uprn, languageCode)
     onComplete(command(request)) {
       case Success(resp) if resp.addressViewModel.isEmpty => lookupUprn(uprn)
       case Success(resp) => complete(resp)
@@ -77,7 +78,7 @@ trait OSAddressLookupService extends HttpService {
   }
 
   private def lookupUprn(uprn: Long): Route = {
-    val request: UprnToAddressLookupRequest = UprnToAddressLookupRequest(uprn)
+    val request = UprnToAddressLookupRequest(uprn)
     onComplete(command(request)) {
       case Success(resp) => complete(resp)
       case Failure(_) => complete(ServiceUnavailable)

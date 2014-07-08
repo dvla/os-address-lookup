@@ -1,15 +1,12 @@
 package dvla.domain.ordnance_survey_preproduction
 
 import java.net.URI
-import play.api.libs.json._
+
+import play.api.libs.json.{JsSuccess, JsValue, Json, Reads}
 
 final case class Header(uri: URI,
-                               /*query: String,*/
-                               offset: Int,
-                               totalresults: Int/*,
-                               format: String,
-                               dataset: String,
-                               maxresults: Int*/)
+                        offset: Int,
+                        totalresults: Int)
 
 object Header {
   implicit val uriReads: Reads[URI] = new Reads[URI] {

@@ -23,10 +23,10 @@ seq(Revolver.settings: _*)
 jacoco.settings
 
 libraryDependencies ++= {
-  val akkaV = "2.2.3"
-  val sprayV = "1.2.0"
+  val akkaV = "2.3.3"
+  val sprayV = "1.3.1"
   Seq(
-    "dvla" % "vehicles-services-common_2.10" % "0.1-SNAPSHOT",
+    "dvla" % "vehicles-services-common_2.10" % "0.2-SNAPSHOT",
     "io.spray" % "spray-can" % sprayV,
     "io.spray" % "spray-client" % sprayV,
     "io.spray" % "spray-caching" % sprayV,

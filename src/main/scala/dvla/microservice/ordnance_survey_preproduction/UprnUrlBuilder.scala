@@ -7,7 +7,7 @@ final class UprnUrlBuilder(val configuration: Configuration){
   private val apiKey = configuration.apiKey
   private val baseUrl = configuration.baseUrl
 
-  def endPoint(request: UprnToAddressLookupRequest) = {
+  def endPoint(request: UprnToAddressLookupRequest): String = {
     val languageCode = request.languageCode match {
       case Some(lang) => "&lr=" + lang
       case None => ""
