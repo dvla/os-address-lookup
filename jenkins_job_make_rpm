@@ -56,7 +56,7 @@ fpm \
   -n $RPM_NAME \
   -v $RPM_VERSION  \
   -a all \
-  -p $RPM_TARGETDIR \
+  -p $RPM_TARGETDIR/$RPM_NAME.rpm \
   -m $RPM_OWNER \
   -x "*.rpm" -x .git -x .gitignore \
   -t rpm \
