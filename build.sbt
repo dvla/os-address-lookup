@@ -9,12 +9,14 @@ version := "0.1"
 
 scalaVersion := "2.10.3"
 
+val nexus = "http://rep002-01.skyscape.preview-dvla.co.uk:8081/nexus/content/repositories"
+
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 resolvers ++= Seq(
   "typesafe repo" at "http://repo.typesafe.com/typesafe/releases",
-  "local nexus snapshots" at "http://rep002-01.skyscape.preview-dvla.co.uk:8081/nexus/content/repositories/snapshots",
-  "local nexus releases" at "http://rep002-01.skyscape.preview-dvla.co.uk:8081/nexus/content/repositories/releases"
+  "local nexus snapshots" at s"$nexus/snapshots",
+  "local nexus releases" at s"$nexus/releases"
 )
 
 // sbt-Revolver allows the running of the spray service in sbt in the background using re-start
@@ -43,4 +45,11 @@ libraryDependencies ++= {
     "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1" % "test",
     "org.mockito" % "mockito-all" % "1.9.5" % "test"
   )
+}
+
+publishTo := {
+  if (version.value.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at s"$nexus/snapshots")
+  else
+    Some("releases"  at s"$nexus/releases")
 }
