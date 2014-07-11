@@ -40,6 +40,7 @@
     <logger name="akka" level="INFO" />
 
     <root level="DEBUG">
+        <appender-ref ref="SYSLOG"/>
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
         <appender-ref ref="SYSLOG"/>
