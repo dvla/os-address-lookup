@@ -1,3 +1,5 @@
+Master [![Build Status](https://travis-ci.org/dvla/os-address-lookup.svg?branch=master)](https://travis-ci.org/dvla/os-address-lookup)
+
 DVLA Ordnance Survey Service
 ============================
 

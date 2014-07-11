@@ -1,0 +1,13 @@
+language: scala
+
+scala:
+  - 2.10.4
+
+jdk:
+  - oraclejdk7
+
+matrix:
+  fast_finish: true
+
+notifications:
+  email: false
