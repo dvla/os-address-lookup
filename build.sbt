@@ -46,6 +46,7 @@ libraryDependencies ++= {
     "org.mockito" % "mockito-all" % "1.9.5" % "test"
   )
 }
+credentials += Credentials(Path.userHome / ".sbt/.credentials")
 
 publishTo := {
   if (version.value.trim.endsWith("SNAPSHOT"))
