@@ -1,0 +1,8 @@
+#!/bin/bash
+
+export JAVA_OPTS="-Dspecs2.color=false -Dsbt.log.format=true -Dsbt.log.noformat=true -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128 $JAVA_OPTS"
+sbt -Dsbt.log.noformat=true -ivy $WORKSPACE clean test assembly publish
+
+rm -rf target/*.rpm
+./jenkins_job_make_rpm
+
