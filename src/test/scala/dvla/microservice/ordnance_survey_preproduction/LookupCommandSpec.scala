@@ -376,9 +376,9 @@ final class LookupCommandSpec extends UnitSpec {
 
   private def lookupCommandMock(response: Option[Response]): LookupCommand = {
     new LookupCommand(configuration = configuration, postcodeUrlBuilder = postcodeUrlBuilder, uprnUrlBuilder = uprnUrlBuilder) {
-      override def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = Future.successful(response)
+      override def call(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = Future.successful(response)
 
-      override def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[Response]] = Future.successful(response)
+      override def call(request: UprnToAddressLookupRequest): Future[Option[Response]] = Future.successful(response)
     }
   }
 

@@ -14,8 +14,6 @@ object Boot extends App {
   private val conf = ConfigFactory.load()
 
   private val service = {
-    val apiVersion = conf.getString("ordnancesurvey.apiversion")
-
     val configuration = {
       val osBaseUrl = conf.getString("ordnancesurvey.preproduction.baseurl")
       val apiKey = conf.getString("ordnancesurvey.preproduction.apikey")

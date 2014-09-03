@@ -35,7 +35,7 @@ class LookupCommand(override val configuration: Configuration,
   private final val Space = " "
   private final lazy val log = Logging(system, this.getClass)
 
-  private def buildUprnAddressPairSeq(postcode: String, resp: Option[Response]): Seq[UprnAddressPair] = {
+  private def addresses(postcode: String, resp: Option[Response]): Seq[UprnAddressPair] = {
     val responseResults = resp.flatMap(_.results)
 
     responseResults match {
@@ -92,12 +92,10 @@ class LookupCommand(override val configuration: Configuration,
     lineBuild(Seq(address.thoroughfareName)) +
     lineBuild(Seq(address.dependentLocality))
 
-
   private def rule4(address: DPA): String =
     lineBuild(Seq(address.buildingName, address.dependentThoroughfareName)) +
     lineBuild(Seq(address.thoroughfareName)) +
     lineBuild(Seq(address.dependentLocality))
-
 
   private def rule5(address: DPA): String =
     lineBuild(Seq(address.subBuildingName, address.buildingName)) +
@@ -141,7 +139,7 @@ class LookupCommand(override val configuration: Configuration,
     }
   }
 
-  private def buildAddressViewModel(uprn: Long, resp: Option[Response]): Option[AddressViewModel] = {
+  private def address(uprn: Long, resp: Option[Response]): Option[AddressViewModel] = {
     val flattenMapResponse = resp.flatMap(_.results)
 
     flattenMapResponse match {
@@ -171,7 +169,8 @@ class LookupCommand(override val configuration: Configuration,
       }
     }
 
-  def callPostcodeToAddressOSWebService(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
+  // Postcode to sequence of addresses
+  def call(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
     import spray.httpx.PlayJsonSupport._
 
     val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
@@ -182,7 +181,8 @@ class LookupCommand(override val configuration: Configuration,
     }
   }
 
-  def callUprnToAddressOSWebService(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
+  // Uprn to single address
+  def call(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
     import spray.httpx.PlayJsonSupport._
 
     val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
@@ -199,8 +199,8 @@ class LookupCommand(override val configuration: Configuration,
     if (request.postcode == CannedPostcode)
       Future(cannedPostcodeToAddressResponse)
     else 
-      callPostcodeToAddressOSWebService(request).map { resp =>
-        PostcodeToAddressResponse(buildUprnAddressPairSeq(request.postcode, resp))
+      call(request).map { resp =>
+        PostcodeToAddressResponse(addresses(request.postcode, resp))
       }.recover {
         case e: Throwable =>
           log.info(s"Ordnance Survey postcode lookup service error: ${e.toString}")
@@ -214,8 +214,8 @@ class LookupCommand(override val configuration: Configuration,
     if (request.uprn == CannedUprn)
       Future(cannedUprnToAddressResponse)
     else
-      callUprnToAddressOSWebService(request).map { resp =>
-        UprnToAddressResponse(buildAddressViewModel(request.uprn, resp))
+      call(request).map { resp =>
+        UprnToAddressResponse(address(request.uprn, resp))
       }.recover {
         case e: Throwable =>
           log.info(s"Ordnance Survey uprn lookup service error: ${e.toString}")
