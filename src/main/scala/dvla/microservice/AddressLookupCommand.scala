@@ -8,7 +8,6 @@ import scala.concurrent.Future
 
 trait AddressLookupCommand {
 
-  val configuration: Configuration
   def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse]
   def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse]
 }

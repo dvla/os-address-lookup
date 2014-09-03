@@ -10,7 +10,7 @@ import dvla.microservice.{AddressLookupCommand, Configuration}
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 
-class LookupCommand(override val configuration: Configuration,
+class LookupCommand(configuration: Configuration,
                     callOrdnanceSurvey: CallOrdnanceSurvey)
                    (implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
 
