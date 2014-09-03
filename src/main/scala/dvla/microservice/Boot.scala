@@ -1,7 +1,6 @@
 package dvla.microservice
 
-import akka.actor.ActorSystem
-import akka.actor.Props
+import akka.actor.{ActorSystem, Props}
 import akka.event.Logging
 import akka.io.IO
 import com.typesafe.config.ConfigFactory
@@ -18,35 +17,22 @@ object Boot extends App {
     val apiVersion = conf.getString("ordnancesurvey.apiversion")
 
     val configuration = {
-      if (apiVersion == "beta_0_6") {
-        val osUsername = conf.getString("ordnancesurvey.beta06.username")
-        val osPassword = conf.getString("ordnancesurvey.beta06.password")
-        val osBaseUrl = conf.getString("ordnancesurvey.beta06.baseurl")
-        Configuration(
-          username = osUsername,
-          password = osPassword,
-          baseUrl = osBaseUrl)
-      } else {
-        val osBaseUrl = conf.getString("ordnancesurvey.preproduction.baseurl")
-        val apiKey = conf.getString("ordnancesurvey.preproduction.apikey")
-        Configuration(
-          baseUrl = osBaseUrl,
-          apiKey = apiKey)
-      }
+      val osBaseUrl = conf.getString("ordnancesurvey.preproduction.baseurl")
+      val apiKey = conf.getString("ordnancesurvey.preproduction.apikey")
+      Configuration(
+        baseUrl = osBaseUrl,
+        apiKey = apiKey)
     }
 
     implicit val commandExecutionContext = system.dispatcher
 
-    val command =
-      if (apiVersion == "beta_0_6")
-        new ordnance_survey_beta_0_6.LookupCommand(configuration)
-      else {
-        val postcodeUrlBuilder = new PostcodeUrlBuilder(configuration = configuration)
-        val uprnUrlBuilder = new UprnUrlBuilder(configuration = configuration)
-        new ordnance_survey_preproduction.LookupCommand(configuration = configuration,
-          postcodeUrlBuilder = postcodeUrlBuilder,
-          uprnUrlBuilder = uprnUrlBuilder)
-      }
+    val command = {
+      val postcodeUrlBuilder = new PostcodeUrlBuilder(configuration = configuration)
+      val uprnUrlBuilder = new UprnUrlBuilder(configuration = configuration)
+      new ordnance_survey_preproduction.LookupCommand(configuration = configuration,
+        postcodeUrlBuilder = postcodeUrlBuilder,
+        uprnUrlBuilder = uprnUrlBuilder)
+    }
 
     val creationProperties = Props(new SprayOSAddressLookupService(configuration, command))
 
