@@ -4,7 +4,7 @@ import akka.actor.{ActorSystem, Props}
 import akka.event.Logging
 import akka.io.IO
 import com.typesafe.config.ConfigFactory
-import dvla.microservice.ordnance_survey_preproduction.{PostcodeUrlBuilder, UprnUrlBuilder}
+import dvla.microservice.ordnance_survey_preproduction.{CallOrdnanceSurveyImpl, PostcodeUrlBuilder, UprnUrlBuilder}
 import spray.can.Http
 
 object Boot extends App {
@@ -25,11 +25,15 @@ object Boot extends App {
     implicit val commandExecutionContext = system.dispatcher
 
     val command = {
-      val postcodeUrlBuilder = new PostcodeUrlBuilder(configuration = configuration)
-      val uprnUrlBuilder = new UprnUrlBuilder(configuration = configuration)
-      new ordnance_survey_preproduction.LookupCommand(configuration = configuration,
-        postcodeUrlBuilder = postcodeUrlBuilder,
-        uprnUrlBuilder = uprnUrlBuilder)
+      val callOrdnanceSurvey = {
+        val postcodeUrlBuilder = new PostcodeUrlBuilder(configuration = configuration)
+        val uprnUrlBuilder = new UprnUrlBuilder(configuration = configuration)
+        new CallOrdnanceSurveyImpl(postcodeUrlBuilder, uprnUrlBuilder)
+      }
+      new ordnance_survey_preproduction.LookupCommand(
+        configuration = configuration,
+        callOrdnanceSurvey = callOrdnanceSurvey
+      )
     }
 
     val creationProperties = Props(new SprayOSAddressLookupService(configuration, command))

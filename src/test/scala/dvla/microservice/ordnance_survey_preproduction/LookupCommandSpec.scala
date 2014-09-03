@@ -1,57 +1,59 @@
 package dvla.microservice.ordnance_survey_preproduction
 
-import akka.actor.ActorSystem
-import com.typesafe.config.{ConfigFactory, Config}
-import dvla.domain.address_lookup._
-import dvla.domain.ordnance_survey_preproduction.{Header, DPA, Result, Response}
-import dvla.helpers.UnitSpec
-import dvla.microservice.Configuration
 import java.net.URI
+import akka.actor.ActorSystem
+import com.typesafe.config.{Config, ConfigFactory}
+import dvla.domain.address_lookup._
+import dvla.domain.ordnance_survey_preproduction.{DPA, Header, Response, Result}
+import dvla.helpers.UnitSpec
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand._
+import dvla.microservice.{AddressLookupCommand, Configuration}
+import org.mockito.Matchers._
+import org.mockito.Mockito._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
-import org.scalatest.time.Second
-import org.scalatest.time.Span
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.time.{Second, Span}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand._
 
-final class LookupCommandSpec extends UnitSpec {
+final class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
   "callPostcodeToAddressOSWebService" should {
 
     "return ordnance_survey valid sequence of UprnAddressPairs when the postcode is valid and the OS service returns results" in {
-      val service = lookupCommandMock(postcodeResponse = PostcodeToAddressResponse(threeAddressPairs))
+      val service = lookupCommandStub(postcodeResponse = PostcodeToAddressResponse(threeAddressPairs))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result, Timeout(Span(1, Second))) {
-        r => r.addresses.length should equal(validDPANoLPI.length)
-          r.addresses.foreach(a => a.uprn should equal(traderUprnValid.toString))
+      whenReady(result, Timeout(Span(1, Second))) { r =>
+        r.addresses.length should equal(validDPANoLPI.length)
+        r.addresses.foreach(a => a.uprn should equal(traderUprnValid.toString))
       }
     }
 
     "return an empty sequence when the postcode is valid but the OS service returns no results" in {
-      val service = lookupCommandMock(postcodeResponse = PostcodeToAddressResponse(Seq.empty))
+      val service = lookupCommandStub(postcodeResponse = PostcodeToAddressResponse(Seq.empty))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses shouldBe empty
+      whenReady(result) { r =>
+        r.addresses shouldBe empty
       }
     }
 
     "return empty seq when response status is not 200 OK" in {
-      val service = lookupCommandMock(None)
+      val service = lookupCommandWithCallOrdnanceSurveyStub(None)
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses shouldBe empty
+      whenReady(result) { r =>
+        r.addresses shouldBe empty
       }
     }
 
     "return an empty sequence when the postcode is valid but the OS service returns ordnance_survey result with no DPA and no LPI" in {
-      val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(emptyDPAandLPI))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses shouldBe empty
+      whenReady(result) { r =>
+        r.addresses shouldBe empty
       }
     }
 
@@ -61,12 +63,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"50ABC FAKE ROAD, FAKE TOWN, EX8 1SN")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"50ABC FAKE ROAD, FAKE TOWN, EX8 1SN")))
       }
     }
 
@@ -76,12 +78,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN")))
       }
     }
 
@@ -91,12 +93,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP")))
       }
     }
 
@@ -106,12 +108,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB")))
       }
     }
 
@@ -121,12 +123,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS")))
       }
     }
 
@@ -136,12 +138,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ")))
       }
     }
 
@@ -151,12 +153,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY")))
       }
     }
 
@@ -166,12 +168,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ")))
       }
     }
 
@@ -181,16 +183,14 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH")))
       }
     }
-
-
 
     "FLAT, COURTLANDS CROSS SERVICE STATION, 397, EXETER ROAD, EXMOUTH, EX8 3NS should return in the format FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS" in {
       val dpa = {
@@ -198,12 +198,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS")))
       }
     }
 
@@ -213,12 +213,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL")))
       }
     }
 
@@ -228,12 +228,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN")))
       }
     }
 
@@ -243,12 +243,12 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"4 LYNDHURST ROAD, EXMOUTH, EX8 3DT")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"4 LYNDHURST ROAD, EXMOUTH, EX8 3DT")))
       }
     }
 
@@ -258,21 +258,21 @@ final class LookupCommandSpec extends UnitSpec {
         Seq(dpa1)
       }
 
-      val service = lookupCommandMock(Some(Response(header, Some(dpa))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(dpa))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) {
-        r => r.addresses.length should equal(dpa.length)
-          r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ")))
+      whenReady(result) { r =>
+        r.addresses.length should equal(dpa.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ")))
       }
     }
 
     "return canned data for the canned postcode" in {
-      val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(emptyDPAandLPI))))
       val result = service(PostcodeToAddressLookupRequest(CannedPostcode))
 
-      whenReady(result) {
-        r => r should equal(cannedPostcodeToAddressResponse)
+      whenReady(result) { r =>
+        r should equal(cannedPostcodeToAddressResponse)
       }
     }
   }
@@ -282,11 +282,11 @@ final class LookupCommandSpec extends UnitSpec {
   "callUprnToAddressOSWebService" should {
 
     "return ordnance_survey valid AddressViewModel when the uprn is valid and the OS service returns results" in {
-      val service = lookupCommandMock(Some(Response(header, Some(validDPANoLPI))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(validDPANoLPI))))
       val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
-      whenReady(result) {
-        r => r.addressViewModel match {
+      whenReady(result) { r =>
+        r.addressViewModel match {
           case Some(addressViewModel) => addressViewModel.uprn.map(_.toString) should equal(Some(osAddressbaseDPA().UPRN))
             addressViewModel.address === osAddressbaseDPA().address
           case _ => fail("Should have returned Some(AddressViewModel)")
@@ -295,56 +295,67 @@ final class LookupCommandSpec extends UnitSpec {
     }
 
     "return None when response status is not 200 OK" in {
-      val service = lookupCommandMock(None)
+      val service = lookupCommandWithCallOrdnanceSurveyStub(None)
       val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
-      whenReady(result) {
-        r => r.addressViewModel should be(None)
+      whenReady(result) { r =>
+        r.addressViewModel should be(None)
       }
     }
 
     "return none when the uprn is valid but the OS service returns no results" in {
-      val service = lookupCommandMock(Some(Response(header, None)))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, None)))
       val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
-      whenReady(result) {
-        r => r.addressViewModel should be(None)
+      whenReady(result) { r =>
+        r.addressViewModel should be(None)
       }
     }
 
     "return none when the result has no DPA and no LPI" in {
-      val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(emptyDPAandLPI))))
       val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
-      whenReady(result) {
-        r => r.addressViewModel should be(None)
+      whenReady(result) { r =>
+        r.addressViewModel should be(None)
       }
     }
 
     "return canned data for the canned uprn" in {
-      val service = lookupCommandMock(Some(Response(header, Some(emptyDPAandLPI))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(emptyDPAandLPI))))
       val result = service(UprnToAddressLookupRequest(CannedUprn))
 
-      whenReady(result) {
-        r => r should equal(cannedUprnToAddressResponse)
+      whenReady(result) { r =>
+        r should equal(cannedUprnToAddressResponse)
       }
     }
   }
 
-  private def testConfig: Config = {
-    ConfigFactory.empty().withFallback(ConfigFactory.load())
+  private final val traderUprnValid = 12345L
+  private final val postcodeValid = "CM81QJ"
+  private final val emptyString = ""
+  private val configuration = Configuration()
+  private val validDPANoLPI = {
+    val result = Result(DPA = Some(osAddressbaseDPA()), LPI = None)
+    Seq(result, result, result)
   }
-
-  private implicit val system = ActorSystem("LookupCommandSpecPreProduction", testConfig)
-
+  private val threeAddressPairs = {
+    val result = UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid")
+    Seq(result, result, result)
+  }
+  private val emptyDPAandLPI = {
+    val result = Result(DPA = None, LPI = None)
+    Seq(result, result, result)
+  }
   private val header = Header(
     uri = new URI(""),
     offset = 0,
     totalresults = 2)
+  private implicit val system = ActorSystem("LookupCommandSpecPreProduction", testConfig)
 
-  private final val traderUprnValid = 12345L
-  private final val postcodeValid = "CM81QJ"
-  private final val emptyString = ""
+  private def testConfig: Config = {
+    ConfigFactory.empty().withFallback(ConfigFactory.load())
+  }
 
   private def osAddressbaseDPA(uprn: String = traderUprnValid.toString, address: String = emptyString, poBoxNumber: Option[String] = None,
                                buildingName: Option[String] = None, subBuildingName: Option[String] = None, buildingNumber: Option[String] = None,
@@ -355,42 +366,19 @@ final class LookupCommandSpec extends UnitSpec {
       thoroughfareName = thoroughfareName, dependentThoroughfareName = dependentThoroughfareName, dependentLocality = dependentLocality, postTown = postTown,
       postCode = postCode, RPC = emptyString, xCoordinate = 0, yCoordinate = 0, status = emptyString, matchScore = 0, matchDescription = emptyString)
 
-  private val configuration = Configuration()
-  private val postcodeUrlBuilder = new PostcodeUrlBuilder(configuration = configuration)
-  private val uprnUrlBuilder = new UprnUrlBuilder(configuration = configuration)
-
-  private val validDPANoLPI = {
-    val result = Result(DPA = Some(osAddressbaseDPA()), LPI = None)
-    Seq(result, result, result)
+  private def lookupCommandWithCallOrdnanceSurveyStub(response: Option[Response]): LookupCommand = {
+    val callOrdnanceSurveyStub = mock[CallOrdnanceSurvey]
+    when(callOrdnanceSurveyStub.call(any[PostcodeToAddressLookupRequest])).thenReturn(Future.successful(response))
+    when(callOrdnanceSurveyStub.call(any[UprnToAddressLookupRequest])).thenReturn(Future.successful(response))
+    new LookupCommand(configuration = configuration, callOrdnanceSurveyStub)
   }
 
-  private val threeAddressPairs = {
-    val result = UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid")
-    Seq(result, result, result)
-  }
-
-  private val emptyDPAandLPI = {
-    val result = Result(DPA = None, LPI = None)
-    Seq(result, result, result)
-  }
-
-  private def lookupCommandMock(response: Option[Response]): LookupCommand = {
-    new LookupCommand(configuration = configuration, postcodeUrlBuilder = postcodeUrlBuilder, uprnUrlBuilder = uprnUrlBuilder) {
-      override def call(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = Future.successful(response)
-
-      override def call(request: UprnToAddressLookupRequest): Future[Option[Response]] = Future.successful(response)
-    }
-  }
-
-  private def lookupCommandMock(
-                                 postcodeResponse: PostcodeToAddressResponse = PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"presentationProperty AAA, 123A, property stub, street stub, town stub, area stub, $postcodeValid"))),
-                                 uprnResponse: UprnToAddressResponse = UprnToAddressResponse(addressViewModel = None)): LookupCommand = {
-
-    new LookupCommand(configuration, postcodeUrlBuilder = postcodeUrlBuilder, uprnUrlBuilder = uprnUrlBuilder) {
-      override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = Future.successful(postcodeResponse)
-
-      override def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = Future.successful(uprnResponse)
-    }
+  private def lookupCommandStub(postcodeResponse: PostcodeToAddressResponse,
+                                uprnResponse: UprnToAddressResponse = UprnToAddressResponse(addressViewModel = None)) = {
+    val lookupCommand = mock[AddressLookupCommand]
+    when(lookupCommand.apply(any[PostcodeToAddressLookupRequest])).thenReturn(Future.successful(postcodeResponse))
+    when(lookupCommand.apply(any[UprnToAddressLookupRequest])).thenReturn(Future.successful(uprnResponse))
+    lookupCommand
   }
 }
 

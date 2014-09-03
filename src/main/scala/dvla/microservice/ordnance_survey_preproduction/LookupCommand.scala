@@ -3,33 +3,17 @@ package dvla.microservice.ordnance_survey_preproduction
 import akka.actor.ActorSystem
 import akka.event.Logging
 import dvla.common.LogFormats
-import dvla.domain.address_lookup.AddressViewModel
-import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
-import dvla.domain.address_lookup.PostcodeToAddressResponse
-import dvla.domain.address_lookup.UprnAddressPair
-import dvla.domain.address_lookup.UprnToAddressLookupRequest
-import dvla.domain.address_lookup.UprnToAddressResponse
-import dvla.domain.ordnance_survey_preproduction.DPA
-import dvla.domain.ordnance_survey_preproduction.Response
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.CannedPostcode
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedPostcodeToAddressResponse
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.CannedUprn
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedUprnToAddressResponse
-import dvla.microservice.AddressLookupCommand
-import dvla.microservice.Configuration
-import spray.client.pipelining._
-import spray.http.HttpRequest
-import spray.http.HttpResponse
-import spray.http.StatusCodes
-import spray.httpx.unmarshalling.FromResponseUnmarshaller
-
+import dvla.domain.address_lookup.{AddressViewModel, PostcodeToAddressLookupRequest, PostcodeToAddressResponse, UprnAddressPair, UprnToAddressLookupRequest, UprnToAddressResponse}
+import dvla.domain.ordnance_survey_preproduction.{DPA, Response}
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.{CannedPostcode, CannedUprn, cannedPostcodeToAddressResponse, cannedUprnToAddressResponse}
+import dvla.microservice.{AddressLookupCommand, Configuration}
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 
 class LookupCommand(override val configuration: Configuration,
-                    val postcodeUrlBuilder: PostcodeUrlBuilder,
-                    val uprnUrlBuilder: UprnUrlBuilder)
+                    callOrdnanceSurvey: CallOrdnanceSurvey)
                    (implicit system: ActorSystem, executionContext: ExecutionContext) extends AddressLookupCommand {
+
   private final val Separator = ", "
   private final val Nothing = ""
   private final val Space = " "
@@ -79,43 +63,43 @@ class LookupCommand(override val configuration: Configuration,
   //rule methods will build and return three strings for address line1, line2 and line3
   private def rule1(address: DPA): String =
     lineBuild(Seq(address.poBoxNumber)) +
-    lineBuild(Seq(address.thoroughfareName)) +
-    lineBuild(Seq(address.dependentLocality))
+      lineBuild(Seq(address.thoroughfareName)) +
+      lineBuild(Seq(address.dependentLocality))
 
   private def rule2(address: DPA): String =
     lineBuild(Seq(address.buildingName)) +
-    lineBuild(Seq(address.dependentThoroughfareName)) +
-    lineBuild(Seq(address.thoroughfareName))
+      lineBuild(Seq(address.dependentThoroughfareName)) +
+      lineBuild(Seq(address.thoroughfareName))
 
   private def rule3(address: DPA): String =
     lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName)) +
-    lineBuild(Seq(address.thoroughfareName)) +
-    lineBuild(Seq(address.dependentLocality))
+      lineBuild(Seq(address.thoroughfareName)) +
+      lineBuild(Seq(address.dependentLocality))
 
   private def rule4(address: DPA): String =
     lineBuild(Seq(address.buildingName, address.dependentThoroughfareName)) +
-    lineBuild(Seq(address.thoroughfareName)) +
-    lineBuild(Seq(address.dependentLocality))
+      lineBuild(Seq(address.thoroughfareName)) +
+      lineBuild(Seq(address.dependentLocality))
 
   private def rule5(address: DPA): String =
     lineBuild(Seq(address.subBuildingName, address.buildingName)) +
-    lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName)) +
-    lineBuild(Seq(address.thoroughfareName))
+      lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName)) +
+      lineBuild(Seq(address.thoroughfareName))
 
   private def rule6(address: DPA): String =
     lineBuild(Seq(address.subBuildingName, address.buildingName)) +
-    lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName, address.thoroughfareName)) +
-    lineBuild(Seq(address.dependentLocality))
+      lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName, address.thoroughfareName)) +
+      lineBuild(Seq(address.dependentLocality))
 
   private def rule7(address: DPA): String =
     lineBuild(Seq(address.buildingNumber, address.thoroughfareName)) +
-    lineBuild(Seq(address.dependentLocality)) +
-    Nothing
+      lineBuild(Seq(address.dependentLocality)) +
+      Nothing
 
   private def rule8(address: DPA): String =
     lineBuild(Seq(address.subBuildingName)) +
-    lineBuild(Seq(address.buildingName)) +
-    lineBuild(Seq(address.thoroughfareName))
+      lineBuild(Seq(address.buildingName)) +
+      lineBuild(Seq(address.thoroughfareName))
 
   @tailrec
   private def lineBuild(addressPart: Seq[Option[String]], accumulatedLine: String = Nothing): String = {
@@ -157,49 +141,13 @@ class LookupCommand(override val configuration: Configuration,
     }
   }
 
-  type ConvertToOsResponse = Future[HttpResponse] => Future[Option[Response]]
-  type ResponseUnmarshaller = FromResponseUnmarshaller[Response]
-
-  private def checkStatusCodeAndUnmarshal(implicit unmarshaller: ResponseUnmarshaller): ConvertToOsResponse =
-    (futRes: Future[HttpResponse]) => futRes.map { res =>
-      if (res.status == StatusCodes.OK) Some(unmarshal[Response](unmarshaller)(res))
-      else {
-        log.warning(s"address lookup failed with status code ${res.status.intValue}")
-        None
-      }
-    }
-
-  // Postcode to sequence of addresses
-  def call(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
-    import spray.httpx.PlayJsonSupport._
-
-    val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
-    val endPoint = postcodeUrlBuilder.endPoint(request)
-
-    pipeline {
-      Get(endPoint)
-    }
-  }
-
-  // Uprn to single address
-  def call(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
-    import spray.httpx.PlayJsonSupport._
-
-    val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
-    val endPoint = uprnUrlBuilder.endPoint(request)
-
-    pipeline {
-      Get(endPoint)
-    }
-  }
-
   override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
     log.info(s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     if (request.postcode == CannedPostcode)
       Future(cannedPostcodeToAddressResponse)
-    else 
-      call(request).map { resp =>
+    else
+      callOrdnanceSurvey.call(request).map { resp =>
         PostcodeToAddressResponse(addresses(request.postcode, resp))
       }.recover {
         case e: Throwable =>
@@ -214,7 +162,7 @@ class LookupCommand(override val configuration: Configuration,
     if (request.uprn == CannedUprn)
       Future(cannedUprnToAddressResponse)
     else
-      call(request).map { resp =>
+      callOrdnanceSurvey.call(request).map { resp =>
         UprnToAddressResponse(address(request.uprn, resp))
       }.recover {
         case e: Throwable =>
@@ -225,15 +173,14 @@ class LookupCommand(override val configuration: Configuration,
 }
 
 object LookupCommand {
+
   // Must be in a valid format yet not exist.
   private[ordnance_survey_preproduction] final val CannedPostcode = "QQ99QQ"
   private[ordnance_survey_preproduction] final val CannedAddress = "Not real street, Not real town, QQ9 9QQ"
   private[ordnance_survey_preproduction] final val CannedUprn = 999999999999L
-  
-  private[ordnance_survey_preproduction] val cannedPostcodeToAddressResponse = 
+  private[ordnance_survey_preproduction] val cannedPostcodeToAddressResponse =
     PostcodeToAddressResponse(addresses = Seq(UprnAddressPair(CannedUprn.toString, CannedAddress)))
-  
-  private[ordnance_survey_preproduction] val cannedUprnToAddressResponse = 
+  private[ordnance_survey_preproduction] val cannedUprnToAddressResponse =
     UprnToAddressResponse(Some(AddressViewModel(
       uprn = Some(CannedUprn),
       address = Seq("Not real street", "Not real town", CannedPostcode)
