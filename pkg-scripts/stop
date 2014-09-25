@@ -1,4 +1,4 @@
 #!/bin/bash
 
-initctl stop os-address-lookup 2>/dev/null
+initctl stop os-address-lookup 
 exit
