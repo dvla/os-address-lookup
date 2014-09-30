@@ -1,3 +1,9 @@
+#!/bin/bash
+
+# Get the version of the binary from sbt and strip color information so we are just left with a version
+SBT_VERSION=`sbt version | tail -1 | awk {'print $2'} | sed -E "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"`
+echo VERSION = "Building RPM for version: $SBT_VERSION"
+
 RPM_VERSION="$(date +'%Y%m%d%H%M%S')"
 RPM_NAME="os-address-lookup"
 RPM_OWNER="jenkins@dvla"
@@ -28,7 +34,7 @@ mkdir -p workdir/etc/monit.d
 # copy objects to workdir directory
 (
   cd workdir/$RPM_PREFIX/
-  cp  $WORKSPACE/target/scala-2.10/*-assembly-0.1-SNAPSHOT.jar os-address-lookup.jar
+  cp  $WORKSPACE/target/scala-2.10/*-assembly-${SBT_VERSION}.jar os-address-lookup.jar
   cd -
 )
 
