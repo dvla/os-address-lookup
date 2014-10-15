@@ -15,7 +15,7 @@ case class DPA(UPRN: String,
                dependentLocality: Option[String] = None,
                postTown: String,
                postCode: String,
-               RPC: String,
+               RPC: Option[String],
                xCoordinate: Float,
                yCoordinate: Float,
                status: String,
@@ -36,7 +36,7 @@ object DPA {
       (__ \ "DEPENDENT_LOCALITY").readNullable[String] and
       (__ \ "POST_TOWN").read[String] and
       (__ \ "POSTCODE").read[String] and
-      (__ \ "RPC").read[String] and
+      (__ \ "RPC").readNullable[String] and
       (__ \ "X_COORDINATE").read[Float] and
       (__ \ "Y_COORDINATE").read[Float] and
       (__ \ "STATUS").read[String] and

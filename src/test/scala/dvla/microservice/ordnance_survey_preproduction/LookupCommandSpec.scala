@@ -350,7 +350,7 @@ final class LookupCommandSpec extends UnitSpec with MockitoSugar {
           dependentLocality = dependentLocality,
           postTown = postTown,
           postCode = postCode,
-          RPC = emptyString,
+          RPC = None,
           xCoordinate = 0,
           yCoordinate = 0,
           status = emptyString,
