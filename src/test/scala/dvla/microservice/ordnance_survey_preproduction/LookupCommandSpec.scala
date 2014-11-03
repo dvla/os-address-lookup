@@ -220,10 +220,27 @@ final class LookupCommandSpec extends UnitSpec with MockitoSugar {
       }
     }
 
-    "return organisation name in the address when one exists" in {
+    "return without organisation name in the address when one exists but we don't specify whether to show it" in {
       val osResult = resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
-      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+      val result = service(PostcodeToAddressLookupRequest(postcode = postcodeValid))
+
+      whenReady(result) { r =>
+        r shouldBe PostcodeToAddressResponse(
+          Seq(
+            UprnAddressPair(
+              uprn = traderUprnValid.toString,
+              address = s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ"
+            )
+          )
+        )
+      }
+    }
+
+    "return organisation name in the address when one exists and we specify to show it" in {
+      val osResult = resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
+      val result = service(PostcodeToAddressLookupRequest(postcode = postcodeValid, showBusinessName = Some(true)))
 
       whenReady(result) { r =>
         r shouldBe PostcodeToAddressResponse(
@@ -231,6 +248,23 @@ final class LookupCommandSpec extends UnitSpec with MockitoSugar {
             UprnAddressPair(
               uprn = traderUprnValid.toString,
               address = s"DVLA, ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ"
+            )
+          )
+        )
+      }
+    }
+
+    "do not return organisation name in the address when one exists but we specify not to show it" in {
+      val osResult = resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
+      val result = service(PostcodeToAddressLookupRequest(postcode = postcodeValid, showBusinessName = Some(false)))
+
+      whenReady(result) { r =>
+        r shouldBe PostcodeToAddressResponse(
+          Seq(
+            UprnAddressPair(
+              uprn = traderUprnValid.toString,
+              address = s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ"
             )
           )
         )

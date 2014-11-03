@@ -19,7 +19,7 @@ class LookupCommand(configuration: Configuration,
   private final val Space = " "
   private final lazy val log = Logging(system, this.getClass)
 
-  private def addresses(postcode: String, resp: Option[Response]): Seq[UprnAddressPair] = {
+  private def addresses(postcode: String, resp: Option[Response], showBusinessName: Option[Boolean]): Seq[UprnAddressPair] = {
     val responseResults = resp.flatMap(_.results)
 
     responseResults match {
@@ -27,14 +27,14 @@ class LookupCommand(configuration: Configuration,
         val addresses = results.flatMap(_.DPA)
         log.info(s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
         val uprnAddressPairs = addresses map { address =>
-          val addressWithOrganisation = {
+          val addressAsString = {
             val addressSanitisedForVss = applyVssRules(address)
-            address.organisationName match {
-              case Some(organisationName) => organisationName + Separator + addressSanitisedForVss
-              case None => addressSanitisedForVss
+            (showBusinessName, address.organisationName) match {
+              case (Some(show), Some(organisationName)) if show => organisationName + Separator + addressSanitisedForVss
+              case _ => addressSanitisedForVss
             }
           }
-          UprnAddressPair(address.UPRN, addressWithOrganisation)
+          UprnAddressPair(address.UPRN, addressAsString)
         }
         uprnAddressPairs.sortBy(kvp => kvp.address) // Sort after translating to drop down format.
       case None =>
@@ -154,7 +154,7 @@ class LookupCommand(configuration: Configuration,
       Future(cannedPostcodeToAddressResponse)
     else
       callOrdnanceSurvey.call(request).map { resp =>
-        PostcodeToAddressResponse(addresses(request.postcode, resp))
+        PostcodeToAddressResponse(addresses(request.postcode, resp, request.showBusinessName))
       }.recover {
         case e: Throwable =>
           log.info(s"Ordnance Survey postcode lookup service error: ${e.toString}")
