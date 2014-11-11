@@ -70,9 +70,6 @@ fpm \
   -C workdir \
   -s dir .
 
-# Versioning, stage 1
-rm -rf $WORKSPACE/target2/*.rpm
-mkdir -p $WORKSPACE/target2
-cp $WORKSPACE/target/$RPM_NAME.rpm $WORKSPACE/target2/$RPM_NAME-$SBT_VERSION-$BUILD_NUMBER.rpm
-ln -s $WORKSPACE/target2/$RPM_NAME-$SBT_VERSION-$BUILD_NUMBER.rpm $WORKSPACE/target2/$RPM_NAME-latest.rpm
-ln -s $WORKSPACE/target2/$RPM_NAME-$SBT_VERSION-$BUILD_NUMBER.rpm $WORKSPACE/target2/$RPM_NAME-latest-$BRANCH_TO_BUILD.rpm
+ln -s $WORKSPACE/target/$RPM_NAME.rpm $WORKSPACE/target/$RPM_NAME-$SBT_VERSION-$RPM_VERSION.rpm
+ln -s $WORKSPACE/target/$RPM_NAME.rpm $WORKSPACE/target/$RPM_NAME-latest.rpm
+ln -s $WORKSPACE/target/$RPM_NAME.rpm $WORKSPACE/target/$RPM_NAME-latest-$BRANCH_TO_BUILD.rpm
