@@ -1,3 +1,4 @@
+import sbt.Scoped.Apply2
 import sbtassembly.Plugin._
 import AssemblyKeys._
 import de.johoop.jacoco4sbt._
