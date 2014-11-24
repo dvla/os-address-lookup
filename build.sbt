@@ -1,3 +1,4 @@
+import sbt.Scoped.Apply2
 import sbtassembly.Plugin._
 import AssemblyKeys._
 import de.johoop.jacoco4sbt._
@@ -7,7 +8,7 @@ organization := "dvla"
 
 name := "os-address-lookup"
 
-version := "0.5"
+version := "0.6-SNAPSHOT"
 
 scalaVersion := "2.10.3"
 
