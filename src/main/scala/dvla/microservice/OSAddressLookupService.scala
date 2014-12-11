@@ -53,7 +53,7 @@ trait OSAddressLookupService extends HttpService {
   }
 
   private def lookupPostcode(postcode: String, showBusinessName: Option[Boolean], languageCode: Option[String]): Route = {
-    val request = PostcodeToAddressLookupRequest(postcode = postcode, languageCode = languageCode)
+    val request = PostcodeToAddressLookupRequest(postcode = postcode, languageCode = languageCode, showBusinessName = showBusinessName)
     onComplete(command(request)) {
       case Success(resp) if resp.addresses.isEmpty => lookupPostcode(postcode, showBusinessName)
       case Success(resp) => complete(resp)
