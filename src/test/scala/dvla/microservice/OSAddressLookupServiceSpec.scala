@@ -125,7 +125,7 @@ final class OSAddressLookupServiceSpec extends RouteSpecBase {
   )
   private val fetchedAddressViewModel = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
   private val postcodeValidRequest = PostcodeToAddressLookupRequest(postcode = postcodeValid, showBusinessName = Some(false))
-  private val postcodeValidLanguageCyRequest = PostcodeToAddressLookupRequest(postcodeValid, languageCode = Some("cy"))
+  private val postcodeValidLanguageCyRequest = PostcodeToAddressLookupRequest(postcodeValid, languageCode = Some("cy"), showBusinessName = Some(false))
   private val uprnValidRequest = UprnToAddressLookupRequest(uprnValid)
   private val uprnValidLanguageCyRequest = UprnToAddressLookupRequest(uprnValid, languageCode = Some("cy"))
 }
