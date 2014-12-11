@@ -31,10 +31,11 @@ trait OSAddressLookupService extends HttpService {
       pathPrefix("postcode-to-address") {
         parameterMap { params =>
           val postcode: String = params.get("postcode").get
+          val showBusinessName: Option[Boolean] = Some(params.get("showBusinessName").exists(_.toBoolean))
           val languageCode: Option[String] = params.get("languageCode")
           languageCode match {
-            case Some(_) => lookupPostcode(postcode = postcode, languageCode = languageCode) // Language specified so search with filter and if no results then search unfiltered.
-            case None => lookupPostcode(postcode) // No language specified so go straight to unfiltered search.
+            case Some(_) => lookupPostcode(postcode = postcode, showBusinessName = showBusinessName, languageCode = languageCode) // Language specified so search with filter and if no results then search unfiltered.
+            case None => lookupPostcode(postcode, showBusinessName) // No language specified so go straight to unfiltered search.
           }
         }
       } ~
@@ -51,17 +52,17 @@ trait OSAddressLookupService extends HttpService {
     }
   }
 
-  private def lookupPostcode(postcode: String, languageCode: Option[String]): Route = {
+  private def lookupPostcode(postcode: String, showBusinessName: Option[Boolean], languageCode: Option[String]): Route = {
     val request = PostcodeToAddressLookupRequest(postcode = postcode, languageCode = languageCode)
     onComplete(command(request)) {
-      case Success(resp) if resp.addresses.isEmpty => lookupPostcode(postcode)
+      case Success(resp) if resp.addresses.isEmpty => lookupPostcode(postcode, showBusinessName)
       case Success(resp) => complete(resp)
       case Failure(_) => complete(ServiceUnavailable)
     }
   }
 
-  private def lookupPostcode(postcode: String): Route = {
-    val request = PostcodeToAddressLookupRequest(postcode = postcode)
+  private def lookupPostcode(postcode: String, showBusinessName: Option[Boolean]): Route = {
+    val request = PostcodeToAddressLookupRequest(postcode = postcode, showBusinessName = showBusinessName)
     onComplete(command(request)) {
       case Success(resp) => complete(resp)
       case Failure(_) => complete(ServiceUnavailable)
