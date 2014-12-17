@@ -26,17 +26,21 @@ class LookupCommand(configuration: Configuration,
       case Some(results) =>
         val addresses = results.flatMap(_.DPA)
         log.info(s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
-        val uprnAddressPairs = addresses map { address =>
+        // sort them before translating. otherwise if they have a business name the order will be different from
+        // the previous call.
+        val addrs = addresses.sortBy(r => r.address)
+        addrs map { address =>
           val addressAsString = {
             val addressSanitisedForVss = applyVssRules(address)
             (showBusinessName, address.organisationName) match {
-              case (Some(show), Some(organisationName)) if show => organisationName + Separator + addressSanitisedForVss
-              case _ => addressSanitisedForVss
+              case (Some(show), Some(organisationName)) if show =>
+                organisationName + Separator + addressSanitisedForVss
+              case _ =>
+                addressSanitisedForVss
             }
           }
           UprnAddressPair(address.UPRN, addressAsString)
         }
-        uprnAddressPairs.sortBy(kvp => kvp.address) // Sort after translating to drop down format.
       case None =>
         // Handle no results for this postcode.
         log.info(s"No results returned for postcode: ${LogFormats.anonymize(postcode)}")
