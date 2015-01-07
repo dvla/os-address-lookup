@@ -25,3 +25,9 @@ addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.1")
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.6.4")
 
 addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.1.4")
+
+// Resolver required to pick up DVLA sbt plugins that are published to bintray using ivy format
+resolvers += Resolver.url(
+  "dvla-sbt-plugin-releases",
+   url("https://dl.bintray.com/dvla/sbt-plugin-releases"))(
+       Resolver.ivyStylePatterns)
