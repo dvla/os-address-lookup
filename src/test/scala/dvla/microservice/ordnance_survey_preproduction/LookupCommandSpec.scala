@@ -1,6 +1,7 @@
 package dvla.microservice.ordnance_survey_preproduction
 
 import java.net.URI
+
 import akka.actor.ActorSystem
 import com.typesafe.config.{Config, ConfigFactory}
 import dvla.domain.address_lookup._
@@ -13,6 +14,7 @@ import org.mockito.Mockito._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.time.{Second, Span}
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -211,6 +213,23 @@ final class LookupCommandSpec extends UnitSpec with MockitoSugar {
       }
     }
 
+    "PO BOX 100, BUSINESS-NAME, POST-TOWN, SN10 4TE should return in the format P.O. BOX 100, POST-TOWN, POST-CODE" in {
+      val osResult = resultBuilder(
+        address = "PO BOX 100, BUSINESS-NAME, DEVIZES, POST-CODE",
+        organisationName = Some("BUSINESS-NAME"),
+        postTown = "POST-TOWN",
+        postCode = "POST-CODE",
+        poBoxNumber = Some("100")
+      )
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) { r =>
+        r.addresses.length should equal(osResult.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"P.O. BOX 100, POST-TOWN, POST-CODE")))
+      }
+    }
+
     "return canned data for the canned postcode" in {
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(emptyDPAandLPI))))
       val result = service(PostcodeToAddressLookupRequest(CannedPostcode))
@@ -383,13 +402,7 @@ final class LookupCommandSpec extends UnitSpec with MockitoSugar {
           dependentThoroughfareName = dependentThoroughfareName,
           dependentLocality = dependentLocality,
           postTown = postTown,
-          postCode = postCode//,
-//          RPC = None,
-//          xCoordinate = 0,
-//          yCoordinate = 0,
-//          status = emptyString,
-//          matchScore = 0,
-//          matchDescription = emptyString
+          postCode = postCode
         )
       ),
       LPI = None)

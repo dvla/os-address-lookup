@@ -71,10 +71,12 @@ class LookupCommand(configuration: Configuration,
   }
 
   //rule methods will build and return three strings for address line1, line2 and line3
-  private def rule1(address: DPA): String =
-    lineBuild(Seq(address.poBoxNumber)) +
+  private def rule1(address: DPA): String = {
+    val poBox = address.poBoxNumber.map(number => s"P.O. BOX $number")
+    lineBuild(Seq(poBox)) +
       lineBuild(Seq(address.thoroughfareName)) +
       lineBuild(Seq(address.dependentLocality))
+  }
 
   private def rule2(address: DPA): String =
     lineBuild(Seq(address.buildingName)) +
