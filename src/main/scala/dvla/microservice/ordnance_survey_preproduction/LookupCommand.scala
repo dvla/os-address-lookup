@@ -67,7 +67,7 @@ class LookupCommand(configuration: Configuration,
         case (_, _, _, _, _, _, None) => rule5(address)
         case _ => rule6(address)
       }
-    addressLines + address.postTown + Separator + address.postCode
+    addressLines + buildPostTown(address.postTown) + Separator + address.postCode
   }
 
   //rule methods will build and return three strings for address line1, line2 and line3
@@ -132,6 +132,17 @@ class LookupCommand(configuration: Configuration,
       case Some(item) => accumulatedLine + item + lastChar
       case _ => if (currentAddressLine + lastChar == lastChar) Nothing
       else currentAddressLine + lastChar
+    }
+  }
+
+  private def buildPostTown (rawPostTown: String) = {
+    val postTownMappings = Map("Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch" -> "Llanfairpwllgwyngyll",
+                               "Letchworth Garden City" -> "Letchworth",
+                               "Appleby in Westmorland"-> "Appleby")
+
+    postTownMappings.get(rawPostTown) match {
+      case Some(postTown) => postTown
+      case _ => rawPostTown.take(20)
     }
   }
 
