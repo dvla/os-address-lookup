@@ -136,11 +136,11 @@ class LookupCommand(configuration: Configuration,
   }
 
   private def buildPostTown (rawPostTown: String) = {
-    val postTownMappings = Map("Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch" -> "Llanfairpwllgwyngyll",
-                               "Letchworth Garden City" -> "Letchworth",
-                               "Appleby in Westmorland"-> "Appleby")
+    val postTownMappings = Map("LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH" -> "LLANFAIRPWLLGWYNGYLL",
+                               "LETCHWORTH GARDEN CITY" -> "LETCHWORTH",
+                               "APPLEBY IN WESTMORLAND"-> "APPLEBY")
 
-    postTownMappings.get(rawPostTown) match {
+    postTownMappings.get(rawPostTown.toUpperCase()) match {
       case Some(postTown) => postTown
       case _ => rawPostTown.take(20)
     }

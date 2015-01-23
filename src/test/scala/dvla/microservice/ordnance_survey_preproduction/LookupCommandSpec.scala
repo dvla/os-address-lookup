@@ -230,25 +230,25 @@ final class LookupCommandSpec extends UnitSpec with MockitoSugar {
       }
     }
 
-    "1, ANOTHER ROAD, Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch, QQ9 9QQ should return post town in the format Llanfairpwllgwyngyll" in {
-      val osResult = resultBuilder(buildingNumber = Some("1"), thoroughfareName = Some("ANOTHER ROAD"), postTown = "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch", postCode = "QQ9 9QQ")
+    "1, ANOTHER ROAD, LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH, QQ9 9QQ should return post town in the format LLANFAIRPWLLGWYNGYLL" in {
+      val osResult = resultBuilder(buildingNumber = Some("1"), thoroughfareName = Some("ANOTHER ROAD"), postTown = "LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH", postCode = "QQ9 9QQ")
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, Llanfairpwllgwyngyll, QQ9 9QQ")))
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, LLANFAIRPWLLGWYNGYLL, QQ9 9QQ")))
       }
     }
 
-    "1, ANOTHER ROAD, Letchworth Garden City, QQ9 9QQ should return post town in the format Letchworth" in {
-      val osResult = resultBuilder(buildingNumber = Some("1"), thoroughfareName = Some("ANOTHER ROAD"), postTown = "Letchworth Garden City", postCode = "QQ9 9QQ")
+    "1, ANOTHER ROAD, LETCHWORTH GARDEN CITY, QQ9 9QQ should return post town in the format LETCHWORTH" in {
+      val osResult = resultBuilder(buildingNumber = Some("1"), thoroughfareName = Some("ANOTHER ROAD"), postTown = "LETCHWORTH GARDEN CITY", postCode = "QQ9 9QQ")
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, Letchworth, QQ9 9QQ")))
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, LETCHWORTH, QQ9 9QQ")))
       }
     }
 
