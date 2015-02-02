@@ -12,19 +12,29 @@ Running the application
     sbt run
 
 Usage
------
-To get all addresses in a postcode:
+=====
 
-    `curl http://localhost:8083/postcode-to-address?postcode=`
+Get all addresses in a postcode
+-------------------------------
 
-followed by a real postcode without spaces.
+To see the raw json returned by the ordnance-survey service, go to this url with a web browser:
 
-To get one address for a UPRN:
+    https://api.ordnancesurvey.co.uk/places/v1/addresses/postcode?postcode=<INSERT POSTCODE WITHOUT SPACES>&dataset=dpa&key=<INSERT API KEY>
 
-    curl http://localhost:8083/uprn-to-address?uprn=
+To see how this micro-service will re-format that json to a view model, you can send a curl command the micro-service:
 
-followed by a UPRN.
+    curl http://localhost:8083/postcode-to-address?postcode=<INSERT POSTCODE WITHOUT SPACES>
 
+Get one address for a UPRN
+--------------------------
+
+To see the raw json returned by the ordnance-survey service, go to this url with a web browser:
+
+    https://api.ordnancesurvey.co.uk/places/v1/addresses/uprn?uprn=<INSERT UPRN>&dataset=dpa&key=<INSERT API KEY>
+
+To see how this micro-service will re-format that json to a view model, you can send a curl command the micro-service:
+
+    curl http://localhost:8083/uprn-to-address?uprn=<INSERT UPRN>
 
 [microservices]: http://martinfowler.com/articles/microservices.html "Microservices"
 [ordnance-survey]: www.ordnancesurvey.co.uk "Ordnance Survey"
