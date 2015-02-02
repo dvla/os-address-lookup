@@ -11,6 +11,13 @@ Running the application
     cd ordnance-survey
     sbt run
 
+Usage
+-----
+
+    curl http://localhost:8083/postcode-to-address?postcode=
+followed by a real postcode without spaces.
+
+
 [microservices]: http://martinfowler.com/articles/microservices.html "Microservices"
 [ordnance-survey]: www.ordnancesurvey.co.uk "Ordnance Survey"
 [scala]: http://www.scala-lang.org/ "Scala Language"
