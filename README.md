@@ -13,9 +13,17 @@ Running the application
 
 Usage
 -----
+To get all addresses in a postcode:
 
-    curl http://localhost:8083/postcode-to-address?postcode=
+    `curl http://localhost:8083/postcode-to-address?postcode=`
+
 followed by a real postcode without spaces.
+
+To get one address for a UPRN:
+
+    curl http://localhost:8083/uprn-to-address?uprn=
+
+followed by a UPRN.
 
 
 [microservices]: http://martinfowler.com/articles/microservices.html "Microservices"
