@@ -3,10 +3,10 @@ package dvla.microservice.ordnance_survey_preproduction
 import dvla.domain.address_lookup.{PostcodeToAddressLookupRequest, UprnToAddressLookupRequest}
 import dvla.domain.ordnance_survey_preproduction.Response
 import spray.client.pipelining._
-import spray.http.{HttpResponse, StatusCodes}
-import spray.httpx.unmarshalling.FromResponseUnmarshaller
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import spray.http.{HttpResponse, StatusCodes}
+import spray.httpx.unmarshalling.FromResponseUnmarshaller
 
 trait CallOrdnanceSurvey {
 

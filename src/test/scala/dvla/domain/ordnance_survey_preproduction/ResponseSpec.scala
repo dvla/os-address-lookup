@@ -1,11 +1,11 @@
 package dvla.domain.ordnance_survey_preproduction
 
-import scala.io.Source
+import dvla.helpers.UnitSpec
 import java.net.URI
 import play.api.libs.json._
-import dvla.helpers.UnitSpec
+import scala.io.Source
 
-final class ResponseSpec extends UnitSpec {
+class ResponseSpec extends UnitSpec {
 
   "Response Parser loading json for ec1a 4jq" should {
     "populate the header given json with header but 0 results" in {

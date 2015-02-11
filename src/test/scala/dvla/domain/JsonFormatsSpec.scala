@@ -7,7 +7,7 @@ import dvla.domain.address_lookup._
 import dvla.domain.address_lookup.UprnAddressPair
 import dvla.domain.address_lookup.PostcodeToAddressResponse
 
-final class JsonFormatsSpec extends WordSpec with Matchers {
+class JsonFormatsSpec extends WordSpec with Matchers {
 
   "JsonFormats" should {
     "successfully unmarshall ordnance_survey valid json postcode to address lookup response payload into ordnance_survey response object" in {

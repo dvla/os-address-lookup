@@ -4,7 +4,7 @@ import dvla.domain.address_lookup._
 import dvla.helpers.UnitSpec
 import dvla.microservice.Configuration
 
-final class UprnUrlBuilderSpec extends UnitSpec {
+class UprnUrlBuilderSpec extends UnitSpec {
   "endPoint" should {
     "not specify language when none provided on the request" in {
       val request = UprnToAddressLookupRequest(uprn = uprn)

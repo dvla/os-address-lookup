@@ -3,10 +3,10 @@ package dvla.microservice
 import akka.event.LoggingAdapter
 import dvla.common.microservice.SprayHttpService
 import dvla.domain.address_lookup.{PostcodeToAddressLookupRequest, UprnToAddressLookupRequest}
+import dvla.domain.JsonFormats._
 import spray.http.StatusCodes.ServiceUnavailable
 import spray.routing.HttpService
 import spray.routing.Route
-import dvla.domain.JsonFormats._
 
 import scala.util.{Failure, Success}
 

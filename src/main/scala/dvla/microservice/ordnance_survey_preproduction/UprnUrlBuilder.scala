@@ -1,7 +1,7 @@
 package dvla.microservice.ordnance_survey_preproduction
 
-import dvla.microservice.Configuration
 import dvla.domain.address_lookup.UprnToAddressLookupRequest
+import dvla.microservice.Configuration
 
 final class UprnUrlBuilder(val configuration: Configuration){
   private val apiKey = configuration.apiKey

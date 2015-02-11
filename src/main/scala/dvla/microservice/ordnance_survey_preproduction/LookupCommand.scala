@@ -3,9 +3,17 @@ package dvla.microservice.ordnance_survey_preproduction
 import akka.actor.ActorSystem
 import akka.event.Logging
 import dvla.common.LogFormats
-import dvla.domain.address_lookup.{AddressViewModel, PostcodeToAddressLookupRequest, PostcodeToAddressResponse, UprnAddressPair, UprnToAddressLookupRequest, UprnToAddressResponse}
+import dvla.domain.address_lookup.AddressViewModel
+import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
+import dvla.domain.address_lookup.PostcodeToAddressResponse
+import dvla.domain.address_lookup.UprnAddressPair
+import dvla.domain.address_lookup.UprnToAddressLookupRequest
+import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.ordnance_survey_preproduction.{DPA, Response}
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.{CannedPostcode, CannedUprn, cannedPostcodeToAddressResponse, cannedUprnToAddressResponse}
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.CannedPostcode
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedPostcodeToAddressResponse
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.CannedUprn
+import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedUprnToAddressResponse
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
@@ -135,18 +143,11 @@ class LookupCommand(configuration: Configuration,
     }
   }
 
-  private def buildPostTown (rawPostTown: String) = {
-    val postTownMappings = Map("LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH" -> "LLANFAIRPWLLGWYNGYLL",
-                               "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch" -> "Llanfairpwllgwyngyll",
-                               "LETCHWORTH GARDEN CITY" -> "LETCHWORTH",
-                                "Letchworth Garden City" -> "Letchworth",
-                               "APPLEBY IN WESTMORLAND" -> "APPLEBY",
-                               "Appleby in Westmorland" -> "Appleby")
-
-    postTownMappings.get(rawPostTown) match {
-      case Some(postTown) => postTown
-      case _ => rawPostTown.take(20)
-    }
+  private def buildPostTown (rawPostTown: String): String = {
+    val postTownAbbreviations = Map("LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH" -> "LLANFAIRPWLLGWYNGYLL", // LL61 5UJ
+                               "LETCHWORTH GARDEN CITY" -> "LETCHWORTH", // SG6 1FT
+                               "APPLEBY-IN-WESTMORLAND" -> "APPLEBY") // CA16 6EJ
+    postTownAbbreviations.getOrElse(rawPostTown.toUpperCase, rawPostTown.take(20))
   }
 
   private def address(uprn: Long, resp: Option[Response]): Option[AddressViewModel] = {
