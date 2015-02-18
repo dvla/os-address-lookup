@@ -1,15 +1,15 @@
 package dvla.microservice
 
 import dvla.domain.JsonFormats._
-import spray.http.StatusCodes._
 import dvla.domain.address_lookup._
-import org.mockito.Mockito._
-import dvla.domain.address_lookup.PostcodeToAddressResponse
 import dvla.domain.address_lookup.AddressViewModel
+import dvla.domain.address_lookup.PostcodeToAddressResponse
 import dvla.domain.address_lookup.UprnToAddressResponse
+import org.mockito.Mockito._
 import scala.concurrent.Future
+import spray.http.StatusCodes._
 
-final class OSAddressLookupServiceSpec extends RouteSpecBase {
+class OSAddressLookupServiceSpec extends RouteSpecBase {
   "The postcode to address lookup service" should {
     "return ordnance_survey successful response containing ordnance_survey model for ordnance_survey valid postcode to address lookup request" in {
       val postcodeToAddressResponse = PostcodeToAddressResponse(fetchedAddressesSeq)

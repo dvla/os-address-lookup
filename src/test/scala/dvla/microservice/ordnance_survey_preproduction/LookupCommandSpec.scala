@@ -1,7 +1,5 @@
 package dvla.microservice.ordnance_survey_preproduction
 
-import java.net.URI
-
 import akka.actor.ActorSystem
 import com.typesafe.config.{Config, ConfigFactory}
 import dvla.domain.address_lookup._
@@ -9,16 +7,16 @@ import dvla.domain.ordnance_survey_preproduction.{DPA, Header, Response, Result}
 import dvla.helpers.UnitSpec
 import dvla.microservice.ordnance_survey_preproduction.LookupCommand._
 import dvla.microservice.{AddressLookupCommand, Configuration}
+import java.net.URI
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.time.{Second, Span}
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-final class LookupCommandSpec extends UnitSpec with MockitoSugar {
+class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
   "call PostcodeToAddressResponse" should {
 
@@ -231,7 +229,11 @@ final class LookupCommandSpec extends UnitSpec with MockitoSugar {
     }
 
     "1, ANOTHER ROAD, LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH, QQ9 9QQ should return post town in the format LLANFAIRPWLLGWYNGYLL" in {
-      val osResult = resultBuilder(buildingNumber = Some("1"), thoroughfareName = Some("ANOTHER ROAD"), postTown = "LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH", postCode = "QQ9 9QQ")
+      val osResult = resultBuilder(buildingNumber = Some("1"),
+        thoroughfareName = Some("ANOTHER ROAD"),
+        postTown = "LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH",
+        postCode = "QQ9 9QQ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
@@ -242,7 +244,11 @@ final class LookupCommandSpec extends UnitSpec with MockitoSugar {
     }
 
     "1, ANOTHER ROAD, LETCHWORTH GARDEN CITY, QQ9 9QQ should return post town in the format LETCHWORTH" in {
-      val osResult = resultBuilder(buildingNumber = Some("1"), thoroughfareName = Some("ANOTHER ROAD"), postTown = "LETCHWORTH GARDEN CITY", postCode = "QQ9 9QQ")
+      val osResult = resultBuilder(buildingNumber = Some("1"),
+        thoroughfareName = Some("ANOTHER ROAD"),
+        postTown = "LETCHWORTH GARDEN CITY",
+        postCode = "QQ9 9QQ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
@@ -252,14 +258,33 @@ final class LookupCommandSpec extends UnitSpec with MockitoSugar {
       }
     }
 
-    "1, ANOTHER ROAD, Post town name is far too long, QQ9 9QQ should return post town in the format Post town name is fa" in {
-      val osResult = resultBuilder(buildingNumber = Some("1"), thoroughfareName = Some("ANOTHER ROAD"), postTown = "Post town name is far too long", postCode = "QQ9 9QQ")
+    "1, ANOTHER ROAD, POST TOWN NAME IS FAR TOO LONG, QQ9 9QQ should return post town abbreviated to the first 20 characters" in {
+      val osResult = resultBuilder(buildingNumber = Some("1"),
+        thoroughfareName = Some("ANOTHER ROAD"),
+        postTown = "POST TOWN NAME IS FAR TOO LONG",
+        postCode = "QQ9 9QQ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, Post town name is fa, QQ9 9QQ")))
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, POST TOWN NAME IS FA, QQ9 9QQ")))
+      }
+    }
+
+    "1, ANOTHER ROAD, APPLEBY-IN-WESTMORLAND should return post town in the format APPLEBY" in {
+      val osResult = resultBuilder(buildingNumber = Some("1"),
+        thoroughfareName = Some("ANOTHER ROAD"),
+        postTown = "APPLEBY-IN-WESTMORLAND",
+        postCode = "QQ9 9QQ"
+      )
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) { r =>
+        r.addresses.length should equal(osResult.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, APPLEBY, QQ9 9QQ")))
       }
     }
 

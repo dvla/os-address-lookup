@@ -4,7 +4,7 @@ import dvla.domain.address_lookup._
 import dvla.helpers.UnitSpec
 import dvla.microservice.Configuration
 
-final class PostcodeUrlBuilderSpec extends UnitSpec {
+class PostcodeUrlBuilderSpec extends UnitSpec {
   "endPoint" should {
     "not specify language filter when none provided on the request" in {
       val request = PostcodeToAddressLookupRequest(postcode = postcode)

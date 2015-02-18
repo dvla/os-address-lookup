@@ -2,7 +2,7 @@ package dvla.domain.address_lookup
 
 import dvla.helpers.UnitSpec
 
-final class AddressViewModelSpec extends UnitSpec {
+class AddressViewModelSpec extends UnitSpec {
 
   "AddressViewModel - model" should {
     "handle ordnance_survey uprn of the correct size" in {

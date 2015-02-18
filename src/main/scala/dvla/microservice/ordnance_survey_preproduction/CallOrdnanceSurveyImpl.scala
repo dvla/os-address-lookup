@@ -4,10 +4,10 @@ import akka.actor.ActorSystem
 import dvla.domain.address_lookup.{PostcodeToAddressLookupRequest, UprnToAddressLookupRequest}
 import dvla.domain.ordnance_survey_preproduction.Response
 import spray.client.pipelining.{Get, sendReceive, _}
-import spray.http.HttpRequest
-import spray.httpx.PlayJsonSupport._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import spray.http.HttpRequest
+import spray.httpx.PlayJsonSupport._
 
 class CallOrdnanceSurveyImpl(postcodeUrlBuilder: PostcodeUrlBuilder, uprnUrlBuilder: UprnUrlBuilder)(implicit system: ActorSystem) extends CallOrdnanceSurvey {
 
