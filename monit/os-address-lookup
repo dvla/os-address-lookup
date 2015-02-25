@@ -1,6 +1,0 @@
-check process os-address-lookup
-  matching os-address-lookup
-  start program = "/sbin/start os-address-lookup"
-  stop program = "/sbin/stop os-address-lookup"
-  if failed host 127.0.0.1 port 8083 then restart
-

@@ -4,5 +4,5 @@ export JAVA_OPTS="-Dspecs2.color=false -Dsbt.log.format=true -Dsbt.log.noformat=
 sbt -Dsbt.log.noformat=true clean test assembly publish &&
 
 rm -rf target/*.rpm &&
-./jenkins_job_make_rpm
+./rpm-build/jenkins_job_make_rpm
 
