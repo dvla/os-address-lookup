@@ -8,7 +8,7 @@ organization := "dvla"
 
 name := "os-address-lookup"
 
-version := "0.11"
+version := "0.12-SNAPSHOT"
 
 scalaVersion := "2.10.3"
 
@@ -31,7 +31,7 @@ libraryDependencies ++= {
   val akkaV = "2.3.3"
   val sprayV = "1.3.1"
   Seq(
-    "dvla" % "vehicles-services-common_2.10" % "0.9",
+    "dvla" % "vehicles-services-common_2.10" % "0.10-SNAPSHOT",
     "io.spray" % "spray-can" % sprayV,
     "io.spray" % "spray-client" % sprayV,
     "io.spray" % "spray-caching" % sprayV,
