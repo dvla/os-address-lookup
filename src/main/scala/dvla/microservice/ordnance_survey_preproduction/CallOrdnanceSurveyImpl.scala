@@ -15,7 +15,6 @@ class CallOrdnanceSurveyImpl(postcodeUrlBuilder: PostcodeUrlBuilder, uprnUrlBuil
   def call(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
     val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
     val endPoint = postcodeUrlBuilder.endPoint(request)
-
     pipeline {
       Get(endPoint)
     }
@@ -25,7 +24,6 @@ class CallOrdnanceSurveyImpl(postcodeUrlBuilder: PostcodeUrlBuilder, uprnUrlBuil
   def call(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
     val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
     val endPoint = uprnUrlBuilder.endPoint(request)
-
     pipeline {
       Get(endPoint)
     }

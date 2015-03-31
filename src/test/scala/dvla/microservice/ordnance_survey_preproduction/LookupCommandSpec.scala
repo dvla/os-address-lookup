@@ -5,7 +5,6 @@ import com.typesafe.config.{Config, ConfigFactory}
 import dvla.domain.address_lookup._
 import dvla.domain.ordnance_survey_preproduction.{DPA, Header, Response, Result}
 import dvla.helpers.UnitSpec
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand._
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import java.net.URI
 import org.mockito.Matchers._
@@ -288,15 +287,6 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       }
     }
 
-    "return canned data for the canned postcode" in {
-      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(emptyDPAandLPI))))
-      val result = service(PostcodeToAddressLookupRequest(CannedPostcode))
-
-      whenReady(result) { r =>
-        r should equal(cannedPostcodeToAddressResponse)
-      }
-    }
-
     "return without organisation name in the address when one exists but we don't specify whether to show it" in {
       val osResult = resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
@@ -385,15 +375,6 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
       whenReady(result) { r =>
         r.addressViewModel should be(None)
-      }
-    }
-
-    "return canned data for the canned uprn" in {
-      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(emptyDPAandLPI))))
-      val result = service(UprnToAddressLookupRequest(CannedUprn))
-
-      whenReady(result) { r =>
-        r should equal(cannedUprnToAddressResponse)
       }
     }
 

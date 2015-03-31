@@ -10,10 +10,6 @@ import dvla.domain.address_lookup.UprnAddressPair
 import dvla.domain.address_lookup.UprnToAddressLookupRequest
 import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.ordnance_survey_preproduction.{DPA, Response}
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.CannedPostcode
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedPostcodeToAddressResponse
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.CannedUprn
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand.cannedUprnToAddressResponse
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
@@ -171,9 +167,6 @@ class LookupCommand(configuration: Configuration,
   override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
     log.info(s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
-    if (request.postcode == CannedPostcode)
-      Future(cannedPostcodeToAddressResponse)
-    else
       callOrdnanceSurvey.call(request).map { resp =>
         PostcodeToAddressResponse(addresses(request.postcode, resp, request.showBusinessName))
       }.recover {
@@ -186,9 +179,6 @@ class LookupCommand(configuration: Configuration,
   override def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
     log.info(s"Dealing with the post request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
 
-    if (request.uprn == CannedUprn)
-      Future(cannedUprnToAddressResponse)
-    else
       callOrdnanceSurvey.call(request).map { resp =>
         UprnToAddressResponse(address(request.uprn, resp))
       }.recover {
@@ -197,19 +187,4 @@ class LookupCommand(configuration: Configuration,
           UprnToAddressResponse(None)
       }
   }
-}
-
-object LookupCommand {
-
-  // Must be in a valid format yet not exist.
-  private[ordnance_survey_preproduction] final val CannedPostcode = "QQ99QQ"
-  private[ordnance_survey_preproduction] final val CannedAddress = "Not real street, Not real town, QQ9 9QQ"
-  private[ordnance_survey_preproduction] final val CannedUprn = 999999999999L
-  private[ordnance_survey_preproduction] val cannedPostcodeToAddressResponse =
-    PostcodeToAddressResponse(addresses = Seq(UprnAddressPair(CannedUprn.toString, CannedAddress)))
-  private[ordnance_survey_preproduction] val cannedUprnToAddressResponse =
-    UprnToAddressResponse(Some(AddressViewModel(
-      uprn = Some(CannedUprn),
-      address = Seq("Not real street", "Not real town", CannedPostcode)
-    )))
 }
