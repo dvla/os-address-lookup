@@ -88,33 +88,33 @@ class LookupCommand(configuration: Configuration,
 
   private def rule2(address: DPA): String =
     lineBuild(Seq(address.buildingName)) +
-      dependentThoroughfareNameNotBlank(address) +
+      lineBuild(Seq(dependentThoroughfareNameNotBlank(address))) +
       lineBuild(Seq(address.thoroughfareName))
 
-  private def dependentThoroughfareNameNotBlank(address: DPA): String =
+  private def dependentThoroughfareNameNotBlank(address: DPA): Option[String] =
     address.dependentThoroughfareName match {
-      case Some(dependentThoroughfareName) if (!dependentThoroughfareName.trim.isEmpty) => lineBuild(Seq(address.dependentThoroughfareName))
-      case _ => ""
+      case Some(dependentThoroughfareName) if !dependentThoroughfareName.trim.isEmpty => Some(dependentThoroughfareName)
+      case _ => None
     }
 
   private def rule3(address: DPA): String =
-    lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName)) +
+    lineBuild(Seq(address.buildingNumber, dependentThoroughfareNameNotBlank(address))) +
       lineBuild(Seq(address.thoroughfareName)) +
       lineBuild(Seq(address.dependentLocality))
 
   private def rule4(address: DPA): String =
-    lineBuild(Seq(address.buildingName, address.dependentThoroughfareName)) +
+    lineBuild(Seq(address.buildingName, dependentThoroughfareNameNotBlank(address))) +
       lineBuild(Seq(address.thoroughfareName)) +
       lineBuild(Seq(address.dependentLocality))
 
   private def rule5(address: DPA): String =
     lineBuild(Seq(address.subBuildingName, address.buildingName)) +
-      lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName)) +
+      lineBuild(Seq(address.buildingNumber, dependentThoroughfareNameNotBlank(address))) +
       lineBuild(Seq(address.thoroughfareName))
 
   private def rule6(address: DPA): String =
     lineBuild(Seq(address.subBuildingName, address.buildingName)) +
-      lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName, address.thoroughfareName)) +
+      lineBuild(Seq(address.buildingNumber, dependentThoroughfareNameNotBlank(address), address.thoroughfareName)) +
       lineBuild(Seq(address.dependentLocality))
 
   private def rule7(address: DPA): String =
@@ -151,8 +151,8 @@ class LookupCommand(configuration: Configuration,
 
   private def buildPostTown (rawPostTown: String): String = {
     val postTownAbbreviations = Map("LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH" -> "LLANFAIRPWLLGWYNGYLL", // LL61 5UJ
-                               "LETCHWORTH GARDEN CITY" -> "LETCHWORTH", // SG6 1FT
-                               "APPLEBY-IN-WESTMORLAND" -> "APPLEBY") // CA16 6EJ
+      "LETCHWORTH GARDEN CITY" -> "LETCHWORTH", // SG6 1FT
+      "APPLEBY-IN-WESTMORLAND" -> "APPLEBY") // CA16 6EJ
     postTownAbbreviations.getOrElse(rawPostTown.toUpperCase, rawPostTown.take(20))
   }
 
