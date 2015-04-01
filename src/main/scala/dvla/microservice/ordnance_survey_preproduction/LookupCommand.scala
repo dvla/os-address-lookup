@@ -88,8 +88,14 @@ class LookupCommand(configuration: Configuration,
 
   private def rule2(address: DPA): String =
     lineBuild(Seq(address.buildingName)) +
-      lineBuild(Seq(address.dependentThoroughfareName)) +
+      dependentThoroughfareNameNotBlank(address) +
       lineBuild(Seq(address.thoroughfareName))
+
+  private def dependentThoroughfareNameNotBlank(address: DPA): String =
+    address.dependentThoroughfareName match {
+      case Some(dependentThoroughfareName) => lineBuild(Seq(address.dependentThoroughfareName))
+      case _ => ""
+    }
 
   private def rule3(address: DPA): String =
     lineBuild(Seq(address.buildingNumber, address.dependentThoroughfareName)) +
