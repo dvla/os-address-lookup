@@ -8,7 +8,7 @@ organization := "dvla"
 
 name := "os-address-lookup"
 
-version := "0.12"
+version := "0.13-SNAPSHOT"
 
 scalaVersion := "2.10.3"
 
