@@ -288,8 +288,8 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       }
     }
 
-    "J K C SPECIALIST CARS LTD, 1-9, MILLBURN ROAD, COLERAINE, BT52 1QS should return in the format J K C SPECIALIST CARS LTD, 1-9, MILLBURN ROAD, COLERAINE, BT52 1QS" in {
-      val osResult = resultBuilder(buildingName = Some("1-9"), organisationName = Some("J K C SPECIALIST CARS LTD"), thoroughfareName = Some("MILLBURN ROAD"), postTown = "COLERAINE", postCode = "BT52 1QS")
+    "J K C SPECIALIST CARS LTD, 1-9, , MILLBURN ROAD, COLERAINE, BT52 1QS should return in the format J K C SPECIALIST CARS LTD, 1-9, MILLBURN ROAD, COLERAINE, BT52 1QS" in {
+      val osResult = resultBuilder(buildingName = Some("1-9"), dependentThoroughfareName = Some(" "), organisationName = Some("J K C SPECIALIST CARS LTD"), thoroughfareName = Some("MILLBURN ROAD"), postTown = "COLERAINE", postCode = "BT52 1QS")
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid, showBusinessName = Some(true)))
 

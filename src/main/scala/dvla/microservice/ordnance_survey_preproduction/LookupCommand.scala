@@ -93,7 +93,7 @@ class LookupCommand(configuration: Configuration,
 
   private def dependentThoroughfareNameNotBlank(address: DPA): String =
     address.dependentThoroughfareName match {
-      case Some(dependentThoroughfareName) => lineBuild(Seq(address.dependentThoroughfareName))
+      case Some(dependentThoroughfareName) if (!dependentThoroughfareName.trim.isEmpty) => lineBuild(Seq(address.dependentThoroughfareName))
       case _ => ""
     }
 
