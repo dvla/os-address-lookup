@@ -5,7 +5,6 @@ import com.typesafe.config.{Config, ConfigFactory}
 import dvla.domain.address_lookup._
 import dvla.domain.ordnance_survey_preproduction.{DPA, Header, Response, Result}
 import dvla.helpers.UnitSpec
-import dvla.microservice.ordnance_survey_preproduction.LookupCommand._
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import java.net.URI
 import org.mockito.Matchers._
@@ -293,19 +292,9 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid, showBusinessName = Some(true)))
 
-
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"J K C SPECIALIST CARS LTD, 1-9, MILLBURN ROAD, COLERAINE, BT52 1QS")))
-      }
-    }
-
-    "return canned data for the canned postcode" in {
-      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(emptyDPAandLPI))))
-      val result = service(PostcodeToAddressLookupRequest(CannedPostcode))
-
-      whenReady(result) { r =>
-        r should equal(cannedPostcodeToAddressResponse)
       }
     }
 
@@ -397,15 +386,6 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
       whenReady(result) { r =>
         r.addressViewModel should be(None)
-      }
-    }
-
-    "return canned data for the canned uprn" in {
-      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(emptyDPAandLPI))))
-      val result = service(UprnToAddressLookupRequest(CannedUprn))
-
-      whenReady(result) { r =>
-        r should equal(cannedUprnToAddressResponse)
       }
     }
 
