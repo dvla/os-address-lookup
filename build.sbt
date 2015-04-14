@@ -5,16 +5,12 @@ import de.johoop.jacoco4sbt._
 import JacocoPlugin._
 
 organization := "dvla"
-
 name := "os-address-lookup"
-
 version := "0.13-SNAPSHOT"
-
 scalaVersion := "2.10.3"
+scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 val nexus = "http://rep002-01.skyscape.preview-dvla.co.uk:8081/nexus/content/repositories"
-
-scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 resolvers ++= Seq(
   "typesafe repo" at "http://repo.typesafe.com/typesafe/releases",
