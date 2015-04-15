@@ -15,9 +15,9 @@ resolvers += "Maven 2" at "http://repo2.maven.org/maven2"
 
 resolvers += "Sonatype Repository" at "https://oss.sonatype.org/content/groups/public"
 
-addSbtPlugin("dvla" % "build-details-generator" % "1.3.1")
+addSbtPlugin("dvla" % "build-details-generator" % "1.3.2-SNAPSHOT")
 
-addSbtPlugin("dvla" % "microservices-sandbox" % "1.3.4")
+addSbtPlugin("dvla" % "microservices-sandbox" % "1.3.5-SNAPSHOT")
 
 // TODO: Do we still need this? Is anybody still using the plugin, rather than importing sbts directly in IDEA?
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.5.1")
