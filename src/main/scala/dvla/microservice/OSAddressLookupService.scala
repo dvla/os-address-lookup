@@ -48,6 +48,11 @@ trait OSAddressLookupService extends HttpService {
             case None => lookupUprn(uprn)
           }
         }
+      } ~
+      pathPrefix("addresses") {
+        parameterMap { params =>
+          addresses(params.get("postcode").get, params.get("languageCode"))
+        }
       }
     }
   }
@@ -66,6 +71,20 @@ trait OSAddressLookupService extends HttpService {
     onComplete(command(request)) {
       case Success(resp) => complete(resp)
       case Failure(_) => complete(ServiceUnavailable)
+    }
+  }
+
+  // This is the only method that needs to stay in. The rest are legacy
+  private def addresses(postcode: String, languageCode: Option[String]): Route = {
+    val request = PostcodeToAddressLookupRequest(postcode, languageCode, showBusinessName= Some(true))
+    val result = command.applyDetailedResult(request)
+    onComplete(result) {
+      case Success(resp)
+        if resp.addresses.isEmpty && languageCode.isDefined => addresses(postcode, None)
+      case Success(resp) =>
+        complete(resp)
+      case Failure(_) =>
+        complete(ServiceUnavailable)
     }
   }
 

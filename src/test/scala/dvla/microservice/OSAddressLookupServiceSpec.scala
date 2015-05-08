@@ -10,6 +10,81 @@ import scala.concurrent.Future
 import spray.http.StatusCodes._
 
 class OSAddressLookupServiceSpec extends RouteSpecBase {
+  "Lookup address by postcode and return json" should {
+    val fetchedAddressesSeq = Seq(
+      AddressDTO(
+        addressLine = "Business Name 1, address line 1, address line 2, address line 3, London, QQ99QQ",
+        businessName = "Business Name 1",
+        streetAddress1 = "address line 1",
+        streetAddress2 = Some("address line 2"),
+        streetAddress3 = Some("address line 3"),
+        postTown = "London",
+        postCode = "QQ99QQ"
+      ),
+      AddressDTO(
+        addressLine = "Business Name 2, address line 1, address line 2, address line 3, Swansea, QQ10QQ",
+        businessName = "Business Name 2",
+        streetAddress1 = "address line 1",
+        streetAddress2 = Some("address line 2"),
+        streetAddress3 = Some("address line 3"),
+        postTown = "Swansea",
+        postCode = "QQ10QQ"
+      )
+    )
+
+    val request = PostcodeToAddressLookupRequest(postcode = postcodeValid, None, showBusinessName = Some(true))
+
+    "return ordnance_survey successful response containing ordnance_survey model for ordnance_survey valid postcode to address lookup request" in {
+      val response = Addresses(fetchedAddressesSeq)
+      when(command.applyDetailedResult(request)).thenReturn(Future.successful(response))
+
+      Get(s"$addressesLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
+        status should equal(OK)
+        contentType.toString() should equal("application/json; charset=UTF-8")
+        val resp = responseAs[Addresses]
+        resp.addresses should equal(fetchedAddressesSeq)
+      }
+    }
+
+    "return an unsuccessful response containing ordnance_survey Service Unavailable status code when the command throws an exception" in {
+      when(command.applyDetailedResult(request)).thenReturn(Future.failed(new RuntimeException))
+
+      Get(s"$addressesLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
+        status should equal(ServiceUnavailable)
+      }
+    }
+
+    "return empty address Seq when that postcode does not exist" in {
+      when(command.applyDetailedResult(request)).thenReturn(Future.successful(Addresses(Seq.empty)))
+
+      Get(s"$addressesLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
+        status should equal(OK)
+        contentType.toString() should equal("application/json; charset=UTF-8")
+        val resp = responseAs[Addresses]
+        resp.addresses should equal(Seq.empty)
+      }
+    }
+
+    "return addresses without language filter when no addresses existed for the filtered lookup" in {
+      val noAddressesFound = PostcodeToAddressResponse(addresses = Seq.empty)
+      val cyRequest = PostcodeToAddressLookupRequest(postcodeValid, Some("cy"), showBusinessName = Some(true))
+      when(command.applyDetailedResult(request)).thenReturn(
+        Future.successful(Addresses(fetchedAddressesSeq))
+      )
+      when(command.applyDetailedResult(cyRequest)).thenReturn(
+        Future.successful(Addresses(Seq.empty))
+      )
+
+      Get(s"$addressesLookupUrl?postcode=$postcodeValid&languageCode=cy") ~> sealRoute(route) ~> check {
+        status should equal(OK)
+        contentType.toString() should equal("application/json; charset=UTF-8")
+        responseAs[Addresses] should equal(
+          Addresses(fetchedAddressesSeq)
+        )
+      }
+    }
+  }
+
   "The postcode to address lookup service" should {
     "return ordnance_survey successful response containing ordnance_survey model for ordnance_survey valid postcode to address lookup request" in {
       val postcodeToAddressResponse = PostcodeToAddressResponse(fetchedAddressesSeq)
@@ -116,6 +191,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
   private final val uprnValid = 12345L
   private final val postcodeToAddressLookupUrl = "/postcode-to-address"
   private final val uprnToAddressLookupUrl = "/uprn-to-address"
+  private final val addressesLookupUrl = "/addresses"
   private final val traderUprnValid = 12345L
   private final val traderUprnValid2 = 4567L
   private val addressWithUprn = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
