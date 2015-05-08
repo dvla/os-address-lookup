@@ -204,13 +204,13 @@ class LookupCommand(configuration: Configuration,
       val result = resp.flatMap(_.results).fold {
         // Handle no results for this postcode.
         log.info(s"No results returned for postcode: ${LogFormats.anonymize(request.postcode)}")
-        Seq.empty[AddressDTO]
+        Seq.empty[AddressDto]
       } { results =>
         log.info(s"Returning result for postcode request ${LogFormats.anonymize(request.postcode)}")
 
         results.flatMap(_.DPA).sortBy(r => r.address) map { address =>
           val (line1, line2, line3) = splitAddressLines(addressLines(address))
-          AddressDTO(
+          AddressDto(
             Seq(address.organisationName, Some(applyVssRules(address))).flatten.mkString(Separator),
             businessName = address.organisationName,
             streetAddress1 = line1,
@@ -225,7 +225,7 @@ class LookupCommand(configuration: Configuration,
     } recover {
       case e: Throwable =>
         log.info(s"Ordnance Survey uprn lookup service error: ${e.toString} \n ${e.getStackTraceString}")
-        Addresses(Seq.empty[AddressDTO])
+        Addresses(Seq.empty[AddressDto])
     }
   }
 }

@@ -12,7 +12,7 @@ import spray.http.StatusCodes._
 class OSAddressLookupServiceSpec extends RouteSpecBase {
   "Lookup address by postcode and return json" should {
     val fetchedAddressesSeq = Seq(
-      AddressDTO(
+      AddressDto(
         addressLine = "Business Name 1, address line 1, address line 2, address line 3, London, QQ99QQ",
         businessName = Some("Business Name 1"),
         streetAddress1 = "address line 1",
@@ -21,7 +21,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
         postTown = "London",
         postCode = "QQ99QQ"
       ),
-      AddressDTO(
+      AddressDto(
         addressLine = "Business Name 2, address line 1, address line 2, address line 3, Swansea, QQ10QQ",
         businessName = Some("Business Name 2"),
         streetAddress1 = "address line 1",

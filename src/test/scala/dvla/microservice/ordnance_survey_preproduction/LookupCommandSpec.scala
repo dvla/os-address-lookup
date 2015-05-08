@@ -29,7 +29,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) (_ should equal(Addresses(Seq(AddressDTO(
+      whenReady(result) (_ should equal(Addresses(Seq(AddressDto(
         "DVLA, ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ",
         Some("DVLA"),
         "ASH COTTAGE",
@@ -73,7 +73,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) (_ should equal(Addresses(Seq(AddressDTO(
+      whenReady(result) (_ should equal(Addresses(Seq(AddressDto(
         "50ABC FAKE ROAD, FAKE TOWN, EX8 1SN",
         None,
         "50ABC FAKE ROAD",
