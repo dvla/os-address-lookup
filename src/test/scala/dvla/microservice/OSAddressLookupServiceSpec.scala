@@ -14,7 +14,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
     val fetchedAddressesSeq = Seq(
       AddressDTO(
         addressLine = "Business Name 1, address line 1, address line 2, address line 3, London, QQ99QQ",
-        businessName = "Business Name 1",
+        businessName = Some("Business Name 1"),
         streetAddress1 = "address line 1",
         streetAddress2 = Some("address line 2"),
         streetAddress3 = Some("address line 3"),
@@ -23,7 +23,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       ),
       AddressDTO(
         addressLine = "Business Name 2, address line 1, address line 2, address line 3, Swansea, QQ10QQ",
-        businessName = "Business Name 2",
+        businessName = Some("Business Name 2"),
         streetAddress1 = "address line 1",
         streetAddress2 = Some("address line 2"),
         streetAddress3 = Some("address line 3"),
