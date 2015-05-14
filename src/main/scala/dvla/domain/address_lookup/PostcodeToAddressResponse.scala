@@ -9,5 +9,3 @@ case class AddressDto(addressLine: String,
                       streetAddress3: Option[String],
                       postTown: String,
                       postCode: String)
-
-final case class Addresses(addresses: Seq[AddressDto])
