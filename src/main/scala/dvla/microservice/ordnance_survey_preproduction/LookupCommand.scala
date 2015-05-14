@@ -187,7 +187,7 @@ class LookupCommand(configuration: Configuration,
       }
   }
 
-  override def applyDetailedResult(request: PostcodeToAddressLookupRequest): Future[Addresses] = {
+  override def applyDetailedResult(request: PostcodeToAddressLookupRequest): Future[Seq[AddressDto]] = {
     log.info(s"Fetching addresses for postcode: ${LogFormats.anonymize(request.postcode)}")
 
     def toOpt(str: String) = if (str.isEmpty) None else Some(str)
@@ -221,11 +221,11 @@ class LookupCommand(configuration: Configuration,
           )
         }
       }
-      Addresses(result)
+      result
     } recover {
       case e: Throwable =>
         log.info(s"Ordnance Survey uprn lookup service error: ${e.toString} \n ${e.getStackTraceString}")
-        Addresses(Seq.empty[AddressDto])
+        Seq.empty[AddressDto]
     }
   }
 }

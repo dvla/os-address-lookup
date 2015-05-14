@@ -29,7 +29,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) (_ should equal(Addresses(Seq(AddressDto(
+      whenReady(result) (_ should equal(Seq(AddressDto(
         "DVLA, ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ",
         Some("DVLA"),
         "ASH COTTAGE",
@@ -37,7 +37,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
         Some("BYSTOCK"),
         "EXMOUTH",
         postcodeValid
-      )))))
+      ))))
     }
 
     "return an empty sequence when the postcode is valid but the OS service returns no results" in {
@@ -45,7 +45,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       val result = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
-        r.addresses shouldBe empty
+        r shouldBe empty
       }
     }
 
@@ -53,7 +53,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       val service = lookupCommandWithCallOrdnanceSurveyStub(None)
       val result = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) { r => r.addresses shouldBe empty}
+      whenReady(result) { r => r shouldBe empty}
     }
 
     "return an empty sequence when the postcode is valid but the OS service returns ordnance_survey result with no DPA and no LPI" in {
@@ -73,7 +73,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
 
-      whenReady(result) (_ should equal(Addresses(Seq(AddressDto(
+      whenReady(result) (_ should equal(Seq(AddressDto(
         "50ABC FAKE ROAD, FAKE TOWN, EX8 1SN",
         None,
         "50ABC FAKE ROAD",
@@ -81,7 +81,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
         None,
         "FAKE TOWN",
         postcodeValid
-      )))))
+      ))))
     }
   }
 

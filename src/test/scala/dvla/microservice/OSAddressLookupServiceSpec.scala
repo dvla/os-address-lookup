@@ -35,14 +35,14 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
     val request = PostcodeToAddressLookupRequest(postcode = postcodeValid, None, showBusinessName = Some(true))
 
     "return ordnance_survey successful response containing ordnance_survey model for ordnance_survey valid postcode to address lookup request" in {
-      val response = Addresses(fetchedAddressesSeq)
+      val response = fetchedAddressesSeq
       when(command.applyDetailedResult(request)).thenReturn(Future.successful(response))
 
       Get(s"$addressesLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
         status should equal(OK)
         contentType.toString() should equal("application/json; charset=UTF-8")
-        val resp = responseAs[Addresses]
-        resp.addresses should equal(fetchedAddressesSeq)
+        val resp = responseAs[Seq[AddressDto]]
+        resp should equal(fetchedAddressesSeq)
       }
     }
 
@@ -55,13 +55,13 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
     }
 
     "return empty address Seq when that postcode does not exist" in {
-      when(command.applyDetailedResult(request)).thenReturn(Future.successful(Addresses(Seq.empty)))
+      when(command.applyDetailedResult(request)).thenReturn(Future.successful(Seq.empty))
 
       Get(s"$addressesLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
         status should equal(OK)
         contentType.toString() should equal("application/json; charset=UTF-8")
-        val resp = responseAs[Addresses]
-        resp.addresses should equal(Seq.empty)
+        val resp = responseAs[Seq[AddressDto]]
+        resp should equal(Seq.empty)
       }
     }
 
@@ -69,18 +69,16 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       val noAddressesFound = PostcodeToAddressResponse(addresses = Seq.empty)
       val cyRequest = PostcodeToAddressLookupRequest(postcodeValid, Some("cy"), showBusinessName = Some(true))
       when(command.applyDetailedResult(request)).thenReturn(
-        Future.successful(Addresses(fetchedAddressesSeq))
+        Future.successful(fetchedAddressesSeq)
       )
       when(command.applyDetailedResult(cyRequest)).thenReturn(
-        Future.successful(Addresses(Seq.empty))
+        Future.successful(Seq.empty)
       )
 
       Get(s"$addressesLookupUrl?postcode=$postcodeValid&languageCode=cy") ~> sealRoute(route) ~> check {
         status should equal(OK)
         contentType.toString() should equal("application/json; charset=UTF-8")
-        responseAs[Addresses] should equal(
-          Addresses(fetchedAddressesSeq)
-        )
+        responseAs[Seq[AddressDto]] should equal(fetchedAddressesSeq)
       }
     }
   }

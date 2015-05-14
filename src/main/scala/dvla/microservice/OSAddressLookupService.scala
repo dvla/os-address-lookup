@@ -79,8 +79,8 @@ trait OSAddressLookupService extends HttpService {
     val request = PostcodeToAddressLookupRequest(postcode, languageCode, showBusinessName= Some(true))
     val result = command.applyDetailedResult(request)
     onComplete(result) {
-      case Success(resp)
-        if resp.addresses.isEmpty && languageCode.isDefined => addresses(postcode, None)
+      case Success(addressesSeq)
+        if addressesSeq.isEmpty && languageCode.isDefined => addresses(postcode, None)
       case Success(resp) =>
         complete(resp)
       case Failure(_) =>
