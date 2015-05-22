@@ -16,6 +16,74 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class LookupCommandSpec extends UnitSpec with MockitoSugar {
+  "Looking up addresses by postcode with details" should {
+    "return valid Addresses when the postcode is valid and the OS service returns seq of results" in {
+      val osResult = resultBuilder(
+        organisationName = Some("DVLA"),
+        buildingName = Some("ASH COTTAGE"),
+        thoroughfareName = Some("OLD BYSTOCK DRIVE"),
+        dependentLocality = Some("BYSTOCK"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 5EQ"
+      )
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
+      val result = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) (_ should equal(Seq(AddressDto(
+        "DVLA, ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ",
+        Some("DVLA"),
+        "ASH COTTAGE",
+        Some("OLD BYSTOCK DRIVE"),
+        Some("BYSTOCK"),
+        "EXMOUTH",
+        postcodeValid
+      ))))
+    }
+
+    "return an empty sequence when the postcode is valid but the OS service returns no results" in {
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(Seq.empty))))
+      val result = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) { r =>
+        r shouldBe empty
+      }
+    }
+
+    "return empty seq when response status is not 200 OK" in {
+      val service = lookupCommandWithCallOrdnanceSurveyStub(None)
+      val result = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) { r => r shouldBe empty}
+    }
+
+    "return an empty sequence when the postcode is valid but the OS service returns ordnance_survey result with no DPA and no LPI" in {
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(emptyDPAandLPI))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) { r => r.addresses shouldBe empty}
+    }
+
+    "not throw when an address contains ordnance_survey building number that contains letters" in {
+      val osResult = resultBuilder(
+        buildingNumber = Some("50ABC"),
+        thoroughfareName = Some("FAKE ROAD"),
+        postTown = "FAKE TOWN",
+        postCode = "EX8 1SN"
+      )
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
+      val result = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) (_ should equal(Seq(AddressDto(
+        "50ABC FAKE ROAD, FAKE TOWN, EX8 1SN",
+        None,
+        "50ABC FAKE ROAD",
+        None,
+        None,
+        "FAKE TOWN",
+        postcodeValid
+      ))))
+    }
+  }
 
   "call PostcodeToAddressResponse" should {
 

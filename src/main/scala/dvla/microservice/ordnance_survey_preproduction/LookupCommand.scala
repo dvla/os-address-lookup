@@ -3,12 +3,7 @@ package dvla.microservice.ordnance_survey_preproduction
 import akka.actor.ActorSystem
 import akka.event.Logging
 import dvla.common.LogFormats
-import dvla.domain.address_lookup.AddressViewModel
-import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
-import dvla.domain.address_lookup.PostcodeToAddressResponse
-import dvla.domain.address_lookup.UprnAddressPair
-import dvla.domain.address_lookup.UprnToAddressLookupRequest
-import dvla.domain.address_lookup.UprnToAddressResponse
+import dvla.domain.address_lookup._
 import dvla.domain.ordnance_survey_preproduction.{DPA, Response}
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import scala.annotation.tailrec
@@ -30,10 +25,7 @@ class LookupCommand(configuration: Configuration,
       case Some(results) =>
         val addresses = results.flatMap(_.DPA)
         log.info(s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
-        // sort them before translating. otherwise if they have a business name the order will be different from
-        // the previous call.
-        val addrs = addresses.sortBy(r => r.address)
-        addrs map { address =>
+        addresses.sortBy(r => r.address) map { address =>
           val addressAsString = {
             val addressSanitisedForVss = applyVssRules(address)
             (showBusinessName, address.organisationName) match {
@@ -52,26 +44,27 @@ class LookupCommand(configuration: Configuration,
     }
   }
 
+  private def addressLines(address: DPA) =
+  (address.poBoxNumber,
+    address.buildingNumber,
+    address.buildingName,
+    address.subBuildingName,
+    address.dependentThoroughfareName,
+    address.thoroughfareName,
+    address.dependentLocality) match {
+    case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
+    case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
+    case (Some(_), _, _, _, _, _, _) => rule1(address)
+    case (_, None, _, None, _, _, None) => rule2(address)
+    case (_, _, None, None, _, _, _) => rule3(address)
+    case (_, None, _, None, _, _, _) => rule4(address)
+    case (_, Some(_), _, _, _, Some(_), _) => rule6(address)
+    case (_, _, _, _, _, _, None) => rule5(address)
+    case _ => rule6(address)
+  }
+
   private def applyVssRules(address: DPA): String = {
-    val addressLines =
-      (address.poBoxNumber,
-        address.buildingNumber,
-        address.buildingName,
-        address.subBuildingName,
-        address.dependentThoroughfareName,
-        address.thoroughfareName,
-        address.dependentLocality) match {
-        case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
-        case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
-        case (Some(_), _, _, _, _, _, _) => rule1(address)
-        case (_, None, _, None, _, _, None) => rule2(address)
-        case (_, _, None, None, _, _, _) => rule3(address)
-        case (_, None, _, None, _, _, _) => rule4(address)
-        case (_, Some(_), _, _, _, Some(_), _) => rule6(address)
-        case (_, _, _, _, _, _, None) => rule5(address)
-        case _ => rule6(address)
-      }
-    addressLines + buildPostTown(address.postTown) + Separator + address.postCode
+    addressLines(address) + buildPostTown(address.postTown) + Separator + address.postCode
   }
 
   //rule methods will build and return three strings for address line1, line2 and line3
@@ -192,5 +185,47 @@ class LookupCommand(configuration: Configuration,
           log.info(s"Ordnance Survey uprn lookup service error: ${e.toString}")
           UprnToAddressResponse(None)
       }
+  }
+
+  override def applyDetailedResult(request: PostcodeToAddressLookupRequest): Future[Seq[AddressDto]] = {
+    log.info(s"Fetching addresses for postcode: ${LogFormats.anonymize(request.postcode)}")
+
+    def toOpt(str: String) = if (str.isEmpty) None else Some(str)
+    def splitAddressLines(addressLines: String) =
+      addressLines.split(",").map(_.trim).map {line =>
+        if (line.length > 30) line.take(30) else line
+      }.filterNot(_.isEmpty) match {
+        case Array(line1) => (line1, None, None)
+        case Array(line1, line2) => (line1, toOpt(line2), None)
+        case Array(line1, line2, line3) => (line1, toOpt(line2), toOpt(line3))
+      }
+
+    callOrdnanceSurvey.call(request).map { resp =>
+      val result = resp.flatMap(_.results).fold {
+        // Handle no results for this postcode.
+        log.info(s"No results returned for postcode: ${LogFormats.anonymize(request.postcode)}")
+        Seq.empty[AddressDto]
+      } { results =>
+        log.info(s"Returning result for postcode request ${LogFormats.anonymize(request.postcode)}")
+
+        results.flatMap(_.DPA).sortBy(r => r.address) map { address =>
+          val (line1, line2, line3) = splitAddressLines(addressLines(address))
+          AddressDto(
+            Seq(address.organisationName, Some(applyVssRules(address))).flatten.mkString(Separator),
+            businessName = address.organisationName,
+            streetAddress1 = line1,
+            streetAddress2 = line2,
+            streetAddress3 = line3,
+            postTown = buildPostTown(address.postTown),
+            postCode = request.postcode
+          )
+        }
+      }
+      result
+    } recover {
+      case e: Throwable =>
+        log.info(s"Ordnance Survey uprn lookup service error: ${e.toString} \n ${e.getStackTraceString}")
+        Seq.empty[AddressDto]
+    }
   }
 }
