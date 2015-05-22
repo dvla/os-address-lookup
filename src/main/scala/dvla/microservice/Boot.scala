@@ -1,13 +1,17 @@
 package dvla.microservice
 
+import java.util.TimeZone
+
 import akka.actor.{ActorSystem, Props}
 import akka.event.Logging
 import akka.io.IO
 import com.typesafe.config.ConfigFactory
 import dvla.microservice.ordnance_survey_preproduction.{CallOrdnanceSurveyImpl, PostcodeUrlBuilder, UprnUrlBuilder}
+import org.joda.time.DateTimeZone
 import spray.can.Http
 
 object Boot extends App {
+  setDefaultTimeZone()
 
   // we need an ActorSystem to host our application in
   implicit val system = ActorSystem("on-spray-can")
@@ -52,5 +56,11 @@ object Boot extends App {
   private def logStartupConfiguration() = {
     log.debug(s"Listening for HTTP on port = $serverPort")
     log.debug("Micro service configured to call ordnance survey web service")
+  }
+
+  private def setDefaultTimeZone() = {
+    val localTimeZone = "UTC"
+    TimeZone.setDefault(TimeZone.getTimeZone(localTimeZone))
+    DateTimeZone.setDefault(DateTimeZone.forID(localTimeZone))
   }
 }
