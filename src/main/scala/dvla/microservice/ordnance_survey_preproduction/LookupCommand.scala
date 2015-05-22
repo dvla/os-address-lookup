@@ -45,23 +45,23 @@ class LookupCommand(configuration: Configuration,
   }
 
   private def addressLines(address: DPA) =
-  (address.poBoxNumber,
-    address.buildingNumber,
-    address.buildingName,
-    address.subBuildingName,
-    address.dependentThoroughfareName,
-    address.thoroughfareName,
-    address.dependentLocality) match {
-    case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
-    case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
-    case (Some(_), _, _, _, _, _, _) => rule1(address)
-    case (_, None, _, None, _, _, None) => rule2(address)
-    case (_, _, None, None, _, _, _) => rule3(address)
-    case (_, None, _, None, _, _, _) => rule4(address)
-    case (_, Some(_), _, _, _, Some(_), _) => rule6(address)
-    case (_, _, _, _, _, _, None) => rule5(address)
-    case _ => rule6(address)
-  }
+    (address.poBoxNumber,
+      address.buildingNumber,
+      address.buildingName,
+      address.subBuildingName,
+      address.dependentThoroughfareName,
+      address.thoroughfareName,
+      address.dependentLocality) match {
+        case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
+        case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
+        case (Some(_), _, _, _, _, _, _) => rule1(address)
+        case (_, None, _, None, _, _, None) => rule2(address)
+        case (_, _, None, None, _, _, _) => rule3(address)
+        case (_, None, _, None, _, _, _) => rule4(address)
+        case (_, Some(_), _, _, _, Some(_), _) => rule6(address)
+        case (_, _, _, _, _, _, None) => rule5(address)
+        case _ => rule6(address)
+      }
 
   private def applyVssRules(address: DPA): String = {
     addressLines(address) + buildPostTown(address.postTown) + Separator + address.postCode
@@ -117,17 +117,15 @@ class LookupCommand(configuration: Configuration,
       lineBuild(Seq(address.thoroughfareName))
 
   @tailrec
-  private def lineBuild(addressPart: Seq[Option[String]], accumulatedLine: String = Nothing): String = {
+  private def lineBuild(addressPart: Seq[Option[String]], accumulatedLine: String = Nothing): String =
     if (addressPart.size == 1) lastItemInList(addressPart.head, accumulatedLine, Separator)
     else lineBuild(addressPart.tail, accumulateLine(addressPart.head, accumulatedLine, Space))
-  }
 
-  private def accumulateLine(currentItem: Option[String], accumulatedLine: String, lastChar: String): String = {
+  private def accumulateLine(currentItem: Option[String], accumulatedLine: String, lastChar: String): String =
     currentItem match {
       case Some(item) => accumulatedLine + item + lastChar
       case _ => accumulatedLine
     }
-  }
 
   private def lastItemInList(lastItem: Option[String], accumulatedLine: String, lastChar: String): String = {
     val currentAddressLine = if (accumulatedLine.takeRight(1) == Space) accumulatedLine.dropRight(1) else accumulatedLine
@@ -152,7 +150,7 @@ class LookupCommand(configuration: Configuration,
       case Some(results) =>
         val addresses = results.flatMap(_.DPA)
         log.info(s"Returning result for uprn request ${LogFormats.anonymize(uprn.toString)}")
-        require(addresses.length >= 1, s"Should be at least one address for the UPRN")
+        require(addresses.nonEmpty, s"Should be at least one address for the UPRN")
         Some(AddressViewModel(
           uprn = Some(addresses.head.UPRN.toLong),
           address = applyVssRules(addresses.head).split(", ")
