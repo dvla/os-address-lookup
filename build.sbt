@@ -27,7 +27,7 @@ libraryDependencies ++= {
   val akkaV = "2.3.3"
   val sprayV = "1.3.1"
   Seq(
-    "dvla" % "vehicles-services-common_2.10" % "0.10",
+    "dvla" %% "vehicles-services-common" % "0.11-SNAPSHOT",
     "io.spray" % "spray-can" % sprayV,
     "io.spray" % "spray-client" % sprayV,
     "io.spray" % "spray-caching" % sprayV,
