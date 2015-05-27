@@ -6,8 +6,8 @@ import JacocoPlugin._
 
 organization := "dvla"
 name := "os-address-lookup"
-version := "0.15"
-scalaVersion := "2.10.4"
+version := "0.16-SNAPSHOT"
+scalaVersion := "2.10.5"
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 val nexus = "http://rep002-01.skyscape.preview-dvla.co.uk:8081/nexus/content/repositories"
