@@ -52,9 +52,11 @@ class LookupCommand(configuration: Configuration,
       address.dependentThoroughfareName,
       address.thoroughfareName,
       address.dependentLocality) match {
-        case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
-        case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
+      case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
+      case (None, None, Some(buildingName), None, None, Some(_), _) if (noAlphas(buildingName)) => rule10(address)
+      case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
         case (Some(_), _, _, _, _, _, _) => rule1(address)
+        case (_, None, Some(buildingName), None, _, _, None) if (noAlphas(buildingName)) => rule9(address)
         case (_, None, _, None, _, _, None) => rule2(address)
         case (_, _, None, None, _, _, _) => rule3(address)
         case (_, None, _, None, _, _, _) => rule4(address)
@@ -115,6 +117,18 @@ class LookupCommand(configuration: Configuration,
     lineBuild(Seq(address.subBuildingName)) +
       lineBuild(Seq(address.buildingName)) +
       lineBuild(Seq(address.thoroughfareName))
+
+  private def rule9(address: DPA): String =
+    lineBuild(Seq(address.buildingName, dependentThoroughfareNameNotBlank(address))) +
+      lineBuild(Seq(address.thoroughfareName))
+
+  private def rule10(address: DPA): String =
+    lineBuild(Seq(address.buildingName, address.thoroughfareName)) +
+      lineBuild(Seq(address.dependentLocality)) +
+      Nothing
+
+  private def noAlphas(messageText: String): Boolean =
+    messageText.length==messageText.replaceAll( """[A-Za-z]""", "").length
 
   @tailrec
   private def lineBuild(addressPart: Seq[Option[String]], accumulatedLine: String = Nothing): String =

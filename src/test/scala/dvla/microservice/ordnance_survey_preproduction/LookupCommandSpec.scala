@@ -168,6 +168,18 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       }
     }
 
+    "1/100, CRANLEY GARDENS, LONDON, SW7 3BB should return in the format 1/100 CRANLEY GARDENS, LONDON, SW7 3BB" in {
+      val osResult = resultBuilder(buildingName = Some("1/100"), thoroughfareName = Some("CRANLEY GARDENS"), postTown = "LONDON", postCode = "SW7 3BB")
+//      val osResult = resultBuilder(buildingNumber = Some("1/100"), thoroughfareName = Some("CRANLEY GARDENS"), postTown = "LONDON", postCode = "SW7 3BB")
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
+
+      whenReady(result) { r =>
+        r.addresses.length should equal(osResult.length)
+        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1/100 CRANLEY GARDENS, LONDON, SW7 3BB")))
+      }
+    }
+
     "UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS should return in the format UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS" in {
       val osResult = resultBuilder(buildingName = Some("UNIT 1-2"), dependentThoroughfareName = Some("DINAN WAY TRADING ESTATE"), thoroughfareName = Some("CONCORDE ROAD"), postTown = "EXMOUTH", postCode = "EX8 4RS")
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
