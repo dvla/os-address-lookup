@@ -6,7 +6,7 @@ import JacocoPlugin._
 
 organization := "dvla"
 name := "os-address-lookup"
-version := "0.16-SNAPSHOT"
+version := "0.16"
 scalaVersion := "2.10.5"
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -27,7 +27,7 @@ libraryDependencies ++= {
   val akkaV = "2.3.3"
   val sprayV = "1.3.1"
   Seq(
-    "dvla" %% "vehicles-services-common" % "0.11-SNAPSHOT",
+    "dvla" %% "vehicles-services-common" % "0.10",
     "io.spray" % "spray-can" % sprayV,
     "io.spray" % "spray-client" % sprayV,
     "io.spray" % "spray-caching" % sprayV,
