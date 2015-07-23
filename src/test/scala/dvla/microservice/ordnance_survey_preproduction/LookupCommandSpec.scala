@@ -83,6 +83,24 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
         postcodeValid
       ))))
     }
+
+    "sort the result by number first and then alphabetically" in {
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(rList(
+        (None, "xyz"),
+        (None, "abc"),
+        (Some("2/22"), "abc"),
+        (Some("flat 30"), "abc"),
+        (Some("flat 3"), "abc"),
+        (Some("flat 4"), "abc"),
+        (Some("10"), "abc"),
+        (Some("1"), "xyz")
+      )))
+      val response = service.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid)).futureValue
+
+      response.map(_.addressLine.replace(", PT, PC", "")) should equal(
+        Seq("1 xyz", "2/22 abc", "10 abc", "abc", "flat 3 abc", "flat 4 abc", "flat 30 abc", "xyz")
+      )
+    }
   }
 
   "call PostcodeToAddressResponse" should {
@@ -412,6 +430,27 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       }
     }
 
+    "sort the result by number first and then alphabetically" in {
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(rList(
+        (None, "xyz"),
+        (None, "abc"),
+        (Some("2/22"), "abc"),
+        (Some("flat 30"), "abc"),
+        (Some("flat 3"), "abc"),
+        (Some("flat 4"), "abc"),
+        (Some("10"), "abc"),
+        (Some("1"), "xyz")
+      )))
+      val response = service(PostcodeToAddressLookupRequest(
+        postcode = postcodeValid,
+        showBusinessName = Some(true))
+      ).futureValue
+
+      response.addresses.map{_.address.replace(", PT, PC", "")} should equal(
+        Seq("1 xyz", "2/22 abc", "10 abc", "abc", "flat 3 abc", "flat 4 abc", "flat 30 abc", "xyz")
+      )
+    }
+
     "do not return organisation name in the address when one exists but we specify not to show it" in {
       val osResult = resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
@@ -470,7 +509,20 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
     }
 
     "return without organisation name in the address even when one exists" in {
-      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")))))
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(
+        Response(
+          header,
+          Some(
+            resultBuilder(
+              organisationName = Some("DVLA"),
+              buildingName = Some("ASH COTTAGE"),
+              thoroughfareName = Some("OLD BYSTOCK DRIVE"),
+              dependentLocality = Some("BYSTOCK"),
+              postTown = "EXMOUTH",
+              postCode = "EX8 5EQ")
+          )
+        )
+      ))
       val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
       whenReady(result) { r =>
@@ -504,20 +556,18 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
     ConfigFactory.empty().withFallback(ConfigFactory.load())
   }
 
-  private def resultBuilder(
-                             uprn: String = traderUprnValid.toString,
-                             address: String = emptyString,
-                             poBoxNumber: Option[String] = None,
-                             buildingName: Option[String] = None,
-                             subBuildingName: Option[String] = None,
-                             organisationName: Option[String] = None,
-                             buildingNumber: Option[String] = None,
-                             thoroughfareName: Option[String] = None,
-                             dependentThoroughfareName: Option[String] = None,
-                             dependentLocality: Option[String] = None,
-                             postTown: String = emptyString,
-                             postCode: String = emptyString
-                             ) = {
+  private def resultBuilder(uprn: String = traderUprnValid.toString,
+                            address: String = emptyString,
+                            poBoxNumber: Option[String] = None,
+                            buildingName: Option[String] = None,
+                            subBuildingName: Option[String] = None,
+                            organisationName: Option[String] = None,
+                            buildingNumber: Option[String] = None,
+                            thoroughfareName: Option[String] = None,
+                            dependentThoroughfareName: Option[String] = None,
+                            dependentLocality: Option[String] = None,
+                            postTown: String = emptyString,
+                            postCode: String = emptyString) = {
     val result = Result(
       DPA = Some(
         DPA(
@@ -538,6 +588,28 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       LPI = None)
     Seq(result)
   }
+
+  private val dpa = DPA(
+    UPRN =  traderUprnValid.toString,
+    address = emptyString,
+    poBoxNumber = None,
+    buildingName = None,
+    subBuildingName = None,
+    organisationName = None,
+    buildingNumber = None,
+    thoroughfareName = None,
+    dependentThoroughfareName = None,
+    dependentLocality = None,
+    postTown = "PT",
+    postCode = "PC"
+  )
+
+  private def r(num: Option[String], thoroughfareName: String) =
+    Result(Some(dpa.copy(buildingNumber = num, thoroughfareName = Some(thoroughfareName))), None)
+  private def rList(address: (Option[String], String)*) =
+    Response(header, Some(address.map{ case(num, address) =>
+     r(num, address)
+    }))
 
   private def lookupCommandWithCallOrdnanceSurveyStub(response: Option[Response]): AddressLookupCommand = {
     val callOrdnanceSurveyStub = mock[CallOrdnanceSurvey]

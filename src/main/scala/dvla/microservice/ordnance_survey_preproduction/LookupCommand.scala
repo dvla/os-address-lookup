@@ -8,6 +8,7 @@ import dvla.domain.ordnance_survey_preproduction.{DPA, Response}
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 class LookupCommand(configuration: Configuration,
                     callOrdnanceSurvey: CallOrdnanceSurvey)
@@ -17,6 +18,22 @@ class LookupCommand(configuration: Configuration,
   private final val Nothing = ""
   private final val Space = " "
   private final lazy val log = Logging(system, this.getClass)
+  private implicit val AddressOrdering = new Ordering[String] {
+    override def compare(x: String, y: String): Int =
+      (Try(x.takeWhile(_.isDigit).toLong), Try(y.takeWhile(_.isDigit).toLong)) match {
+        case (Success(xNum), Success(yNum)) => xNum.compareTo(yNum)
+        case (Success(xNum), _) => -1
+        case (_, Success(yNum)) => 1
+        case _ => stripSameSuffix(x, y) match { case (a, b) =>
+          if (x == a) a.compareTo(b)
+          else compare(a, b)
+      }
+    }
+
+    def stripSameSuffix(a: String, b: String): (String, String) =
+      if (a.head == b.head && !a.head.isDigit) stripSameSuffix(a.tail, b.tail)
+      else (a, b)
+  }
 
   private def addresses(postcode: String, resp: Option[Response], showBusinessName: Option[Boolean]): Seq[UprnAddressPair] = {
     val responseResults = resp.flatMap(_.results)
@@ -25,7 +42,7 @@ class LookupCommand(configuration: Configuration,
       case Some(results) =>
         val addresses = results.flatMap(_.DPA)
         log.info(s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
-        addresses.sortBy(r => r.address) map { address =>
+        addresses.map{ address =>
           val addressAsString = {
             val addressSanitisedForVss = applyVssRules(address)
             (showBusinessName, address.organisationName) match {
@@ -36,7 +53,7 @@ class LookupCommand(configuration: Configuration,
             }
           }
           UprnAddressPair(address.UPRN, addressAsString)
-        }
+        }.sortBy(_.address)(AddressOrdering)
       case None =>
         // Handle no results for this postcode.
         log.info(s"No results returned for postcode: ${LogFormats.anonymize(postcode)}")
@@ -178,13 +195,13 @@ class LookupCommand(configuration: Configuration,
   override def apply(request: PostcodeToAddressLookupRequest): Future[PostcodeToAddressResponse] = {
     log.info(s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
-      callOrdnanceSurvey.call(request).map { resp =>
-        PostcodeToAddressResponse(addresses(request.postcode, resp, request.showBusinessName))
-      }.recover {
-        case e: Throwable =>
-          log.info(s"Ordnance Survey postcode lookup service error: ${e.toString}")
-          PostcodeToAddressResponse(Seq.empty)
-      }
+    callOrdnanceSurvey.call(request).map { resp =>
+      PostcodeToAddressResponse(addresses(request.postcode, resp, request.showBusinessName))
+    }.recover {
+      case e: Throwable =>
+        log.info(s"Ordnance Survey postcode lookup service error: ${e.toString}")
+        PostcodeToAddressResponse(Seq.empty)
+    }
   }
 
   override def apply(request: UprnToAddressLookupRequest): Future[UprnToAddressResponse] = {
@@ -213,14 +230,14 @@ class LookupCommand(configuration: Configuration,
       }
 
     callOrdnanceSurvey.call(request).map { resp =>
-      val result = resp.flatMap(_.results).fold {
+      resp.flatMap(_.results).fold {
         // Handle no results for this postcode.
         log.info(s"No results returned for postcode: ${LogFormats.anonymize(request.postcode)}")
         Seq.empty[AddressDto]
       } { results =>
         log.info(s"Returning result for postcode request ${LogFormats.anonymize(request.postcode)}")
 
-        results.flatMap(_.DPA).sortBy(r => r.address) map { address =>
+        results.flatMap(_.DPA).map { address =>
           val (line1, line2, line3) = splitAddressLines(addressLines(address))
           AddressDto(
             Seq(address.organisationName, Some(applyVssRules(address))).flatten.mkString(Separator),
@@ -231,13 +248,14 @@ class LookupCommand(configuration: Configuration,
             postTown = buildPostTown(address.postTown),
             postCode = request.postcode
           )
-        }
+        }.sortBy(_.addressLine)(AddressOrdering)
       }
-      result
     } recover {
       case e: Throwable =>
         log.info(s"Ordnance Survey uprn lookup service error: ${e.toString} \n ${e.getStackTraceString}")
         Seq.empty[AddressDto]
     }
   }
+
+
 }
