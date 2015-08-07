@@ -2,6 +2,7 @@ package dvla.microservice.ordnance_survey_preproduction
 
 import akka.actor.ActorSystem
 import com.typesafe.config.{Config, ConfigFactory}
+import dvla.common.clientsidesession.TrackingId
 import dvla.domain.address_lookup._
 import dvla.domain.ordnance_survey_preproduction.{DPA, Header, Response, Result}
 import dvla.helpers.UnitSpec
@@ -551,7 +552,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
     offset = 0,
     totalresults = 2)
   private implicit val system = ActorSystem("LookupCommandSpecPreProduction", testConfig)
-
+  private implicit val trackingId = TrackingId("default_tracking_id")
   private def testConfig: Config = {
     ConfigFactory.empty().withFallback(ConfigFactory.load())
   }

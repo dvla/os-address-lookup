@@ -1,5 +1,7 @@
 package dvla.microservice
 
+import dvla.common.clientsidesession.TrackingId
+import dvla.common.microservice.HttpHeaders.`Tracking-Id`
 import dvla.domain.JsonFormats._
 import dvla.domain.address_lookup._
 import dvla.domain.address_lookup.AddressViewModel
@@ -34,11 +36,12 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
 
     val request = PostcodeToAddressLookupRequest(postcode = postcodeValid, None, showBusinessName = Some(true))
 
+
     "return ordnance_survey successful response containing ordnance_survey model for ordnance_survey valid postcode to address lookup request" in {
       val response = fetchedAddressesSeq
       when(command.applyDetailedResult(request)).thenReturn(Future.successful(response))
 
-      Get(s"$addressesLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
+      Get(s"$addressesLookupUrl?postcode=$postcodeValid")  ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(OK)
         contentType.toString() should equal("application/json; charset=UTF-8")
         val resp = responseAs[Seq[AddressDto]]
@@ -49,7 +52,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
     "return an unsuccessful response containing ordnance_survey Service Unavailable status code when the command throws an exception" in {
       when(command.applyDetailedResult(request)).thenReturn(Future.failed(new RuntimeException))
 
-      Get(s"$addressesLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
+      Get(s"$addressesLookupUrl?postcode=$postcodeValid") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(ServiceUnavailable)
       }
     }
@@ -57,7 +60,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
     "return empty address Seq when that postcode does not exist" in {
       when(command.applyDetailedResult(request)).thenReturn(Future.successful(Seq.empty))
 
-      Get(s"$addressesLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
+      Get(s"$addressesLookupUrl?postcode=$postcodeValid") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(OK)
         contentType.toString() should equal("application/json; charset=UTF-8")
         val resp = responseAs[Seq[AddressDto]]
@@ -75,7 +78,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
         Future.successful(Seq.empty)
       )
 
-      Get(s"$addressesLookupUrl?postcode=$postcodeValid&languageCode=cy") ~> sealRoute(route) ~> check {
+      Get(s"$addressesLookupUrl?postcode=$postcodeValid&languageCode=cy") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(OK)
         contentType.toString() should equal("application/json; charset=UTF-8")
         responseAs[Seq[AddressDto]] should equal(fetchedAddressesSeq)
@@ -88,7 +91,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       val postcodeToAddressResponse = PostcodeToAddressResponse(fetchedAddressesSeq)
       when(command.apply(postcodeValidRequest)).thenReturn(Future.successful(postcodeToAddressResponse))
 
-      Get(s"$postcodeToAddressLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
+      Get(s"$postcodeToAddressLookupUrl?postcode=$postcodeValid") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(OK)
         val resp = responseAs[PostcodeToAddressResponse]
         resp.addresses should equal(fetchedAddressesSeq)
@@ -98,7 +101,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
     "return an unsuccessful response containing ordnance_survey Service Unavailable status code when the command throws an exception" in {
       when(command.apply(postcodeValidRequest)).thenReturn(Future.failed(new RuntimeException))
 
-      Get(s"$postcodeToAddressLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
+      Get(s"$postcodeToAddressLookupUrl?postcode=$postcodeValid") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(ServiceUnavailable)
       }
     }
@@ -107,7 +110,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       val postcodeToAddressResponse = PostcodeToAddressResponse(addresses = Seq.empty)
       when(command.apply(postcodeValidRequest)).thenReturn(Future.successful(postcodeToAddressResponse))
 
-      Get(s"$postcodeToAddressLookupUrl?postcode=$postcodeValid") ~> sealRoute(route) ~> check {
+      Get(s"$postcodeToAddressLookupUrl?postcode=$postcodeValid") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(OK)
         val resp = responseAs[PostcodeToAddressResponse]
         resp.addresses should equal(Seq.empty)
@@ -124,7 +127,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
         Future.successful(noAddressesFound)
       )
 
-      Get(s"$postcodeToAddressLookupUrl?postcode=$postcodeValid&languageCode=cy") ~> sealRoute(route) ~> check {
+      Get(s"$postcodeToAddressLookupUrl?postcode=$postcodeValid&languageCode=cy") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(OK)
         val resp = responseAs[PostcodeToAddressResponse]
         resp.addresses should equal(fetchedAddressesSeq)
@@ -137,7 +140,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       val uprnToAddressResponse = UprnToAddressResponse(Option(fetchedAddressViewModel))
       when(command.apply(uprnValidRequest)).thenReturn(Future.successful(uprnToAddressResponse))
 
-      Get(s"$uprnToAddressLookupUrl?uprn=$uprnValid") ~> sealRoute(route) ~> check {
+      Get(s"$uprnToAddressLookupUrl?uprn=$uprnValid") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(OK)
         val resp = responseAs[UprnToAddressResponse]
         resp.addressViewModel should be(defined)
@@ -148,7 +151,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
     "return an unsuccessful response containing ordnance_survey Service Unavailable status code when the command throws an exception" in {
       when(command.apply(uprnValidRequest)).thenReturn(Future.failed(new RuntimeException))
 
-      Get(s"$uprnToAddressLookupUrl?uprn=$uprnValid") ~> sealRoute(route) ~> check {
+      Get(s"$uprnToAddressLookupUrl?uprn=$uprnValid") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(ServiceUnavailable)
       }
     }
@@ -157,7 +160,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       val uprnToAddressResponse = UprnToAddressResponse(None)
       when(command.apply(uprnValidRequest)).thenReturn(Future.successful(uprnToAddressResponse))
 
-      Get(s"$uprnToAddressLookupUrl?uprn=$uprnValid") ~> sealRoute(route) ~> check {
+      Get(s"$uprnToAddressLookupUrl?uprn=$uprnValid") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(OK)
         val resp = responseAs[UprnToAddressResponse]
         resp.addressViewModel should equal(None)
@@ -174,7 +177,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
         Future.successful(noAddressFound)
       )
 
-      Get(s"$uprnToAddressLookupUrl?uprn=$uprnValid&languageCode=cy") ~> sealRoute(route) ~> check {
+      Get(s"$uprnToAddressLookupUrl?uprn=$uprnValid&languageCode=cy") ~> addHeader(`Tracking-Id`.name, trackingId.value) ~> sealRoute(route) ~> check {
         status should equal(OK)
         val resp = responseAs[UprnToAddressResponse]
         resp.addressViewModel should be(defined)
@@ -192,6 +195,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
   private final val addressesLookupUrl = "/addresses"
   private final val traderUprnValid = 12345L
   private final val traderUprnValid2 = 4567L
+  implicit val trackingId = TrackingId("default_tracking_id")
   private val addressWithUprn = AddressViewModel(uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
   private val fetchedAddressesSeq = Seq(
     UprnAddressPair(traderUprnValid.toString, addressWithUprn.address.mkString(", ")),
