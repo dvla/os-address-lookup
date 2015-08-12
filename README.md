@@ -5,11 +5,24 @@ DVLA Ordnance Survey Service
 
 The codebase is predominantly [Scala][scala] and is implemented against [Spray][spray]: a lightweight HTTP framework for the JVM.
 
+The application is calling the ordnancesurvey.co.uk service to retrieve addresses from a postcode. 
+
 Running the application
 -----------------------
 
-    cd ordnance-survey
-    sbt run
+	The application is running as part of an exemplar by executing the following command on the exemplar:
+
+    	sbt sandbox
+
+    To run this microservice on its own, you have to create a fat jar and then run this jar. To do so:
+
+    	sbt assembly
+    	java -jar target/scala-2.10/os-address-lookup-XXX.jar
+
+    	where XXX is the current version
+
+    The listening port is defined in src/main/resources/application.conf, under the `port` property 
+
 
 Usage
 =====
