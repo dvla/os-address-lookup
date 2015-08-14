@@ -14,13 +14,7 @@ case class DPA(UPRN: String,
                dependentThoroughfareName: Option[String] = None,
                dependentLocality: Option[String] = None,
                postTown: String,
-               postCode: String//,
-//               RPC: Option[String],
-//               xCoordinate: Float,
-//               yCoordinate: Float,
-//               status: String,
-//               matchScore: Float,
-//               matchDescription: String
+               postCode: String
                 )
 
 object DPA {
@@ -36,13 +30,7 @@ object DPA {
       (__ \ "DEPENDENT_THOROUGHFARE_NAME").readNullable[String] and
       (__ \ "DEPENDENT_LOCALITY").readNullable[String] and
       (__ \ "POST_TOWN").read[String] and
-      (__ \ "POSTCODE").read[String] //and
-//      (__ \ "RPC").readNullable[String] and
-//      (__ \ "X_COORDINATE").read[Float] and
-//      (__ \ "Y_COORDINATE").read[Float] and
-//      (__ \ "STATUS").read[String] and
-//      (__ \ "MATCH").read[Float] and
-//      (__ \ "MATCH_DESCRIPTION").read[String]
+      (__ \ "POSTCODE").read[String]
     )(DPA.apply _)
 
   implicit val writesDPA = new Writes[DPA] {
@@ -58,13 +46,7 @@ object DPA {
       "DEPENDENT_THOROUGHFARE_NAME" -> dpa.thoroughfareName,
       "DEPENDENT_LOCALITY" -> dpa.dependentLocality,
       "POST_TOWN" -> dpa.postTown,
-      "POSTCODE" -> dpa.postCode//,
-//      "RPC" -> dpa.RPC,
-//      "X_COORDINATE" -> dpa.xCoordinate,
-//      "Y_COORDINATE" -> dpa.yCoordinate,
-//      "STATUS" -> dpa.status,
-//      "MATCH" -> dpa.matchScore,
-//      "MATCH_DESCRIPTION" -> dpa.matchDescription
+      "POSTCODE" -> dpa.postCode
     )
   }
 }

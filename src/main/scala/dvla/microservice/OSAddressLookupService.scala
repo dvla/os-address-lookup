@@ -9,7 +9,6 @@ import dvla.domain.JsonFormats._
 import spray.http.StatusCodes.ServiceUnavailable
 import spray.routing.HttpService
 import spray.routing.Route
-
 import scala.util.{Failure, Success}
 
 // we don't implement our route structure directly in the service actor because

@@ -3,14 +3,13 @@ package dvla.microservice.ordnance_survey_preproduction
 import akka.actor.ActorSystem
 import akka.event.Logging
 import dvla.common.LogFormats
-import dvla.common.LogFormats.DVLALogger
 import dvla.common.clientsidesession.TrackingId
 import dvla.domain.address_lookup._
 import dvla.domain.ordnance_survey_preproduction.{DPA, Response}
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Success, Try}
 
 class LookupCommand(configuration: Configuration,
                     callOrdnanceSurvey: CallOrdnanceSurvey)
@@ -45,7 +44,7 @@ class LookupCommand(configuration: Configuration,
     responseResults match {
       case Some(results) =>
         val addresses = results.flatMap(_.DPA)
-        logMessage(trackingId,Info,s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
+        logMessage(trackingId, Info, s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
         addresses.map{ address =>
           val addressAsString = {
             val addressSanitisedForVss = applyVssRules(address)
@@ -60,7 +59,7 @@ class LookupCommand(configuration: Configuration,
         }.sortBy(_.address)(AddressOrdering)
       case None =>
         // Handle no results for this postcode.
-        logMessage(trackingId,Info,s"No results returned for postcode: ${LogFormats.anonymize(postcode)}")
+        logMessage(trackingId, Info, s"No results returned for postcode: ${LogFormats.anonymize(postcode)}")
         Seq.empty
     }
   }
@@ -74,10 +73,10 @@ class LookupCommand(configuration: Configuration,
       address.thoroughfareName,
       address.dependentLocality) match {
       case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
-      case (None, None, Some(buildingName), None, None, Some(_), _) if (noAlphas(buildingName)) => rule10(address)
+      case (None, None, Some(buildingName), None, None, Some(_), _) if noAlphas(buildingName) => rule10(address)
       case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
         case (Some(_), _, _, _, _, _, _) => rule1(address)
-        case (_, None, Some(buildingName), None, _, _, None) if (noAlphas(buildingName)) => rule9(address)
+        case (_, None, Some(buildingName), None, _, _, None) if noAlphas(buildingName) => rule9(address)
         case (_, None, _, None, _, _, None) => rule2(address)
         case (_, _, None, None, _, _, _) => rule3(address)
         case (_, None, _, None, _, _, _) => rule4(address)
@@ -184,46 +183,46 @@ class LookupCommand(configuration: Configuration,
     flattenMapResponse match {
       case Some(results) =>
         val addresses = results.flatMap(_.DPA)
-        logMessage(trackingId,Info,s"Returning result for uprn request ${LogFormats.anonymize(uprn.toString)}")
+        logMessage(trackingId, Info, s"Returning result for uprn request ${LogFormats.anonymize(uprn.toString)}")
         require(addresses.nonEmpty, s"Should be at least one address for the UPRN")
         Some(AddressViewModel(
           uprn = Some(addresses.head.UPRN.toLong),
           address = applyVssRules(addresses.head).split(", ")
         )) // Translate to view model.
       case None =>
-        logMessage(trackingId,Info,s"No results returned by web service for submitted UPRN: ${LogFormats.anonymize(uprn.toString)}")
+        logMessage(trackingId, Info, s"No results returned by web service for submitted UPRN: ${LogFormats.anonymize(uprn.toString)}")
         None
     }
   }
 
   override def apply(request: PostcodeToAddressLookupRequest)
                     (implicit trackingId: TrackingId): Future[PostcodeToAddressResponse] = {
-    logMessage(trackingId,Info,s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
+    logMessage(trackingId, Info, "Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     callOrdnanceSurvey.call(request).map { resp =>
       PostcodeToAddressResponse(addresses(request.postcode, resp, request.showBusinessName))
     }.recover {
       case e: Throwable =>
-        logMessage(trackingId,Info,s"Ordnance Survey postcode lookup service error: ${e.toString}")
+        logMessage(trackingId, Info, s"Ordnance Survey postcode lookup service error: ${e.toString}")
         PostcodeToAddressResponse(Seq.empty)
     }
   }
 
   override def apply(request: UprnToAddressLookupRequest)
                     (implicit trackingId: TrackingId): Future[UprnToAddressResponse] = {
-    logMessage(trackingId,Info,s"Dealing with the post request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
+    logMessage(trackingId, Info, s"Dealing with the post request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
 
       callOrdnanceSurvey.call(request).map { resp =>
         UprnToAddressResponse(address(request.uprn, resp))
       }.recover {
         case e: Throwable =>
-          logMessage(trackingId,Error,s"Ordnance Survey uprn lookup service error: ${e.toString}")
+          logMessage(trackingId, Error, s"Ordnance Survey uprn lookup service error: ${e.toString}")
           UprnToAddressResponse(None)
       }
   }
 
   override def applyDetailedResult(request: PostcodeToAddressLookupRequest)(implicit trackingId: TrackingId): Future[Seq[AddressDto]] = {
-    logMessage(trackingId,Info,s"Fetching addresses for postcode: ${LogFormats.anonymize(request.postcode)}")
+    logMessage(trackingId, Info, s"Fetching addresses for postcode: ${LogFormats.anonymize(request.postcode)}")
 
     def toOpt(str: String) = if (str.isEmpty) None else Some(str)
     def splitAddressLines(addressLines: String) =
@@ -238,10 +237,10 @@ class LookupCommand(configuration: Configuration,
     callOrdnanceSurvey.call(request).map { resp =>
       resp.flatMap(_.results).fold {
         // Handle no results for this postcode.
-        logMessage(trackingId,Info,s"No results returned for postcode: ${LogFormats.anonymize(request.postcode)}")
+        logMessage(trackingId, Info, s"No results returned for postcode: ${LogFormats.anonymize(request.postcode)}")
         Seq.empty[AddressDto]
       } { results =>
-        logMessage(trackingId,Info,s"Returning result for postcode request ${LogFormats.anonymize(request.postcode)}")
+        logMessage(trackingId, Info, s"Returning result for postcode request ${LogFormats.anonymize(request.postcode)}")
 
         results.flatMap(_.DPA).map { address =>
           val (line1, line2, line3) = splitAddressLines(addressLines(address))
@@ -258,7 +257,7 @@ class LookupCommand(configuration: Configuration,
       }
     } recover {
       case e: Throwable =>
-        logMessage(trackingId,Error,s"Ordnance Survey uprn lookup service error: ${e.toString} \n ${e.getStackTraceString}")
+        logMessage(trackingId, Error, s"Ordnance Survey uprn lookup service error: ${e.toString} \n ${e.getStackTraceString}")
         Seq.empty[AddressDto]
     }
   }
