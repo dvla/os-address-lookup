@@ -9,7 +9,8 @@ import scala.concurrent.Future
 import spray.http.HttpRequest
 import spray.httpx.PlayJsonSupport._
 
-class CallOrdnanceSurveyImpl(postcodeUrlBuilder: PostcodeUrlBuilder, uprnUrlBuilder: UprnUrlBuilder)(implicit system: ActorSystem) extends CallOrdnanceSurvey {
+class CallOrdnanceSurveyImpl(postcodeUrlBuilder: PostcodeUrlBuilder,
+                             uprnUrlBuilder: UprnUrlBuilder)(implicit system: ActorSystem) extends CallOrdnanceSurvey {
 
   // Postcode to sequence of addresses
   def call(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {

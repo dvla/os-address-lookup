@@ -37,7 +37,12 @@ trait OSAddressLookupService extends HttpService {
               val showBusinessName: Option[Boolean] = Some(params.get("showBusinessName").exists(_.toBoolean))
               val languageCode: Option[String] = params.get("languageCode")
               languageCode match {
-                case Some(_) => lookupPostcode(postcode = postcode, showBusinessName = showBusinessName, languageCode = languageCode)(TrackingId(trackingId)) // Language specified so search with filter and if no results then search unfiltered.
+                case Some(_) =>
+                  lookupPostcode(
+                    postcode = postcode,
+                    showBusinessName = showBusinessName,
+                    languageCode = languageCode
+                  )(TrackingId(trackingId)) // Language specified so search with filter and if no results then search unfiltered.
                 case None => lookupPostcode(postcode, showBusinessName)(TrackingId(trackingId)) // No language specified so go straight to unfiltered search.
               }
             }
@@ -72,7 +77,11 @@ trait OSAddressLookupService extends HttpService {
 
   private def lookupPostcode(postcode: String, showBusinessName: Option[Boolean], languageCode: Option[String])
                             (implicit trackingId: TrackingId): Route = {
-    val request = PostcodeToAddressLookupRequest(postcode = postcode, languageCode = languageCode, showBusinessName = showBusinessName)
+    val request = PostcodeToAddressLookupRequest(
+      postcode = postcode,
+      languageCode = languageCode,
+      showBusinessName = showBusinessName
+    )
     onComplete(command(request)) {
       case Success(resp) if resp.addresses.isEmpty => lookupPostcode(postcode, showBusinessName)
       case Success(resp) => complete(resp)

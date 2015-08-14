@@ -3,7 +3,7 @@ package dvla.domain.ordnance_survey_preproduction
 import play.api.libs.functional.syntax._
 import play.api.libs.json.{JsValue, Json, Reads, Writes, __}
 
-case class DPA(UPRN: String,
+case class  DPA(UPRN: String,
                address: String,
                poBoxNumber: Option[String] = None,
                buildingName: Option[String] = None,

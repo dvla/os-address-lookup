@@ -1,6 +1,10 @@
 package dvla.domain
 
-import dvla.domain.address_lookup._
+import dvla.domain.address_lookup.AddressDto
+import dvla.domain.address_lookup.AddressViewModel
+import dvla.domain.address_lookup.PostcodeToAddressResponse
+import dvla.domain.address_lookup.UprnAddressPair
+import dvla.domain.address_lookup.UprnToAddressResponse
 import spray.httpx.SprayJsonSupport
 import spray.json.DefaultJsonProtocol
 

@@ -2,9 +2,15 @@ package dvla.microservice.ordnance_survey_preproduction
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import dvla.common.LogFormats
 import dvla.common.clientsidesession.TrackingId
-import dvla.domain.address_lookup._
+import dvla.common.LogFormats
+import dvla.domain.address_lookup.AddressDto
+import dvla.domain.address_lookup.AddressViewModel
+import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
+import dvla.domain.address_lookup.PostcodeToAddressResponse
+import dvla.domain.address_lookup.UprnAddressPair
+import dvla.domain.address_lookup.UprnToAddressLookupRequest
+import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.ordnance_survey_preproduction.{DPA, Response}
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import scala.annotation.tailrec
@@ -190,14 +196,15 @@ class LookupCommand(configuration: Configuration,
           address = applyVssRules(addresses.head).split(", ")
         )) // Translate to view model.
       case None =>
-        logMessage(trackingId, Info, s"No results returned by web service for submitted UPRN: ${LogFormats.anonymize(uprn.toString)}")
+        val msg = s"No results returned by web service for submitted UPRN: ${LogFormats.anonymize(uprn.toString)}"
+        logMessage(trackingId, Info, msg)
         None
     }
   }
 
   override def apply(request: PostcodeToAddressLookupRequest)
                     (implicit trackingId: TrackingId): Future[PostcodeToAddressResponse] = {
-    logMessage(trackingId, Info, "Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
+    logMessage(trackingId, Info, s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     callOrdnanceSurvey.call(request).map { resp =>
       PostcodeToAddressResponse(addresses(request.postcode, resp, request.showBusinessName))
@@ -221,7 +228,8 @@ class LookupCommand(configuration: Configuration,
       }
   }
 
-  override def applyDetailedResult(request: PostcodeToAddressLookupRequest)(implicit trackingId: TrackingId): Future[Seq[AddressDto]] = {
+  override def applyDetailedResult(request: PostcodeToAddressLookupRequest)
+                                  (implicit trackingId: TrackingId): Future[Seq[AddressDto]] = {
     logMessage(trackingId, Info, s"Fetching addresses for postcode: ${LogFormats.anonymize(request.postcode)}")
 
     def toOpt(str: String) = if (str.isEmpty) None else Some(str)
@@ -257,10 +265,9 @@ class LookupCommand(configuration: Configuration,
       }
     } recover {
       case e: Throwable =>
-        logMessage(trackingId, Error, s"Ordnance Survey uprn lookup service error: ${e.toString} \n ${e.getStackTraceString}")
+        val msg = s"Ordnance Survey uprn lookup service error: ${e.toString} \n ${e.getStackTraceString}"
+        logMessage(trackingId, Error, msg)
         Seq.empty[AddressDto]
     }
   }
-
-
 }
