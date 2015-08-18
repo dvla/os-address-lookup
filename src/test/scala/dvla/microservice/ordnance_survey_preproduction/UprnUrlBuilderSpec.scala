@@ -1,10 +1,11 @@
 package dvla.microservice.ordnance_survey_preproduction
 
-import dvla.domain.address_lookup._
+import dvla.domain.address_lookup.UprnToAddressLookupRequest
 import dvla.helpers.UnitSpec
 import dvla.microservice.Configuration
 
 class UprnUrlBuilderSpec extends UnitSpec {
+
   "endPoint" should {
     "not specify language when none provided on the request" in {
       val request = UprnToAddressLookupRequest(uprn = uprn)

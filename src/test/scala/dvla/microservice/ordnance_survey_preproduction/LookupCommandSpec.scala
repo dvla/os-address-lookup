@@ -3,13 +3,19 @@ package dvla.microservice.ordnance_survey_preproduction
 import akka.actor.ActorSystem
 import com.typesafe.config.{Config, ConfigFactory}
 import dvla.common.clientsidesession.TrackingId
-import dvla.domain.address_lookup._
+import dvla.domain.address_lookup.AddressDto
+import dvla.domain.address_lookup.AddressViewModel
+import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
+import dvla.domain.address_lookup.PostcodeToAddressResponse
+import dvla.domain.address_lookup.UprnAddressPair
+import dvla.domain.address_lookup.UprnToAddressLookupRequest
+import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.ordnance_survey_preproduction.{DPA, Header, Response, Result}
 import dvla.helpers.UnitSpec
 import dvla.microservice.{AddressLookupCommand, Configuration}
 import java.net.URI
-import org.mockito.Matchers._
-import org.mockito.Mockito._
+import org.mockito.Matchers.any
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.time.{Second, Span}
@@ -105,9 +111,15 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
   }
 
   "call PostcodeToAddressResponse" should {
-
     "return ordnance_survey valid sequence of UprnAddressPairs when the postcode is valid and the OS service returns seq of results" in {
-      val osResult = resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
+      val osResult = resultBuilder(
+        organisationName = Some("DVLA"),
+        buildingName = Some("ASH COTTAGE"),
+        thoroughfareName = Some("OLD BYSTOCK DRIVE"),
+        dependentLocality = Some("BYSTOCK"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 5EQ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult ++ osResult ++ osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
@@ -144,168 +156,290 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
     }
 
     "not throw when an address contains ordnance_survey building number that contains letters" in {
-      val osResult = resultBuilder(buildingNumber = Some("50ABC"), thoroughfareName = Some("FAKE ROAD"), postTown = "FAKE TOWN", postCode = "EX8 1SN")
+      val osResult = resultBuilder(
+        buildingNumber = Some("50ABC"),
+        thoroughfareName = Some("FAKE ROAD"),
+        postTown = "FAKE TOWN",
+        postCode = "EX8 1SN"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"50ABC FAKE ROAD, FAKE TOWN, EX8 1SN")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"50ABC FAKE ROAD, FAKE TOWN, EX8 1SN"))
+        )
       }
     }
 
     "FLAT 1, 52, SALISBURY ROAD, EXMOUTH, EX8 1SN should return in the format FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN" in {
-      val osResult = resultBuilder(subBuildingName = Some("FLAT 1"), buildingNumber = Some("52"), thoroughfareName = Some("SALISBURY ROAD"), postTown = "EXMOUTH", postCode = "EX8 1SN")
+      val osResult = resultBuilder(
+        subBuildingName = Some("FLAT 1"),
+        buildingNumber = Some("52"),
+        thoroughfareName = Some("SALISBURY ROAD"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 1SN"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN"))
+        )
       }
     }
 
     "FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP should return in the format FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP" in {
-      val osResult = resultBuilder(subBuildingName = Some("FLAT 1"), buildingName = Some("MONTPELLIER COURT"), thoroughfareName = Some("MONTPELLIER ROAD"), postTown = "EXMOUTH", postCode = "EX8 1JP")
+      val osResult = resultBuilder(
+        subBuildingName = Some("FLAT 1"),
+        buildingName = Some("MONTPELLIER COURT"),
+        thoroughfareName = Some("MONTPELLIER ROAD"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 1JP"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP"))
+        )
       }
     }
 
     "FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB should return in the format FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB" in {
-      val osResult = resultBuilder(subBuildingName = Some("FLAT 1"), buildingName = Some("13A"), thoroughfareName = Some("CRANLEY GARDENS"), postTown = "LONDON", postCode = "SW7 3BB")
+      val osResult = resultBuilder(
+        subBuildingName = Some("FLAT 1"),
+        buildingName = Some("13A"),
+        thoroughfareName = Some("CRANLEY GARDENS"),
+        postTown = "LONDON",
+        postCode = "SW7 3BB"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB"))
+        )
       }
     }
 
     "1/100, CRANLEY GARDENS, LONDON, SW7 3BB should return in the format 1/100 CRANLEY GARDENS, LONDON, SW7 3BB" in {
-      val osResult = resultBuilder(buildingName = Some("1/100"), thoroughfareName = Some("CRANLEY GARDENS"), postTown = "LONDON", postCode = "SW7 3BB")
+      val osResult = resultBuilder(
+        buildingName = Some("1/100"),
+        thoroughfareName = Some("CRANLEY GARDENS"),
+        postTown = "LONDON",
+        postCode = "SW7 3BB"
+      )
 //      val osResult = resultBuilder(buildingNumber = Some("1/100"), thoroughfareName = Some("CRANLEY GARDENS"), postTown = "LONDON", postCode = "SW7 3BB")
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1/100 CRANLEY GARDENS, LONDON, SW7 3BB")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"1/100 CRANLEY GARDENS, LONDON, SW7 3BB"))
+        )
       }
     }
 
     "UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS should return in the format UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS" in {
-      val osResult = resultBuilder(buildingName = Some("UNIT 1-2"), dependentThoroughfareName = Some("DINAN WAY TRADING ESTATE"), thoroughfareName = Some("CONCORDE ROAD"), postTown = "EXMOUTH", postCode = "EX8 4RS")
+      val osResult = resultBuilder(
+        buildingName = Some("UNIT 1-2"),
+        dependentThoroughfareName = Some("DINAN WAY TRADING ESTATE"),
+        thoroughfareName = Some("CONCORDE ROAD"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 4RS"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS"))
+        )
       }
     }
 
     "6, BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ should return in the format 6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ" in {
-      val osResult = resultBuilder(buildingNumber = Some("6"), dependentThoroughfareName = Some("BRIXINGTON PARADE"), thoroughfareName = Some("CHURCHILL ROAD"), postTown = "EXMOUTH", postCode = "EX8 4RJ")
+      val osResult = resultBuilder(
+        buildingNumber = Some("6"),
+        dependentThoroughfareName = Some("BRIXINGTON PARADE"),
+        thoroughfareName = Some("CHURCHILL ROAD"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 4RJ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ"))
+        )
       }
     }
 
     "6, PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY should return in the format 6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY" in {
-      val osResult = resultBuilder(buildingNumber = Some("6"), dependentThoroughfareName = Some("PARK VIEW"), thoroughfareName = Some("WOTTON LANE"), dependentLocality = Some("LYMPSTONE"), postTown = "EXMOUTH", postCode = "EX8 5LY")
+      val osResult = resultBuilder(
+        buildingNumber = Some("6"),
+        dependentThoroughfareName = Some("PARK VIEW"),
+        thoroughfareName = Some("WOTTON LANE"),
+        dependentLocality = Some("LYMPSTONE"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 5LY"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY"))
+        )
       }
     }
 
     "7, VILLA MAISON, 4, CYPRUS ROAD, EXMOUTH, EX8 2DZ should return in the format 7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ" in {
-      val osResult = resultBuilder(subBuildingName = Some("7"), buildingName = Some("VILLA MAISON"), buildingNumber = Some("4"), thoroughfareName = Some("CYPRUS ROAD"), postTown = "EXMOUTH", postCode = "EX8 2DZ")
+      val osResult = resultBuilder(
+        subBuildingName = Some("7"),
+        buildingName = Some("VILLA MAISON"),
+        buildingNumber = Some("4"),
+        thoroughfareName = Some("CYPRUS ROAD"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 2DZ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ"))
+        )
       }
     }
 
     "FLAT 1,HEATHGATE,7,LANSDOWNE ROAD,BUDLEIGH SALTERTON,EX9 6AH should return in the format FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH" in {
-      val osResult = resultBuilder(subBuildingName = Some("FLAT 1"), buildingName = Some("HEATHGATE"), buildingNumber = Some("7"), thoroughfareName = Some("LANSDOWNE ROAD"), postTown = "BUDLEIGH SALTERTON", postCode = "EX9 6AH")
+      val osResult = resultBuilder(
+        subBuildingName = Some("FLAT 1"),
+        buildingName = Some("HEATHGATE"),
+        buildingNumber = Some("7"),
+        thoroughfareName = Some("LANSDOWNE ROAD"),
+        postTown = "BUDLEIGH SALTERTON",
+        postCode = "EX9 6AH"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH"))
+        )
       }
     }
 
     "FLAT, COURTLANDS CROSS SERVICE STATION, 397, EXETER ROAD, EXMOUTH, EX8 3NS should return in the format FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS" in {
-      val osResult = resultBuilder(subBuildingName = Some("FLAT"), buildingName = Some("COURTLANDS CROSS SERVICE STATION"), buildingNumber = Some("397"), thoroughfareName = Some("EXETER ROAD"), postTown = "EXMOUTH", postCode = "EX8 3NS")
+      val osResult = resultBuilder(
+        subBuildingName = Some("FLAT"),
+        buildingName = Some("COURTLANDS CROSS SERVICE STATION"),
+        buildingNumber = Some("397"),
+        thoroughfareName = Some("EXETER ROAD"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 3NS"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS"))
+        )
       }
     }
 
     "2, THE RED LODGE, 11, ELWYN ROAD, EXMOUTH, EX8 2EL should return in the format 2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL" in {
-      val osResult = resultBuilder(subBuildingName = Some("2"), buildingName = Some("THE RED LODGE"), buildingNumber = Some("11"), thoroughfareName = Some("ELWYN ROAD"), postTown = "EXMOUTH", postCode = "EX8 2EL")
+      val osResult = resultBuilder(
+        subBuildingName = Some("2"),
+        buildingName = Some("THE RED LODGE"),
+        buildingNumber = Some("11"),
+        thoroughfareName = Some("ELWYN ROAD"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 2EL"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL"))
+        )
       }
     }
 
     "40, SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN should return in the format 40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN" in {
-      val osResult = resultBuilder(buildingNumber = Some("40"), thoroughfareName = Some("SKETTY PARK DRIVE"), dependentLocality = Some("SKETTY"), postTown = "SWANSEA", postCode = "SA2 8LN")
+      val osResult = resultBuilder(
+        buildingNumber = Some("40"),
+        thoroughfareName = Some("SKETTY PARK DRIVE"),
+        dependentLocality = Some("SKETTY"),
+        postTown = "SWANSEA",
+        postCode = "SA2 8LN"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN"))
+        )
       }
     }
 
     "4, LYNDHURST ROAD, EXMOUTH, EX8 3DT should return in the format 4 LYNDHURST ROAD, EXMOUTH, EX8 3DT" in {
-      val osResult = resultBuilder(buildingNumber = Some("4"), thoroughfareName = Some("LYNDHURST ROAD"), postTown = "EXMOUTH", postCode = "EX8 3DT")
+      val osResult = resultBuilder(
+        buildingNumber = Some("4"),
+        thoroughfareName = Some("LYNDHURST ROAD"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 3DT"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"4 LYNDHURST ROAD, EXMOUTH, EX8 3DT")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"4 LYNDHURST ROAD, EXMOUTH, EX8 3DT"))
+        )
       }
     }
 
     "ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ should return in the format ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ" in {
-      val osResult = resultBuilder(buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
+      val osResult = resultBuilder(
+        buildingName = Some("ASH COTTAGE"),
+        thoroughfareName = Some("OLD BYSTOCK DRIVE"),
+        dependentLocality = Some("BYSTOCK"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 5EQ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ"))
+        )
       }
     }
 
@@ -322,12 +456,15 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"P.O. BOX 100, POST-TOWN, POST-CODE")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"P.O. BOX 100, POST-TOWN, POST-CODE"))
+        )
       }
     }
 
     "1, ANOTHER ROAD, LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH, QQ9 9QQ should return post town in the format LLANFAIRPWLLGWYNGYLL" in {
-      val osResult = resultBuilder(buildingNumber = Some("1"),
+      val osResult = resultBuilder(
+        buildingNumber = Some("1"),
         thoroughfareName = Some("ANOTHER ROAD"),
         postTown = "LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH",
         postCode = "QQ9 9QQ"
@@ -337,12 +474,15 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, LLANFAIRPWLLGWYNGYLL, QQ9 9QQ")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, LLANFAIRPWLLGWYNGYLL, QQ9 9QQ"))
+        )
       }
     }
 
     "1, ANOTHER ROAD, LETCHWORTH GARDEN CITY, QQ9 9QQ should return post town in the format LETCHWORTH" in {
-      val osResult = resultBuilder(buildingNumber = Some("1"),
+      val osResult = resultBuilder(
+        buildingNumber = Some("1"),
         thoroughfareName = Some("ANOTHER ROAD"),
         postTown = "LETCHWORTH GARDEN CITY",
         postCode = "QQ9 9QQ"
@@ -352,7 +492,9 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, LETCHWORTH, QQ9 9QQ")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, LETCHWORTH, QQ9 9QQ"))
+        )
       }
     }
 
@@ -367,12 +509,15 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, POST TOWN NAME IS FA, QQ9 9QQ")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, POST TOWN NAME IS FA, QQ9 9QQ"))
+        )
       }
     }
 
     "1, ANOTHER ROAD, APPLEBY-IN-WESTMORLAND should return post town in the format APPLEBY" in {
-      val osResult = resultBuilder(buildingNumber = Some("1"),
+      val osResult = resultBuilder(
+        buildingNumber = Some("1"),
         thoroughfareName = Some("ANOTHER ROAD"),
         postTown = "APPLEBY-IN-WESTMORLAND",
         postCode = "QQ9 9QQ"
@@ -382,23 +527,41 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, APPLEBY, QQ9 9QQ")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"1 ANOTHER ROAD, APPLEBY, QQ9 9QQ"))
+        )
       }
     }
 
     "J K C SPECIALIST CARS LTD, 1-9, , MILLBURN ROAD, COLERAINE, BT52 1QS should return in the format J K C SPECIALIST CARS LTD, 1-9, MILLBURN ROAD, COLERAINE, BT52 1QS" in {
-      val osResult = resultBuilder(buildingName = Some("1-9"), dependentThoroughfareName = Some(" "), organisationName = Some("J K C SPECIALIST CARS LTD"), thoroughfareName = Some("MILLBURN ROAD"), postTown = "COLERAINE", postCode = "BT52 1QS")
+      val osResult = resultBuilder(
+        buildingName = Some("1-9"),
+        dependentThoroughfareName = Some(" "),
+        organisationName = Some("J K C SPECIALIST CARS LTD"),
+        thoroughfareName = Some("MILLBURN ROAD"),
+        postTown = "COLERAINE",
+        postCode = "BT52 1QS"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcodeValid, showBusinessName = Some(true)))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
-        r shouldBe PostcodeToAddressResponse(Seq(UprnAddressPair(traderUprnValid.toString, s"J K C SPECIALIST CARS LTD, 1-9, MILLBURN ROAD, COLERAINE, BT52 1QS")))
+        r shouldBe PostcodeToAddressResponse(
+          Seq(UprnAddressPair(traderUprnValid.toString, s"J K C SPECIALIST CARS LTD, 1-9, MILLBURN ROAD, COLERAINE, BT52 1QS"))
+        )
       }
     }
 
     "return without organisation name in the address when one exists but we don't specify whether to show it" in {
-      val osResult = resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
+      val osResult = resultBuilder(
+        organisationName = Some("DVLA"),
+        buildingName = Some("ASH COTTAGE"),
+        thoroughfareName = Some("OLD BYSTOCK DRIVE"),
+        dependentLocality = Some("BYSTOCK"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 5EQ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcode = postcodeValid))
 
@@ -415,7 +578,14 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
     }
 
     "return organisation name in the address when one exists and we specify to show it" in {
-      val osResult = resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
+      val osResult = resultBuilder(
+        organisationName = Some("DVLA"),
+        buildingName = Some("ASH COTTAGE"),
+        thoroughfareName = Some("OLD BYSTOCK DRIVE"),
+        dependentLocality = Some("BYSTOCK"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 5EQ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcode = postcodeValid, showBusinessName = Some(true)))
 
@@ -453,7 +623,14 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
     }
 
     "do not return organisation name in the address when one exists but we specify not to show it" in {
-      val osResult = resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
+      val osResult = resultBuilder(
+        organisationName = Some("DVLA"),
+        buildingName = Some("ASH COTTAGE"),
+        thoroughfareName = Some("OLD BYSTOCK DRIVE"),
+        dependentLocality = Some("BYSTOCK"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 5EQ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
       val result = service(PostcodeToAddressLookupRequest(postcode = postcodeValid, showBusinessName = Some(false)))
 
@@ -471,14 +648,25 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
   }
 
   "call UprnToAddressLookupRequest" should {
-
     "return ordnance_survey valid AddressViewModel when the uprn is valid and the OS service returns a sequence results" in {
-      val osResult = resultBuilder(organisationName = Some("DVLA"), buildingName = Some("ASH COTTAGE"), thoroughfareName = Some("OLD BYSTOCK DRIVE"), dependentLocality = Some("BYSTOCK"), postTown = "EXMOUTH", postCode = "EX8 5EQ")
+      val osResult = resultBuilder(
+        organisationName = Some("DVLA"),
+        buildingName = Some("ASH COTTAGE"),
+        thoroughfareName = Some("OLD BYSTOCK DRIVE"),
+        dependentLocality = Some("BYSTOCK"),
+        postTown = "EXMOUTH",
+        postCode = "EX8 5EQ"
+      )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult ++ osResult ++ osResult))))
       val result = service(UprnToAddressLookupRequest(traderUprnValid))
 
       whenReady(result) { r =>
-        r shouldBe UprnToAddressResponse(addressViewModel = Some(AddressViewModel(uprn = Some(traderUprnValid), address = Seq("ASH COTTAGE", "OLD BYSTOCK DRIVE", "BYSTOCK", "EXMOUTH", "EX8 5EQ"))))
+        r shouldBe UprnToAddressResponse(addressViewModel =
+          Some(AddressViewModel(
+            uprn = Some(traderUprnValid),
+            address = Seq("ASH COTTAGE", "OLD BYSTOCK DRIVE", "BYSTOCK", "EXMOUTH", "EX8 5EQ"))
+          )
+        )
       }
     }
 
@@ -608,8 +796,8 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
   private def r(num: Option[String], thoroughfareName: String) =
     Result(Some(dpa.copy(buildingNumber = num, thoroughfareName = Some(thoroughfareName))), None)
   private def rList(address: (Option[String], String)*) =
-    Response(header, Some(address.map{ case(num, address) =>
-     r(num, address)
+    Response(header, Some(address.map{ case(num, addr) =>
+     r(num, addr)
     }))
 
   private def lookupCommandWithCallOrdnanceSurveyStub(response: Option[Response]): AddressLookupCommand = {
@@ -619,4 +807,3 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
     new LookupCommand(configuration = configuration, callOrdnanceSurveyStub)
   }
 }
-

@@ -2,7 +2,7 @@ package dvla.domain.ordnance_survey_preproduction
 
 import dvla.helpers.UnitSpec
 import java.net.URI
-import play.api.libs.json._
+import play.api.libs.json.Json
 import scala.io.Source
 
 class ResponseSpec extends UnitSpec {

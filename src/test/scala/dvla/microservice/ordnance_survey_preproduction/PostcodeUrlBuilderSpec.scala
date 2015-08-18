@@ -1,10 +1,11 @@
 package dvla.microservice.ordnance_survey_preproduction
 
-import dvla.domain.address_lookup._
+import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 import dvla.helpers.UnitSpec
 import dvla.microservice.Configuration
 
 class PostcodeUrlBuilderSpec extends UnitSpec {
+
   "endPoint" should {
     "not specify language filter when none provided on the request" in {
       val request = PostcodeToAddressLookupRequest(postcode = postcode)

@@ -204,7 +204,7 @@ class LookupCommand(configuration: Configuration,
 
   override def apply(request: PostcodeToAddressLookupRequest)
                     (implicit trackingId: TrackingId): Future[PostcodeToAddressResponse] = {
-    logMessage(trackingId, Info, s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
+    logMessage(trackingId, Info, "Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     callOrdnanceSurvey.call(request).map { resp =>
       PostcodeToAddressResponse(addresses(request.postcode, resp, request.showBusinessName))
