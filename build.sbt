@@ -26,11 +26,11 @@ jacoco.settings
 libraryDependencies ++= {
   Seq(
     "dvla" %% "vehicles-services-common" % "0.12-SNAPSHOT",
+    "io.spray" % "spray-client" % "1.3.1",
     "ch.qos.logback" % "logback-classic" % "1.1.0",
     "org.scalatest" %% "scalatest" % "2.0" % "test",
     "com.github.nscala-time" %% "nscala-time" % "0.8.0",
     "com.typesafe.play" %% "play-json" % "2.2.2",
-    "com.github.nscala-time" %% "nscala-time" % "0.8.0",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1" % "test",
     "org.mockito" % "mockito-all" % "1.9.5" % "test"
   )
