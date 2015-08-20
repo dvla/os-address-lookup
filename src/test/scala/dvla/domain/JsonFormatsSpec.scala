@@ -19,7 +19,7 @@ class JsonFormatsSpec extends WordSpec with Matchers {
           |{"uprn":"12345",
           |"address":"presentationProperty stub, 789, property stub, street stub, town stub, area stub, SA11AA"
           |}]}""".stripMargin
-      val unmarshalledResponse = jsonPayload.asJson.convertTo[PostcodeToAddressResponse]
+      val unmarshalledResponse = jsonPayload.parseJson.convertTo[PostcodeToAddressResponse]
       unmarshalledResponse should equal(expectedResponse)
     }
 
@@ -33,7 +33,7 @@ class JsonFormatsSpec extends WordSpec with Matchers {
           |{"uprn":12345,
           |"address":["44 Hythe Road","White City","London","NW10 6RJ"]
           |}}""".stripMargin
-      val unmarshalledResponse = jsonPayload.asJson.convertTo[UprnToAddressResponse]
+      val unmarshalledResponse = jsonPayload.parseJson.convertTo[UprnToAddressResponse]
       unmarshalledResponse should equal(expectedResponse)
     }
   }

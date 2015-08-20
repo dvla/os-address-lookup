@@ -26,7 +26,7 @@ jacoco.settings
 libraryDependencies ++= {
   Seq(
     "dvla" %% "vehicles-services-common" % "0.12-SNAPSHOT",
-    "io.spray" % "spray-client" % "1.3.1",
+    "io.spray" %% "spray-client" % "1.3.1",
     "ch.qos.logback" % "logback-classic" % "1.1.0",
     "org.scalatest" %% "scalatest" % "2.0" % "test",
     "com.github.nscala-time" %% "nscala-time" % "0.8.0",
