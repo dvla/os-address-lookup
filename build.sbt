@@ -23,6 +23,11 @@ seq(Revolver.settings: _*)
 
 jacoco.settings
 
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => {
+  case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
+  case _ => MergeStrategy.first
+}}
+
 libraryDependencies ++= {
   Seq(
     "dvla" %% "vehicles-services-common" % "0.12-SNAPSHOT",
