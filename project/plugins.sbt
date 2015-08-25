@@ -25,3 +25,6 @@ addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.1")
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.6.4")
 
 addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.1.4")
+
+addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
+

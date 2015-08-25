@@ -23,11 +23,6 @@ seq(Revolver.settings: _*)
 
 jacoco.settings
 
-mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => {
-  case PathList("META-INF", "MANIFEST.MF") => MergeStrategy.discard
-  case _ => MergeStrategy.first
-}}
-
 libraryDependencies ++= {
   Seq(
     "dvla" %% "vehicles-services-common" % "0.12-SNAPSHOT",
@@ -36,12 +31,15 @@ libraryDependencies ++= {
     "org.scalatest" %% "scalatest" % "2.0" % "test",
     "com.github.nscala-time" %% "nscala-time" % "0.8.0",
     "com.typesafe.play" %% "play-json" % "2.2.2",
+    "io.spray" %% "spray-testkit" % "1.3.2" % "test",
     "org.scalamock" %% "scalamock-scalatest-support" % "3.0.1" % "test",
     "org.mockito" % "mockito-all" % "1.9.5" % "test"
   )
 }
 
 credentials += Credentials(Path.userHome / ".sbt/.credentials")
+
+net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 publishTo := {
   if (version.value.trim.endsWith("SNAPSHOT"))
