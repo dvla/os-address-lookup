@@ -1,0 +1,10 @@
+/opt/os-address-lookup/logs/*.log {
+        missingok
+        copytruncate
+        notifempty
+        dateext
+        daily
+        create 644 os-address-lookup os-address-lookup
+        compress
+        rotate 35
+}

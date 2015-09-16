@@ -18,6 +18,7 @@ RPM_TARGETDIR="$WORKSPACE/target/" #grab the jenkins WORKSPACE working dir
 UPSTART_FILES_DIR="$WORKSPACE/rpm-build/upstart/"
 PKG_SCRIPTS_DIR="$WORKSPACE/rpm-build/pkg-scripts/"
 WORKDIR="$WORKSPACE/workdir"
+LOGROTATE_FILES_DIR="rpm-build/logrotate.d/"
 
 echo *********************************
 echo
@@ -29,7 +30,7 @@ echo *********************************
 # create workdir directories
 rm -rf $WORKDIR
 mkdir -p $WORKDIR/$RPM_PREFIX
-mkdir -p $WORKDIR/etc/init
+mkdir -p $WORKDIR/etc/init $WORKDIR/etc/logrotate.d
 
 #  "Get the version of the binary from sbt and strip color information so we are just left with a version"
 cd $WORKSPACE
@@ -47,6 +48,9 @@ cd -
 # add the init files
 cp -r $UPSTART_FILES_DIR/* $WORKDIR/etc/init
 
+# add the logrotate files
+cp -r $LOGROTATE_FILES_DIR/* $WORKDIR/etc/logrotate.d
+
 # add application.conf
 cp $WORKSPACE/target/scala-2.10/classes/application.conf $WORKDIR/$RPM_PREFIX/
 
@@ -60,7 +64,7 @@ test -e $RPM_TARGETDIR || mkdir $RPM_TARGETDIR
 
 fpm \
   --before-remove="$PKG_SCRIPTS_DIR/stop" \
-  --after-install="$PKG_SCRIPTS_DIR/restart" \
+  --after-install="$PKG_SCRIPTS_DIR/postinstall" \
   --description="$RPM_DESCRIPTION" \
   --url=$RPM_URL \
   --license="$RPM_LICENSE" \

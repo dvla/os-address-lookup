@@ -1,5 +1,0 @@
-#!/bin/bash
-
-initctl stop os-address-lookup
-initctl start os-address-lookup
-exit 0

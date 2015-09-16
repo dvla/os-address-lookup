@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Set SELinux file types to allow logrotation
+APP="os-address-lookup"
+
+semanage fcontext -a -t var_log_t "/opt/$APP/logs(/.*)?"
+restorecon -r /opt/$APP/logs
+
+# Restart service
+initctl stop $APP 2>/dev/null
+initctl start $APP 2>/dev/null
+
+exit 0
