@@ -1,13 +1,13 @@
 package dvla.microservice
 
+import akka.actor.ActorSystem
 import com.typesafe.config.{ConfigFactory, Config}
 import dvla.common.clientsidesession.TrackingId
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 import dvla.helpers.UnitSpec
-import dvla.microservice.ordnance_survey_preproduction._
+import dvla.microservice.ordnance_survey_preproduction.{CallOrdnanceSurveyImpl, PostcodeUrlBuilder, UprnUrlBuilder}
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.time.{Seconds, Span}
-import akka.actor.ActorSystem
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class LookupCommandIntegrationSpec extends UnitSpec {

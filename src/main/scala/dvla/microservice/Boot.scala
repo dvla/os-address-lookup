@@ -44,17 +44,18 @@ object Boot extends App {
     system.actorOf(creationProperties, "micro-service") // create and start our service actor
   }
 
+  private val serverPort = conf.getInt("port")
+
   private val log = Logging(system, getClass)
   logStartupConfiguration()
 
-  private val serverPort = conf.getInt("port")
 
   // start ordnance_survey new HTTP server on the port specified in configuration with our service actor as the handler
   IO(Http) ! Http.Bind(service, interface = "localhost", port = serverPort)
 
   private def logStartupConfiguration() = {
-    log.debug(s"Listening for HTTP on port = $serverPort")
-    log.debug("Micro service configured to call ordnance survey web service")
+    log.info(s"Listening for HTTP on port = $serverPort")
+    log.info("Micro service configured to call ordnance survey web service")
   }
 
   private def setDefaultTimeZone() = {
