@@ -6,7 +6,7 @@ import JacocoPlugin._
 
 organization := "dvla"
 name := "os-address-lookup"
-version := "0.21"
+version := "0.22-SNAPSHOT"
 scalaVersion := "2.10.5"
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -25,7 +25,7 @@ jacoco.settings
 
 libraryDependencies ++= {
   Seq(
-    "dvla" %% "vehicles-services-common" % "0.12",
+    "dvla" %% "vehicles-services-common" % "0.13-SNAPSHOT",
     "io.spray" %% "spray-client" % "1.3.1",
     "ch.qos.logback" % "logback-classic" % "1.1.0",
     "org.scalatest" %% "scalatest" % "2.0" % "test",
