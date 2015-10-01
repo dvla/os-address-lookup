@@ -52,8 +52,8 @@ class LookupCommand(configuration: Configuration,
         val addresses = results.flatMap(_.DPA)
         logMessage(trackingId, Info, s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
         addresses.map{ address =>
+          val addressSanitisedForVss = applyVssRules(address)
           val addressAsString = {
-            val addressSanitisedForVss = applyVssRules(address)
             (showBusinessName, address.organisationName) match {
               case (Some(show), Some(organisationName)) if show =>
                 organisationName + Separator + addressSanitisedForVss
@@ -61,7 +61,7 @@ class LookupCommand(configuration: Configuration,
                 addressSanitisedForVss
             }
           }
-          UprnAddressPair(address.UPRN, addressAsString)
+          UprnAddressPair(addressSanitisedForVss, addressAsString)
         }.sortBy(_.address)(AddressOrdering)
       case None =>
         // Handle no results for this postcode.
