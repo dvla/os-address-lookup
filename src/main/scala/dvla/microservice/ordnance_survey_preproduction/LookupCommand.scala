@@ -8,7 +8,7 @@ import dvla.domain.address_lookup.AddressDto
 import dvla.domain.address_lookup.AddressViewModel
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 import dvla.domain.address_lookup.PostcodeToAddressResponse
-import dvla.domain.address_lookup.UprnAddressPair
+import dvla.domain.address_lookup.AddressResponse
 import dvla.domain.address_lookup.UprnToAddressLookupRequest
 import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.ordnance_survey_preproduction.{DPA, Response}
@@ -44,7 +44,7 @@ class LookupCommand(configuration: Configuration,
   }
 
   private def addresses(postcode: String, resp: Option[Response], showBusinessName: Option[Boolean])
-                       (implicit trackingId: TrackingId): Seq[UprnAddressPair] = {
+                       (implicit trackingId: TrackingId): Seq[AddressResponse] = {
     val responseResults = resp.flatMap(_.results)
 
     responseResults match {
@@ -61,7 +61,7 @@ class LookupCommand(configuration: Configuration,
                 addressSanitisedForVss
             }
           }
-          UprnAddressPair(addressSanitisedForVss, addressAsString)
+          AddressResponse(addressAsString, Some(address.UPRN) ,address.organisationName)
         }.sortBy(_.address)(AddressOrdering)
       case None =>
         // Handle no results for this postcode.

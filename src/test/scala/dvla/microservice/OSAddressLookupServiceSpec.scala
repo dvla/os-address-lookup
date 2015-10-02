@@ -9,7 +9,7 @@ import dvla.domain.address_lookup.PostcodeToAddressResponse
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.address_lookup.UprnToAddressLookupRequest
-import dvla.domain.address_lookup.UprnAddressPair
+import dvla.domain.address_lookup.AddressResponse
 import org.mockito.Mockito.when
 import scala.concurrent.Future
 import spray.http.StatusCodes.{ServiceUnavailable, OK}
@@ -199,8 +199,8 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
   private val addressWithUprn = AddressViewModel(
     uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
   private val fetchedAddressesSeq = Seq(
-    UprnAddressPair(traderUprnValid.toString, addressWithUprn.address.mkString(", ")),
-    UprnAddressPair(traderUprnValid2.toString, addressWithUprn.address.mkString(", "))
+    AddressResponse(addressWithUprn.address.mkString(", "), Some(traderUprnValid.toString), None),
+    AddressResponse(addressWithUprn.address.mkString(", "), Some(traderUprnValid2.toString), None)
   )
   private val fetchedAddressViewModel = AddressViewModel(
     uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))

@@ -1,6 +1,6 @@
 package dvla.domain.address_lookup
 
-final case class PostcodeToAddressResponse(addresses: Seq[UprnAddressPair])
+final case class PostcodeToAddressResponse(addresses: Seq[AddressResponse])
 
 case class AddressDto(addressLine: String,
                       businessName: Option[String],
