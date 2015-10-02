@@ -34,16 +34,14 @@ trait OSAddressLookupService extends HttpService {
           headerValueByName(`Tracking-Id`.name) {
             trackingId => {
               val postcode: String = params.get("postcode").get
-              val showBusinessName: Option[Boolean] = Some(params.get("showBusinessName").exists(_.toBoolean))
               val languageCode: Option[String] = params.get("languageCode")
               languageCode match {
                 case Some(_) =>
                   lookupPostcode(
                     postcode = postcode,
-                    showBusinessName = showBusinessName,
                     languageCode = languageCode
                   )(TrackingId(trackingId)) // Language specified so search with filter and if no results then search unfiltered.
-                case None => lookupPostcode(postcode, showBusinessName)(TrackingId(trackingId)) // No language specified so go straight to unfiltered search.
+                case None => lookupPostcode(postcode)(TrackingId(trackingId)) // No language specified so go straight to unfiltered search.
               }
             }
           }
@@ -75,23 +73,22 @@ trait OSAddressLookupService extends HttpService {
     }
   }
 
-  private def lookupPostcode(postcode: String, showBusinessName: Option[Boolean], languageCode: Option[String])
+  private def lookupPostcode(postcode: String, languageCode: Option[String])
                             (implicit trackingId: TrackingId): Route = {
     val request = PostcodeToAddressLookupRequest(
       postcode = postcode,
-      languageCode = languageCode,
-      showBusinessName = showBusinessName
+      languageCode = languageCode
     )
     onComplete(command(request)) {
-      case Success(resp) if resp.addresses.isEmpty => lookupPostcode(postcode, showBusinessName)
+      case Success(resp) if resp.addresses.isEmpty => lookupPostcode(postcode)
       case Success(resp) => complete(resp)
       case Failure(_) => complete(ServiceUnavailable)
     }
   }
 
-  private def lookupPostcode(postcode: String, showBusinessName: Option[Boolean])
+  private def lookupPostcode(postcode: String)
                             (implicit trackingId: TrackingId): Route = {
-    val request = PostcodeToAddressLookupRequest(postcode = postcode, showBusinessName = showBusinessName)
+    val request = PostcodeToAddressLookupRequest(postcode = postcode)
     onComplete(command(request)) {
       case Success(resp) => complete(resp)
       case Failure(_) => complete(ServiceUnavailable)
@@ -100,7 +97,7 @@ trait OSAddressLookupService extends HttpService {
 
   // This is the only method that needs to stay in. The rest are legacy
   private def addresses(postcode: String, languageCode: Option[String])(implicit trackingId: TrackingId): Route = {
-    val request = PostcodeToAddressLookupRequest(postcode, languageCode, showBusinessName= Some(true))
+    val request = PostcodeToAddressLookupRequest(postcode, languageCode)
     val result = command.applyDetailedResult(request)
     onComplete(result) {
       case Success(addressesSeq)

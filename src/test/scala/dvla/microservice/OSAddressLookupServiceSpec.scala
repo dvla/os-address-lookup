@@ -9,7 +9,7 @@ import dvla.domain.address_lookup.PostcodeToAddressResponse
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.address_lookup.UprnToAddressLookupRequest
-import dvla.domain.address_lookup.AddressResponse
+import dvla.domain.address_lookup.AddressResponseDto
 import org.mockito.Mockito.when
 import scala.concurrent.Future
 import spray.http.StatusCodes.{ServiceUnavailable, OK}
@@ -37,7 +37,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
       )
     )
 
-    val request = PostcodeToAddressLookupRequest(postcode = postcodeValid, None, showBusinessName = Some(true))
+    val request = PostcodeToAddressLookupRequest(postcode = postcodeValid, None)
 
     "return ordnance_survey successful response containing ordnance_survey model for ordnance_survey valid postcode to address lookup request" in {
       val response = fetchedAddressesSeq
@@ -72,7 +72,7 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
 
     "return addresses without language filter when no addresses existed for the filtered lookup" in {
       val noAddressesFound = PostcodeToAddressResponse(addresses = Seq.empty)
-      val cyRequest = PostcodeToAddressLookupRequest(postcodeValid, Some("cy"), showBusinessName = Some(true))
+      val cyRequest = PostcodeToAddressLookupRequest(postcodeValid, Some("cy"))
       when(command.applyDetailedResult(request)).thenReturn(
         Future.successful(fetchedAddressesSeq)
       )
@@ -199,14 +199,14 @@ class OSAddressLookupServiceSpec extends RouteSpecBase {
   private val addressWithUprn = AddressViewModel(
     uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
   private val fetchedAddressesSeq = Seq(
-    AddressResponse(addressWithUprn.address.mkString(", "), Some(traderUprnValid.toString), None),
-    AddressResponse(addressWithUprn.address.mkString(", "), Some(traderUprnValid2.toString), None)
+    AddressResponseDto(addressWithUprn.address.mkString(", "), Some(traderUprnValid.toString), None),
+    AddressResponseDto(addressWithUprn.address.mkString(", "), Some(traderUprnValid2.toString), None)
   )
   private val fetchedAddressViewModel = AddressViewModel(
     uprn = Some(traderUprnValid), address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ"))
-  private val postcodeValidRequest = PostcodeToAddressLookupRequest(postcode = postcodeValid, showBusinessName = Some(false))
+  private val postcodeValidRequest = PostcodeToAddressLookupRequest(postcode = postcodeValid)
   private val postcodeValidLanguageCyRequest =
-    PostcodeToAddressLookupRequest(postcodeValid, languageCode = Some("cy"), showBusinessName = Some(false))
+    PostcodeToAddressLookupRequest(postcodeValid, languageCode = Some("cy"))
   private val uprnValidRequest = UprnToAddressLookupRequest(uprnValid)
   private val uprnValidLanguageCyRequest = UprnToAddressLookupRequest(uprnValid, languageCode = Some("cy"))
 }

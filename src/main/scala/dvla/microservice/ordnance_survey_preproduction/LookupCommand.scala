@@ -8,7 +8,7 @@ import dvla.domain.address_lookup.AddressDto
 import dvla.domain.address_lookup.AddressViewModel
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 import dvla.domain.address_lookup.PostcodeToAddressResponse
-import dvla.domain.address_lookup.AddressResponse
+import dvla.domain.address_lookup.AddressResponseDto
 import dvla.domain.address_lookup.UprnToAddressLookupRequest
 import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.ordnance_survey_preproduction.{DPA, Response}
@@ -43,8 +43,8 @@ class LookupCommand(configuration: Configuration,
       else (a, b)
   }
 
-  private def addresses(postcode: String, resp: Option[Response], showBusinessName: Option[Boolean])
-                       (implicit trackingId: TrackingId): Seq[AddressResponse] = {
+  private def addresses(postcode: String, resp: Option[Response])
+                       (implicit trackingId: TrackingId): Seq[AddressResponseDto] = {
     val responseResults = resp.flatMap(_.results)
 
     responseResults match {
@@ -53,15 +53,7 @@ class LookupCommand(configuration: Configuration,
         logMessage(trackingId, Info, s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
         addresses.map{ address =>
           val addressSanitisedForVss = applyVssRules(address)
-          val addressAsString = {
-            (showBusinessName, address.organisationName) match {
-              case (Some(show), Some(organisationName)) if show =>
-                organisationName + Separator + addressSanitisedForVss
-              case _ =>
-                addressSanitisedForVss
-            }
-          }
-          AddressResponse(addressAsString, Some(address.UPRN) ,address.organisationName)
+          AddressResponseDto(addressSanitisedForVss, Some(address.UPRN) ,address.organisationName)
         }.sortBy(_.address)(AddressOrdering)
       case None =>
         // Handle no results for this postcode.
@@ -207,7 +199,7 @@ class LookupCommand(configuration: Configuration,
     logMessage(trackingId, Info, s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     callOrdnanceSurvey.call(request).map { resp =>
-      PostcodeToAddressResponse(addresses(request.postcode, resp, request.showBusinessName))
+      PostcodeToAddressResponse(addresses(request.postcode, resp))
     }.recover {
       case e: Throwable =>
         logMessage(trackingId, Info, s"Ordnance Survey postcode lookup service error: ${e.toString}")

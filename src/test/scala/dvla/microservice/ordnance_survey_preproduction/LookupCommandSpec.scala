@@ -7,7 +7,7 @@ import dvla.domain.address_lookup.AddressDto
 import dvla.domain.address_lookup.AddressViewModel
 import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
 import dvla.domain.address_lookup.PostcodeToAddressResponse
-import dvla.domain.address_lookup.AddressResponse
+import dvla.domain.address_lookup.AddressResponseDto
 import dvla.domain.address_lookup.UprnToAddressLookupRequest
 import dvla.domain.address_lookup.UprnToAddressResponse
 import dvla.domain.ordnance_survey_preproduction.{DPA, Header, Response, Result}
@@ -169,7 +169,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"50ABC FAKE ROAD, FAKE TOWN, EX8 1SN", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"50ABC FAKE ROAD, FAKE TOWN, EX8 1SN", Some(traderUprnValid), None))
         )
       }
     }
@@ -188,7 +188,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"FLAT 1, 52 SALISBURY ROAD, EXMOUTH, EX8 1SN", Some(traderUprnValid), None))
         )
       }
     }
@@ -207,7 +207,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"FLAT 1, MONTPELLIER COURT, MONTPELLIER ROAD, EXMOUTH, EX8 1JP", Some(traderUprnValid), None))
         )
       }
     }
@@ -226,7 +226,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"FLAT 1, 13A, CRANLEY GARDENS, LONDON, SW7 3BB", Some(traderUprnValid), None))
         )
       }
     }
@@ -245,7 +245,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"1/100 CRANLEY GARDENS, LONDON, SW7 3BB", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"1/100 CRANLEY GARDENS, LONDON, SW7 3BB", Some(traderUprnValid), None))
         )
       }
     }
@@ -264,7 +264,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"UNIT 1-2, DINAN WAY TRADING ESTATE, CONCORDE ROAD, EXMOUTH, EX8 4RS", Some(traderUprnValid), None))
         )
       }
     }
@@ -283,7 +283,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"6 BRIXINGTON PARADE, CHURCHILL ROAD, EXMOUTH, EX8 4RJ", Some(traderUprnValid), None))
         )
       }
     }
@@ -303,7 +303,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"6 PARK VIEW, WOTTON LANE, LYMPSTONE, EXMOUTH, EX8 5LY", Some(traderUprnValid), None))
         )
       }
     }
@@ -323,7 +323,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"7 VILLA MAISON, 4 CYPRUS ROAD, EXMOUTH, EX8 2DZ", Some(traderUprnValid), None))
         )
       }
     }
@@ -343,7 +343,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"FLAT 1 HEATHGATE, 7 LANSDOWNE ROAD, BUDLEIGH SALTERTON, EX9 6AH", Some(traderUprnValid), None))
         )
       }
     }
@@ -363,7 +363,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"FLAT COURTLANDS CROSS SERVICE STATION, 397 EXETER ROAD, EXMOUTH, EX8 3NS", Some(traderUprnValid), None))
         )
       }
     }
@@ -383,7 +383,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"2 THE RED LODGE, 11 ELWYN ROAD, EXMOUTH, EX8 2EL", Some(traderUprnValid), None))
         )
       }
     }
@@ -402,7 +402,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"40 SKETTY PARK DRIVE, SKETTY, SWANSEA, SA2 8LN", Some(traderUprnValid), None))
         )
       }
     }
@@ -420,7 +420,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"4 LYNDHURST ROAD, EXMOUTH, EX8 3DT", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"4 LYNDHURST ROAD, EXMOUTH, EX8 3DT", Some(traderUprnValid), None))
         )
       }
     }
@@ -439,7 +439,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ", Some(traderUprnValid), None))
         )
       }
     }
@@ -458,7 +458,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"P.O. BOX 100, POST-TOWN, POST-CODE", Some(traderUprnValid), Some("BUSINESS-NAME")))
+          Seq(AddressResponseDto(s"P.O. BOX 100, POST-TOWN, POST-CODE", Some(traderUprnValid), Some("BUSINESS-NAME")))
         )
       }
     }
@@ -476,7 +476,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"1 ANOTHER ROAD, LLANFAIRPWLLGWYNGYLL, QQ9 9QQ", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"1 ANOTHER ROAD, LLANFAIRPWLLGWYNGYLL, QQ9 9QQ", Some(traderUprnValid), None))
         )
       }
     }
@@ -494,7 +494,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"1 ANOTHER ROAD, LETCHWORTH, QQ9 9QQ", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"1 ANOTHER ROAD, LETCHWORTH, QQ9 9QQ", Some(traderUprnValid), None))
         )
       }
     }
@@ -511,7 +511,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"1 ANOTHER ROAD, POST TOWN NAME IS FA, QQ9 9QQ", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"1 ANOTHER ROAD, POST TOWN NAME IS FA, QQ9 9QQ", Some(traderUprnValid), None))
         )
       }
     }
@@ -529,12 +529,12 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"1 ANOTHER ROAD, APPLEBY, QQ9 9QQ", Some(traderUprnValid), None))
+          Seq(AddressResponseDto(s"1 ANOTHER ROAD, APPLEBY, QQ9 9QQ", Some(traderUprnValid), None))
         )
       }
     }
 
-    "J K C SPECIALIST CARS LTD, 1-9, , MILLBURN ROAD, COLERAINE, BT52 1QS should return in the format J K C SPECIALIST CARS LTD, 1-9, MILLBURN ROAD, COLERAINE, BT52 1QS" in {
+    "J K C SPECIALIST CARS LTD, 1-9, , MILLBURN ROAD, COLERAINE, BT52 1QS should return in the format 1-9, MILLBURN ROAD, COLERAINE, BT52 1QS" in {
       val osResult = resultBuilder(
         buildingName = Some("1-9"),
         dependentThoroughfareName = Some(" "),
@@ -544,12 +544,12 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
         postCode = "BT52 1QS"
       )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
-      val result = service(PostcodeToAddressLookupRequest(postcodeValid, showBusinessName = Some(true)))
+      val result = service(PostcodeToAddressLookupRequest(postcodeValid))
 
       whenReady(result) { r =>
         r.addresses.length should equal(osResult.length)
         r shouldBe PostcodeToAddressResponse(
-          Seq(AddressResponse(s"J K C SPECIALIST CARS LTD, 1-9, MILLBURN ROAD, COLERAINE, BT52 1QS", Some(traderUprnValid), Some("J K C SPECIALIST CARS LTD")))
+          Seq(AddressResponseDto(s"1-9, MILLBURN ROAD, COLERAINE, BT52 1QS", Some(traderUprnValid), Some("J K C SPECIALIST CARS LTD")))
         )
       }
     }
@@ -569,28 +569,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       whenReady(result) { r =>
         r shouldBe PostcodeToAddressResponse(
           Seq(
-            AddressResponse(s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ", Some(traderUprnValid), Some("DVLA"))
-          )
-        )
-      }
-    }
-
-    "return organisation name in the address when one exists and we specify to show it" in {
-      val osResult = resultBuilder(
-        organisationName = Some("DVLA"),
-        buildingName = Some("ASH COTTAGE"),
-        thoroughfareName = Some("OLD BYSTOCK DRIVE"),
-        dependentLocality = Some("BYSTOCK"),
-        postTown = "EXMOUTH",
-        postCode = "EX8 5EQ"
-      )
-      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
-      val result = service(PostcodeToAddressLookupRequest(postcode = postcodeValid, showBusinessName = Some(true)))
-
-      whenReady(result) { r =>
-        r shouldBe PostcodeToAddressResponse(
-          Seq(
-            AddressResponse(s"DVLA, ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ", Some(traderUprnValid), Some("DVLA"))
+            AddressResponseDto(s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ", Some(traderUprnValid), Some("DVLA"))
           )
         )
       }
@@ -607,10 +586,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
         (Some("10"), "abc"),
         (Some("1"), "xyz")
       )))
-      val response = service(PostcodeToAddressLookupRequest(
-        postcode = postcodeValid,
-        showBusinessName = Some(true))
-      ).futureValue
+      val response = service(PostcodeToAddressLookupRequest(postcode = postcodeValid)).futureValue
 
       response.addresses.map{_.address.replace(", PT, PC", "")} should equal(
         Seq("1 xyz", "2/22 abc", "10 abc", "abc", "flat 3 abc", "flat 4 abc", "flat 30 abc", "xyz")
@@ -627,12 +603,12 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
         postCode = "EX8 5EQ"
       )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
-      val result = service(PostcodeToAddressLookupRequest(postcode = postcodeValid, showBusinessName = Some(false)))
+      val result = service(PostcodeToAddressLookupRequest(postcode = postcodeValid))
 
       whenReady(result) { r =>
         r shouldBe PostcodeToAddressResponse(
           Seq(
-            AddressResponse(s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ", Some(traderUprnValid), Some("DVLA"))
+            AddressResponseDto(s"ASH COTTAGE, OLD BYSTOCK DRIVE, BYSTOCK, EXMOUTH, EX8 5EQ", Some(traderUprnValid), Some("DVLA"))
           )
         )
       }

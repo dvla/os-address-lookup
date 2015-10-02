@@ -5,7 +5,7 @@ import dvla.domain.JsonFormats._
 import spray.json._
 import dvla.domain.address_lookup.AddressViewModel
 import dvla.domain.address_lookup.PostcodeToAddressResponse
-import dvla.domain.address_lookup.AddressResponse
+import dvla.domain.address_lookup.AddressResponseDto
 import dvla.domain.address_lookup.UprnToAddressResponse
 
 class JsonFormatsSpec extends WordSpec with Matchers {
@@ -13,7 +13,7 @@ class JsonFormatsSpec extends WordSpec with Matchers {
   "JsonFormats" should {
     "successfully unmarshall ordnance_survey valid json postcode to address lookup response payload into ordnance_survey response object" in {
       val expectedResponse = PostcodeToAddressResponse(Seq(
-        AddressResponse(s"presentationProperty stub, 789, property stub, street stub, town stub, area stub, SA11AA", Some("12345"), None)))
+        AddressResponseDto(s"presentationProperty stub, 789, property stub, street stub, town stub, area stub, SA11AA", Some("12345"), None)))
       val jsonPayload =
         """{"addresses":[
           |{"uprn":"12345",
