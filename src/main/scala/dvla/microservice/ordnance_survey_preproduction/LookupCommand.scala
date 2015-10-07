@@ -196,7 +196,7 @@ class LookupCommand(configuration: Configuration,
 
   override def apply(request: PostcodeToAddressLookupRequest)
                     (implicit trackingId: TrackingId): Future[PostcodeToAddressResponse] = {
-    logMessage(trackingId, Info, s"Dealing with the post request for postcode ${LogFormats.anonymize(request.postcode)}")
+    logMessage(trackingId, Info, s"Dealing with http POST request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     callOrdnanceSurvey.call(request).map { resp =>
       PostcodeToAddressResponse(addresses(request.postcode, resp))
@@ -209,7 +209,7 @@ class LookupCommand(configuration: Configuration,
 
   override def apply(request: UprnToAddressLookupRequest)
                     (implicit trackingId: TrackingId): Future[UprnToAddressResponse] = {
-    logMessage(trackingId, Info, s"Dealing with the post request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
+    logMessage(trackingId, Info, s"Dealing with http POST request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
 
       callOrdnanceSurvey.call(request).map { resp =>
         UprnToAddressResponse(address(request.uprn, resp))
