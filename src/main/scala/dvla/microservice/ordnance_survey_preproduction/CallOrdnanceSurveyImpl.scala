@@ -1,6 +1,8 @@
 package dvla.microservice.ordnance_survey_preproduction
 
 import akka.actor.ActorSystem
+import akka.event.Logging
+import dvla.common.clientsidesession.TrackingId
 import dvla.domain.address_lookup.{PostcodeToAddressLookupRequest, UprnToAddressLookupRequest}
 import dvla.domain.ordnance_survey_preproduction.Response
 import spray.client.pipelining.{Get, sendReceive, _}
@@ -12,8 +14,10 @@ import spray.httpx.PlayJsonSupport._
 class CallOrdnanceSurveyImpl(postcodeUrlBuilder: PostcodeUrlBuilder,
                              uprnUrlBuilder: UprnUrlBuilder)(implicit system: ActorSystem) extends CallOrdnanceSurvey {
 
+  private implicit val log = Logging(system, this.getClass)
+
   // Postcode to sequence of addresses
-  def call(request: PostcodeToAddressLookupRequest): Future[Option[Response]] = {
+  def call(request: PostcodeToAddressLookupRequest)(implicit trackingId: TrackingId): Future[Option[Response]] = {
     val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
     val endPoint = postcodeUrlBuilder.endPoint(request)
     pipeline {
@@ -22,7 +26,7 @@ class CallOrdnanceSurveyImpl(postcodeUrlBuilder: PostcodeUrlBuilder,
   }
 
   // Uprn to single address
-  def call(request: UprnToAddressLookupRequest): Future[Option[Response]] = {
+  def call(request: UprnToAddressLookupRequest)(implicit trackingId: TrackingId): Future[Option[Response]] = {
     val pipeline: HttpRequest => Future[Option[Response]] = sendReceive ~> checkStatusCodeAndUnmarshal
     val endPoint = uprnUrlBuilder.endPoint(request)
     pipeline {

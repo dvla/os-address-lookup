@@ -9,12 +9,13 @@ final class PostcodeUrlBuilder(val configuration: Configuration) {
 
   def endPoint(request: PostcodeToAddressLookupRequest): String = {
     val languageCode = request.languageCode match {
-      case Some(lang) => "&lr=" + lang.toUpperCase.substring(0,2) // Collapse the many variations of English (e.g. en-us, en-gb) into just the first 2 chars.
+      // Collapse the many variations of English (e.g. en-us, en-gb) into just the first 2 chars.
+      case Some(lang) => "&lr=" + lang.toUpperCase.substring(0,2)
       case None => ""
     }
     s"$baseUrl/postcode?" +
       s"postcode=${postcodeWithNoSpaces(request.postcode)}" +
-      s"&dataset=dpa" +
+      "&dataset=dpa" +
       languageCode +
       s"&key=$apiKey"
   }

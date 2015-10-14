@@ -182,7 +182,7 @@ class LookupCommand(configuration: Configuration,
       case Some(results) =>
         val addresses = results.flatMap(_.DPA)
         logMessage(trackingId, Info, s"Returning result for uprn request ${LogFormats.anonymize(uprn.toString)}")
-        require(addresses.nonEmpty, s"Should be at least one address for the UPRN")
+        require(addresses.nonEmpty, "Should be at least one address for the UPRN")
         Some(AddressViewModel(
           uprn = Some(addresses.head.UPRN.toLong),
           address = applyVssRules(addresses.head).split(", ")
@@ -222,7 +222,7 @@ class LookupCommand(configuration: Configuration,
 
   override def applyDetailedResult(request: PostcodeToAddressLookupRequest)
                                   (implicit trackingId: TrackingId): Future[Seq[AddressDto]] = {
-    logMessage(trackingId, Info, s"Fetching addresses for postcode: ${LogFormats.anonymize(request.postcode)}")
+    logMessage(trackingId, Info, s"Dealing with http POST request for postcode: ${LogFormats.anonymize(request.postcode)}")
 
     def toOpt(str: String) = if (str.isEmpty) None else Some(str)
     def splitAddressLines(addressLines: String) =
