@@ -28,3 +28,8 @@ addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.1.4")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.5")
 
+// Resolver required to pick up DVLA sbt plugins that are published to bintray using ivy format
+resolvers += Resolver.url(
+  "dvla-sbt-plugin-releases",
+   url("https://dl.bintray.com/dvla/sbt-plugin-releases"))(
+       Resolver.ivyStylePatterns)
