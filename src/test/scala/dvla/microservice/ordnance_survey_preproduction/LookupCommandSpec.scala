@@ -776,8 +776,8 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
   private def lookupCommandWithCallOrdnanceSurveyStub(response: Option[Response]): AddressLookupCommand = {
     val callOrdnanceSurveyStub = mock[CallOrdnanceSurvey]
-    when(callOrdnanceSurveyStub.call(any[PostcodeToAddressLookupRequest])).thenReturn(Future.successful(response))
-    when(callOrdnanceSurveyStub.call(any[UprnToAddressLookupRequest])).thenReturn(Future.successful(response))
+    when(callOrdnanceSurveyStub.call(any[PostcodeToAddressLookupRequest])(any[TrackingId])).thenReturn(Future.successful(response))
+    when(callOrdnanceSurveyStub.call(any[UprnToAddressLookupRequest])(any[TrackingId])).thenReturn(Future.successful(response))
     new LookupCommand(configuration = configuration, callOrdnanceSurveyStub)
   }
 }

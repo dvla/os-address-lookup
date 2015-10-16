@@ -30,7 +30,9 @@ trait CallOrdnanceSurvey extends DVLALogger {
         Some(unmarshal[Response](unmarshaller)(res))
       }
       else {
-        val msg = s"Received the following status when calling Ordnance Survey: ${res.status} in response: ${res.entity.toString.replaceAll(" ", "")}"
+        val emptyString = ""
+        val msg = s"Received the following status when calling Ordnance Survey: ${res.status} " +
+          s"in response: ${res.entity.toString.replaceAll("\\n|\\r/g", emptyString)}"
         logMessage(trackingId, Error, msg)
         None
       }
