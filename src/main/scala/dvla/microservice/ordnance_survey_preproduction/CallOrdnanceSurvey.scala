@@ -31,8 +31,9 @@ trait CallOrdnanceSurvey extends DVLALogger {
       }
       else {
         val emptyString = ""
+        val globalNewlineCarriageReturnRegex = "\\n|\\r/g"
         val msg = s"Received the following status when calling Ordnance Survey: ${res.status} " +
-          s"in response: ${res.entity.toString.replaceAll("\\n|\\r/g", emptyString)}"
+          s"in response: ${res.entity.toString.replaceAll(globalNewlineCarriageReturnRegex, emptyString)}"
         logMessage(trackingId, Error, msg)
         None
       }

@@ -9,10 +9,10 @@ import spray.client.pipelining.{Get, sendReceive, _}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import spray.http.HttpRequest
-import spray.httpx.PlayJsonSupport._
+import spray.httpx.PlayJsonSupport.playJsonUnmarshaller
 
-class CallOrdnanceSurveyImpl(postcodeUrlBuilder: PostcodeUrlBuilder,
-                             uprnUrlBuilder: UprnUrlBuilder)(implicit system: ActorSystem) extends CallOrdnanceSurvey {
+class CallOrdnanceSurveyImpl(postcodeUrlBuilder: PostcodeUrlBuilder, uprnUrlBuilder: UprnUrlBuilder)
+                            (implicit system: ActorSystem) extends CallOrdnanceSurvey {
 
   private implicit val log = Logging(system, this.getClass)
 
