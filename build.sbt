@@ -6,7 +6,7 @@ import JacocoPlugin._
 
 organization := "dvla"
 name := "os-address-lookup"
-version := "0.24-SNAPSHOT"
+version := "0.25-SNAPSHOT"
 scalaVersion := "2.10.5"
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
