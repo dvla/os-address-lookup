@@ -19,11 +19,14 @@ import org.mockito.Mockito.when
 import org.scalatest.concurrent.PatienceConfiguration.Timeout
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.time.{Second, Span}
+import spray.can.Http.ConnectionException
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class LookupCommandSpec extends UnitSpec with MockitoSugar {
-  private implicit val trackingId = TrackingId("default_tracking_id")
+
+  private implicit val trackingId = TrackingId("test-tracking-id")
+
   "Looking up addresses by postcode with details" should {
     "return valid Addresses when the postcode is valid and the OS service returns seq of results" in {
       val osResult = resultBuilder(
@@ -108,6 +111,18 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       response.map(_.addressLine.replace(", PT, PC", "")) should equal(
         Seq("1 xyz", "2/22 abc", "10 abc", "abc", "flat 3 abc", "flat 4 abc", "flat 30 abc", "xyz")
       )
+    }
+
+    "throw an exception when the service cannot connect to the OS end point" in {
+      val callOrdnanceSurveyMock = mock[CallOrdnanceSurvey]
+      when(callOrdnanceSurveyMock.call(any[PostcodeToAddressLookupRequest])(any[TrackingId]))
+        .thenReturn(Future.failed(new ConnectionException("Connection attempt to non-existent-endpoint.co.uk:443 failed")))
+      val command = new LookupCommand(configuration = configuration, callOrdnanceSurveyMock)
+
+      val result = command.applyDetailedResult(PostcodeToAddressLookupRequest(postcodeValid))
+      whenReady(result.failed) { e =>
+        e shouldBe a [ConnectionException]
+      }
     }
   }
 
@@ -613,6 +628,18 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
         )
       }
     }
+
+    "throw an exception when the service cannot connect to the OS end point" in {
+      val callOrdnanceSurveyMock = mock[CallOrdnanceSurvey]
+      when(callOrdnanceSurveyMock.call(any[PostcodeToAddressLookupRequest])(any[TrackingId]))
+        .thenReturn(Future.failed(new ConnectionException("Connection attempt to non-existent-endpoint.co.uk:443 failed")))
+      val command = new LookupCommand(configuration = configuration, callOrdnanceSurveyMock)
+
+      val result = command.apply(PostcodeToAddressLookupRequest(postcodeValid))
+      whenReady(result.failed) { e =>
+        e shouldBe a [ConnectionException]
+      }
+    }
   }
 
   "call UprnToAddressLookupRequest" should {
@@ -627,7 +654,6 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       )
       val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult ++ osResult ++ osResult))))
       val result = service(UprnToAddressLookupRequest(numericTraderUprnValid))
-
 
       whenReady(result) { r =>
         r shouldBe UprnToAddressResponse(addressViewModel =
@@ -692,6 +718,18 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
             )
           )
         )
+      }
+    }
+
+    "throw an exception when the service cannot connect to the OS end point" in {
+      val callOrdnanceSurveyMock = mock[CallOrdnanceSurvey]
+      when(callOrdnanceSurveyMock.call(any[UprnToAddressLookupRequest])(any[TrackingId]))
+        .thenReturn(Future.failed(new ConnectionException("Connection attempt to non-existent-endpoint.co.uk:443 failed")))
+      val command = new LookupCommand(configuration = configuration, callOrdnanceSurveyMock)
+
+      val result = command.apply(UprnToAddressLookupRequest(numericTraderUprnValid))
+      whenReady(result.failed) { e =>
+        e shouldBe a [ConnectionException]
       }
     }
   }
@@ -776,8 +814,10 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
   private def lookupCommandWithCallOrdnanceSurveyStub(response: Option[Response]): AddressLookupCommand = {
     val callOrdnanceSurveyStub = mock[CallOrdnanceSurvey]
-    when(callOrdnanceSurveyStub.call(any[PostcodeToAddressLookupRequest])(any[TrackingId])).thenReturn(Future.successful(response))
-    when(callOrdnanceSurveyStub.call(any[UprnToAddressLookupRequest])(any[TrackingId])).thenReturn(Future.successful(response))
+    when(callOrdnanceSurveyStub.call(any[PostcodeToAddressLookupRequest])(any[TrackingId]))
+      .thenReturn(Future.successful(response))
+    when(callOrdnanceSurveyStub.call(any[UprnToAddressLookupRequest])(any[TrackingId]))
+      .thenReturn(Future.successful(response))
     new LookupCommand(configuration = configuration, callOrdnanceSurveyStub)
   }
 }

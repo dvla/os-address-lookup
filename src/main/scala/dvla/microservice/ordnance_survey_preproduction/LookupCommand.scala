@@ -182,6 +182,7 @@ class LookupCommand(configuration: Configuration,
       case Some(results) =>
         val addresses = results.flatMap(_.DPA)
         logMessage(trackingId, Info, s"Returning result for uprn request ${LogFormats.anonymize(uprn.toString)}")
+        // If this line fails an IllegalArgumentException will be thrown
         require(addresses.nonEmpty, "Should be at least one address for the UPRN")
         Some(AddressViewModel(
           uprn = Some(addresses.head.UPRN.toLong),
@@ -196,33 +197,39 @@ class LookupCommand(configuration: Configuration,
 
   override def apply(request: PostcodeToAddressLookupRequest)
                     (implicit trackingId: TrackingId): Future[PostcodeToAddressResponse] = {
-    logMessage(trackingId, Info, s"Dealing with http POST request for postcode ${LogFormats.anonymize(request.postcode)}")
+    logMessage(trackingId, Info, s"Dealing with http GET request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     callOrdnanceSurvey.call(request).map { resp =>
       PostcodeToAddressResponse(addresses(request.postcode, resp))
     }.recover {
       case e: Throwable =>
         logMessage(trackingId, Info, s"Ordnance Survey postcode lookup service error: ${e.toString}")
-        PostcodeToAddressResponse(Seq.empty)
+        // The previous implementation returned a PostcodeToAddressResponse with an empty list of addresses.
+        // Better to throw the exception so an error code can be returned to the client instead of http 200
+        // and the health check can pick it up as a micro service failure
+        throw e
     }
   }
 
   override def apply(request: UprnToAddressLookupRequest)
                     (implicit trackingId: TrackingId): Future[UprnToAddressResponse] = {
-    logMessage(trackingId, Info, s"Dealing with http POST request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
+    logMessage(trackingId, Info, s"Dealing with http GET request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
 
-      callOrdnanceSurvey.call(request).map { resp =>
-        UprnToAddressResponse(address(request.uprn, resp))
-      }.recover {
-        case e: Throwable =>
-          logMessage(trackingId, Error, s"Ordnance Survey uprn lookup service error: ${e.toString}")
-          UprnToAddressResponse(None)
-      }
+    callOrdnanceSurvey.call(request).map { resp =>
+      UprnToAddressResponse(address(request.uprn, resp))
+    }.recover {
+      case e: IllegalArgumentException =>
+        logMessage(trackingId, Error, s"Ordnance Survey uprn lookup service error: ${e.toString}")
+        UprnToAddressResponse(None)
+      case e: Throwable =>
+        logMessage(trackingId, Error, s"Ordnance Survey uprn lookup service error: ${e.toString}")
+        throw e
+    }
   }
 
   override def applyDetailedResult(request: PostcodeToAddressLookupRequest)
                                   (implicit trackingId: TrackingId): Future[Seq[AddressDto]] = {
-    logMessage(trackingId, Info, s"Dealing with http POST request for postcode: ${LogFormats.anonymize(request.postcode)}")
+    logMessage(trackingId, Info, s"Dealing with http GET request for postcode: ${LogFormats.anonymize(request.postcode)}")
 
     def toOpt(str: String) = if (str.isEmpty) None else Some(str)
     def splitAddressLines(addressLines: String) =
@@ -257,9 +264,8 @@ class LookupCommand(configuration: Configuration,
       }
     } recover {
       case e: Throwable =>
-        val msg = s"Ordnance Survey uprn lookup service error: ${e.toString} \n ${e.getStackTraceString}"
-        logMessage(trackingId, Error, msg)
-        Seq.empty[AddressDto]
+        logMessage(trackingId, Error, s"Ordnance Survey postcode lookup service error: ${e.toString}")
+        throw e
     }
   }
 }
