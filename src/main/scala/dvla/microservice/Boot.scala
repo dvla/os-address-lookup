@@ -44,17 +44,19 @@ object Boot extends App {
     system.actorOf(creationProperties, "micro-service") // create and start our service actor
   }
 
-  private val serverPort = conf.getInt("port")
+  private val port = conf.getInt("port")
+
+  private val address = conf.getString("address")
 
   private val log = Logging(system, getClass)
   logStartupConfiguration()
 
 
   // start ordnance_survey new HTTP server on the port specified in configuration with our service actor as the handler
-  IO(Http) ! Http.Bind(service, interface = "localhost", port = serverPort)
+  IO(Http) ! Http.Bind(service, interface = address, port = port)
 
   private def logStartupConfiguration() = {
-    log.info(s"Listening for HTTP on port = $serverPort")
+    log.info(s"Listening for HTTP on $address:$port")
     log.info("Micro service configured to call ordnance survey web service")
   }
 
