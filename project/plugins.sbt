@@ -19,7 +19,5 @@ addSbtPlugin("dvla" % "build-details-generator" % "1.3.2-SNAPSHOT")
 
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.8.0")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.6.4")
-
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.8.2")
 
