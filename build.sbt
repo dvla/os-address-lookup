@@ -16,6 +16,8 @@ resolvers ++= Seq(
 // sbt-Revolver allows the running of the spray service in sbt in the background using re-start
 Seq(Revolver.settings: _*)
 
+test in assembly := {}
+
 libraryDependencies ++= {
   Seq(
     "dvla" %% "vehicles-services-common" % "0.15-SNAPSHOT",
