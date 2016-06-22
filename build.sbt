@@ -1,7 +1,7 @@
 
 organization := "dvla"
 name := "os-address-lookup"
-version := "0.29"
+version := "0.30-SNAPSHOT"
 scalaVersion := "2.10.6"
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -20,7 +20,7 @@ test in assembly := {}
 
 libraryDependencies ++= {
   Seq(
-    "dvla" %% "vehicles-services-common" % "0.15",
+    "dvla" %% "vehicles-services-common" % "0.16-SNAPSHOT",
     "ch.qos.logback" % "logback-classic" % "1.1.7",
     "com.typesafe.play" %% "play-json" % "2.3.10",
     "io.spray" %% "spray-client" % "1.3.2",
