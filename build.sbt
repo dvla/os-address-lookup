@@ -2,7 +2,7 @@
 organization := "dvla"
 name := "os-address-lookup"
 version := "0.30-SNAPSHOT"
-scalaVersion := "2.10.6"
+scalaVersion := "2.11.8"
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 val nexus = "http://rep002-01.skyscape.preview-dvla.co.uk:8081/nexus/content/repositories"
