@@ -13,7 +13,7 @@ RPM_DESCRIPTION="Ordnance Survey Address Lookup"
 RPM_URL="http://example.dotcom.com"
 RPM_LICENSE="MIT"
 RPM_VENDOR="DVLA"
-RPM_PREFIX="/opt/os-address-lookup/"
+RPM_PREFIX="/opt/$RPM_NAME/"
 RPM_TARGETDIR="$WORKSPACE/target/" #grab the jenkins WORKSPACE working dir
 UPSTART_FILES_DIR="$WORKSPACE/rpm-build/upstart/"
 PKG_SCRIPTS_DIR="$WORKSPACE/rpm-build/pkg-scripts/"
@@ -35,13 +35,15 @@ mkdir -p $WORKDIR/etc/init $WORKDIR/etc/logrotate.d
 #  "Get the version of the binary from sbt and strip color information so we are just left with a version"
 cd $WORKSPACE
 VERSION=`sbt version | tail -1 | awk {'print $2'} | sed -E "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"`
-echo VERSION = $VERSION
+SBT_TARGET_DIR=`sbt crossTarget | tail -1 | awk {'print $2'} | sed -E "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g"`
+SBT_TARGET_DIR=`basename \`dirname "$SBT_TARGET_DIR"\``/`basename "$SBT_TARGET_DIR"`
 cd -
+echo VERSION = "Building RPM for version: $SBT_VERSION"
 
 # copy objects to workdir directory
 (
   cd $WORKDIR/$RPM_PREFIX/
-  cp  $WORKSPACE/target/scala-2.10/*-assembly-$VERSION.jar os-address-lookup.jar
+  cp  $WORKSPACE/$SBT_TARGET_DIR/*-assembly-$VERSION.jar ${RPM_NAME}.jar
   cd -
 )
 
@@ -52,7 +54,7 @@ cp -r $UPSTART_FILES_DIR/* $WORKDIR/etc/init
 cp -r $LOGROTATE_FILES_DIR/* $WORKDIR/etc/logrotate.d
 
 # add application.conf
-cp $WORKSPACE/target/scala-2.10/classes/application.conf $WORKDIR/$RPM_PREFIX/
+cp $WORKSPACE/$SBT_TARGET_DIR/classes/application.conf $WORKDIR/$RPM_PREFIX/
 
 # add a git log file
 git log > $WORKDIR/$RPM_PREFIX/git-log.txt
