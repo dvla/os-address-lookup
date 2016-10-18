@@ -62,7 +62,7 @@ class LookupCommand(configuration: Configuration,
     }
   }
 
-  private def addressLines(address: DPA) =
+  private def addressLines(address: DPA): String =
     (address.poBoxNumber,
       address.buildingNumber,
       address.buildingName,
@@ -70,9 +70,9 @@ class LookupCommand(configuration: Configuration,
       address.dependentThoroughfareName,
       address.thoroughfareName,
       address.dependentLocality) match {
-      case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
-      case (None, None, Some(buildingName), None, None, Some(_), _) if noAlphas(buildingName) => rule10(address)
-      case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
+        case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
+        case (None, None, Some(buildingName), None, None, Some(_), _) if noAlphas(buildingName) => rule10(address)
+        case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
         case (Some(_), _, _, _, _, _, _) => rule1(address)
         case (_, None, Some(buildingName), None, _, _, None) if noAlphas(buildingName) => rule9(address)
         case (_, None, _, None, _, _, None) => rule2(address)
@@ -81,10 +81,15 @@ class LookupCommand(configuration: Configuration,
         case (_, Some(_), _, _, _, Some(_), _) => rule6(address)
         case (_, _, _, _, _, _, None) => rule5(address)
         case _ => rule6(address)
-      }
+    }
 
   private def applyVssRules(address: DPA): String = {
-    addressLines(address) + buildPostTown(address.postTown) + Separator + address.postCode
+    val addrLines = addressLines(address)
+    if (addrLines.isEmpty) {
+      val msg = s"ERROR: this address does not have any address lines - postcode: ${LogFormats.anonymize(address.postCode)}"
+      throw new Exception(msg)
+    }
+    addrLines + buildPostTown(address.postTown) + Separator + address.postCode
   }
 
   //rule methods will build and return three strings for address line1, line2 and line3
@@ -239,15 +244,20 @@ class LookupCommand(configuration: Configuration,
         case Array(line1) => (line1, None, None)
         case Array(line1, line2) => (line1, toOpt(line2), None)
         case Array(line1, line2, line3) => (line1, toOpt(line2), toOpt(line3))
+        case _ =>
+          val msg = s"ERROR: this address does not have any address lines - postcode: ${LogFormats.anonymize(request.postcode)}"
+          throw new Exception(msg)
       }
 
     callOrdnanceSurvey.call(request).map { resp =>
       resp.flatMap(_.results).fold {
         // Handle no results for this postcode.
-        logMessage(trackingId, Info, s"No results returned for postcode: ${LogFormats.anonymize(request.postcode)}")
+        logMessage(trackingId, Info, s"No results returned from Ordnance Survey for postcode: ${LogFormats.anonymize(request.postcode)}")
         Seq.empty[AddressDto]
       } { results =>
-        logMessage(trackingId, Info, s"Returning result for postcode request ${LogFormats.anonymize(request.postcode)}")
+        val msg = "Successfully retrieved results from Ordnance Survey for postcode " +
+          s"${LogFormats.anonymize(request.postcode)} - now processing those results"
+        logMessage(trackingId, Info, msg)
 
         results.flatMap(_.DPA).map { address =>
           val (line1, line2, line3) = splitAddressLines(addressLines(address))
