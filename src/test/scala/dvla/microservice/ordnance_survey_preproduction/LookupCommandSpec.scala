@@ -640,6 +640,40 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
         e shouldBe a [ConnectionException]
       }
     }
+
+    "handle addresses that are returned from ordnance survey with only organisation name, post town and postcode in address line v2 code" in {
+      val osResult = resultBuilder(
+        organisationName = Some("ROYAL NAVY"),
+        postTown = "PLYMOUTH",
+        postCode = "PL2 2BG"
+      )
+      val service = lookupCommandWithCallOrdnanceSurveyStub(Some(Response(header, Some(osResult))))
+      val result = service(PostcodeToAddressLookupRequest("PL22BG"))
+
+      whenReady(result) { r =>
+        r.addresses.length should equal(osResult.length)
+        r shouldBe PostcodeToAddressResponse(
+          Seq(AddressResponseDto(s"ROYAL NAVY, PLYMOUTH, PL2 2BG", Some(traderUprnValid), Some("ROYAL NAVY")))
+        )
+      }
+    }
+
+    "throw an exception when dealing with addresses that are returned from ordnance survey with only organisation name, post town and postcode in address line v1 code" in {
+      val osResult = resultBuilder(
+        organisationName = Some("ROYAL NAVY"),
+        postTown = "PLYMOUTH",
+        postCode = "PL2 2BG"
+      )
+      val service = lookupCommandWithCallOrdnanceSurveyStub(
+        Some(Response(header, Some(osResult))),
+        new Configuration(addressLinesV2 = false)
+      )
+      val result: Future[PostcodeToAddressResponse] = service(PostcodeToAddressLookupRequest("PL22BG"))
+      whenReady(result.failed) { e =>
+        e shouldBe a [Exception]
+        e.getMessage should startWith("ERROR: this address does not have any address lines - postcode:")
+      }
+    }
   }
 
   "call UprnToAddressLookupRequest" should {
@@ -812,7 +846,8 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
      r(num, addr)
     }))
 
-  private def lookupCommandWithCallOrdnanceSurveyStub(response: Option[Response]): AddressLookupCommand = {
+  private def lookupCommandWithCallOrdnanceSurveyStub(response: Option[Response],
+                                                      configuration: Configuration = configuration): AddressLookupCommand = {
     val callOrdnanceSurveyStub = mock[CallOrdnanceSurvey]
     when(callOrdnanceSurveyStub.call(any[PostcodeToAddressLookupRequest])(any[TrackingId]))
       .thenReturn(Future.successful(response))
