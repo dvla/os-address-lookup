@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source ./rpm-build/jenkins_job_opts
+echo "SBT options $SBT_OPTS"
+sbt clean coverage test coverageReport
