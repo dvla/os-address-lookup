@@ -17,7 +17,7 @@ Running the application
     To run this microservice on its own, you have to create a fat jar and then run this jar. To do so:
 
     	sbt assembly
-    	java -jar target/scala-2.10/os-address-lookup-XXX.jar
+    	java -jar target/scala-2.11/os-address-lookup-XXX.jar
 
     	where XXX is the current version
 
@@ -53,3 +53,21 @@ To see how this micro-service will re-format that json to a view model, you can 
 [ordnance-survey]: www.ordnancesurvey.co.uk "Ordnance Survey"
 [scala]: http://www.scala-lang.org/ "Scala Language"
 [spray]: http://spray.io/ "Spray"
+
+Useful Links
+============
+
+[Postcode Address File specification](http://www.poweredbypaf.com/wp-content/uploads/2015/02/Latest-Programmers_guide_Edition-7-Version-6.pdf)
+
+[Some interesting false assumptions about addresses](https://www.mjt.me.uk/posts/falsehoods-programmers-believe-about-addresses/)
+
+[OS Datasets](http://data.ordnancesurvey.co.uk/)
+
+[OS REST API test page](https://apidocs.os.uk/docs/os-places-find)
+
+Glossary
+========
+
+**DPA**  Delivery Point Address (dataset)
+
+**LPI** Local Property Identifier (dataset)
