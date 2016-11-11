@@ -51,13 +51,13 @@ object Boot extends App {
   private val log = Logging(system, getClass)
   logStartupConfiguration()
 
-
   // start ordnance_survey new HTTP server on the port specified in configuration with our service actor as the handler
   IO(Http) ! Http.Bind(service, interface = address, port = port)
 
   private def logStartupConfiguration() = {
     log.info(s"Listening for HTTP on $address:$port")
-    log.info("Micro service configured to call ordnance survey web service")
+    val url = conf.getString("ordnancesurvey.preproduction.baseurl")
+    log.info(s"Micro service configured to call ordnance survey web service on url $url")
   }
 
   private def setDefaultTimeZone() = {
