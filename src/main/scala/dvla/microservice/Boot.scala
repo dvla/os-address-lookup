@@ -20,11 +20,9 @@ object Boot extends App {
     val configuration = {
       val osBaseUrl = conf.getString("ordnancesurvey.preproduction.baseurl")
       val apiKey = conf.getString("ordnancesurvey.preproduction.apikey")
-      val addressLinesV2 = conf.getBoolean("addressLinesV2")
       Configuration(
         baseUrl = osBaseUrl,
-        apiKey = apiKey,
-        addressLinesV2 = addressLinesV2)
+        apiKey = apiKey)
     }
 
     implicit val commandExecutionContext = system.dispatcher
@@ -60,9 +58,6 @@ object Boot extends App {
     log.info(s"Listening for HTTP on $address:$port")
     val url = conf.getString("ordnancesurvey.preproduction.baseurl")
     log.info(s"Micro service configured to call ordnance survey web service on url $url")
-    val addressLinesV2 = conf.getBoolean("addressLinesV2")
-    val version = if (addressLinesV2) "v2" else "v1"
-    log.info(s"Micro service configured to use address line population $version code")
   }
 
   private def setDefaultTimeZone() = {
