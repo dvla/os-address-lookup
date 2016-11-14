@@ -213,7 +213,7 @@ class LookupCommand(configuration: Configuration,
       PostcodeToAddressResponse(addresses(request.postcode, resp))
     }.recover {
       case e: Throwable =>
-        logMessage(trackingId, Info, s"Ordnance Survey postcode lookup service error: ${e.toString}")
+        logErrorMessage(trackingId, s"Ordnance Survey postcode lookup service error", e)
         // The previous implementation returned a PostcodeToAddressResponse with an empty list of addresses.
         // Better to throw the exception so an error code can be returned to the client instead of http 200
         // and the health check can pick it up as a micro service failure
@@ -229,10 +229,10 @@ class LookupCommand(configuration: Configuration,
       UprnToAddressResponse(address(request.uprn, resp))
     }.recover {
       case e: IllegalArgumentException =>
-        logMessage(trackingId, Error, s"Ordnance Survey uprn lookup service error: ${e.toString}")
+        logErrorMessage(trackingId, s"Ordnance Survey uprn lookup service error", e)
         UprnToAddressResponse(None)
       case e: Throwable =>
-        logMessage(trackingId, Error, s"Ordnance Survey uprn lookup service error: ${e.toString}")
+        logErrorMessage(trackingId, s"Ordnance Survey uprn lookup service error", e)
         throw e
     }
   }
@@ -279,7 +279,7 @@ class LookupCommand(configuration: Configuration,
       }
     } recover {
       case e: Throwable =>
-        logMessage(trackingId, Error, s"Ordnance Survey postcode lookup service error: ${e.toString}")
+        logErrorMessage(trackingId, s"Ordnance Survey postcode lookup service error", e)
         throw e
     }
   }

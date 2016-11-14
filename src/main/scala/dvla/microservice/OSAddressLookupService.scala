@@ -28,6 +28,9 @@ trait OSAddressLookupService extends HttpService with DVLALogger {
   // TODO Work out if we want to dispatch requests on ordnance_survey different dispatcher
   private implicit def executionContext = actorRefFactory.dispatcher
 
+  //NOTE:
+  // VM calls postcode-to-address => uk.gov.dvla.vehicles.presentation.common.webserviceclients.addresslookup.ordnanceservey.WebServiceImpl#callPostcodeWebService
+  // PR calls address => uk.gov.dvla.vehicles.presentation.common.webserviceclients.addresslookup.gds.WebServiceImpl#callPostcodeWebService
   val route = {
     get {
       pathPrefix("postcode-to-address") {
@@ -119,7 +122,6 @@ trait OSAddressLookupService extends HttpService with DVLALogger {
     }
   }
 
-  // This is the only method that needs to stay in. The rest are legacy
   private def addresses(postcode: String, languageCode: Option[String])
                        (implicit trackingId: TrackingId, log: LoggingAdapter): Route = {
     logMessage(trackingId, Info, "Received http GET request on os address lookup /addresses")
