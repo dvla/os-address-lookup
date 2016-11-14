@@ -62,30 +62,6 @@ class LookupCommand(configuration: Configuration,
     }
   }
 
-//  private def addressLines(address: DPA): String =
-//    if (configuration.addressLinesV2) addressLinesV2(address) else addressLinesV1(address)
-
-//  private def addressLinesV1(address: DPA): String =
-//    (address.poBoxNumber,
-//      address.buildingNumber,
-//      address.buildingName,
-//      address.subBuildingName,
-//      address.dependentThoroughfareName,
-//      address.thoroughfareName,
-//      address.dependentLocality) match {
-//        case (None, None, Some(_), Some(_), None, Some(_), None) => rule8(address)
-//        case (None, None, Some(buildingName), None, None, Some(_), _) if noAlphas(buildingName) => rule10(address)
-//        case (None, Some(_), None, None, None, Some(_), _) => rule7(address)
-//        case (Some(_), _, _, _, _, _, _) => rule1(address)
-//        case (_, None, Some(buildingName), None, _, _, None) if noAlphas(buildingName) => rule9(address)
-//        case (_, None, _, None, _, _, None) => rule2(address)
-//        case (_, _, None, None, _, _, _) => rule3(address)
-//        case (_, None, _, None, _, _, _) => rule4(address)
-//        case (_, Some(_), _, _, _, Some(_), _) => rule6(address)
-//        case (_, _, _, _, _, _, None) => rule5(address)
-//        case _ => rule6(address)
-//      }
-
   private def addressLinesV2(address: DPA): String =
     (address.poBoxNumber,
       address.buildingNumber,
