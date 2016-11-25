@@ -30,7 +30,7 @@ trait OSAddressLookupService extends HttpService with DVLALogger {
 
   //NOTE:
   // VM calls postcode-to-address => uk.gov.dvla.vehicles.presentation.common.webserviceclients.addresslookup.ordnanceservey.WebServiceImpl#callPostcodeWebService
-  // PR calls address => uk.gov.dvla.vehicles.presentation.common.webserviceclients.addresslookup.gds.WebServiceImpl#callPostcodeWebService
+  // PR calls addresses via javascipt (VPC) => uk.gov.dvla.vehicles.presentation.common.controllers.AddressLookup#byPostcode
   val route = {
     get {
       pathPrefix("postcode-to-address") {

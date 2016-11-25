@@ -210,7 +210,9 @@ class LookupCommand(configuration: Configuration,
     logMessage(trackingId, Info, s"Dealing with http GET request for postcode ${LogFormats.anonymize(request.postcode)}")
 
     callOrdnanceSurvey.call(request).map { resp =>
-      PostcodeToAddressResponse(addresses(request.postcode, resp))
+      val addressesResp = addresses(request.postcode, resp)
+      logMessage(trackingId, Debug, "addressesResp: " + addressesResp)
+      PostcodeToAddressResponse(addressesResp)
     }.recover {
       case e: Throwable =>
         logErrorMessage(trackingId, s"Ordnance Survey postcode lookup service error", e)
@@ -242,7 +244,8 @@ class LookupCommand(configuration: Configuration,
     logMessage(trackingId, Info, s"Dealing with http GET request for postcode: ${LogFormats.anonymize(request.postcode)}")
 
     def toOpt(str: String) = if (str.isEmpty) None else Some(str)
-    def splitAddressLines(addressLines: String) =
+    def splitAddressLines(addressLines: String) = {
+      logMessage(trackingId, Debug, "addressLines: " + addressLines)
       addressLines.split(",").map(_.trim).map {line =>
         if (line.length > 30) line.take(30) else line
       }.filterNot(_.isEmpty) match {
@@ -250,9 +253,10 @@ class LookupCommand(configuration: Configuration,
         case Array(line1, line2) => (line1, toOpt(line2), None)
         case Array(line1, line2, line3) => (line1, toOpt(line2), toOpt(line3))
         case _ =>
+          // Note: No known postcode/address returned by OS that would result in reaching this but you never know...
           val msg = s"ERROR: this address does not have any address lines - postcode: ${LogFormats.anonymize(request.postcode)}"
           throw new Exception(msg)
-      }
+      }}
 
     callOrdnanceSurvey.call(request).map { resp =>
       resp.flatMap(_.results).fold {
@@ -265,9 +269,15 @@ class LookupCommand(configuration: Configuration,
         logMessage(trackingId, Info, msg)
 
         results.flatMap(_.DPA).map { address =>
+          val addressSanitisedForVss = applyVssRules(address)
           val (line1, line2, line3) = splitAddressLines(addressLinesV2(address))
+          var addressLine = Seq(address.organisationName, Some(addressSanitisedForVss)).flatten.mkString(Separator)
+          if (line1.startsWith(address.organisationName.getOrElse(""))) {
+            logMessage(trackingId, Debug, "line1 includes business name")
+            addressLine = Seq(Some(addressSanitisedForVss)).flatten.mkString(Separator)
+          }
           AddressDto(
-            Seq(address.organisationName, Some(applyVssRules(address))).flatten.mkString(Separator),
+            addressLine,
             businessName = address.organisationName,
             streetAddress1 = line1,
             streetAddress2 = line2,
