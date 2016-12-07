@@ -15,7 +15,7 @@ resolvers += "Maven 2" at "http://repo2.maven.org/maven2"
 
 resolvers += "Sonatype Repository" at "https://oss.sonatype.org/content/groups/public"
 
-addSbtPlugin("dvla" % "build-details-generator" % "1.3.2-SNAPSHOT")
+addSbtPlugin("dvla" % "build-details-generator" % "1.3.1")
 
 addSbtPlugin("io.spray" % "sbt-revolver" % "0.8.0")
 
