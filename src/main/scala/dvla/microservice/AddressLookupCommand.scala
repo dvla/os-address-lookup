@@ -7,7 +7,5 @@ import scala.concurrent.Future
 
 trait AddressLookupCommand extends DVLALogger {
 
-  def apply(request: PostcodeToAddressLookupRequest)(implicit trackingId: TrackingId): Future[PostcodeToAddressResponse]
-  def applyDetailedResult(request: PostcodeToAddressLookupRequest)(implicit trackingId: TrackingId): Future[Seq[AddressDto]]
-  def apply(request: UprnToAddressLookupRequest)(implicit trackingId: TrackingId): Future[UprnToAddressResponse]
+  def apply(request: PostcodeToAddressLookupRequest)(implicit trackingId: TrackingId): Future[Seq[AddressDto]]
 }

@@ -1,7 +1,7 @@
 {
     "header" : {
-        "uri" : "https://api.ordnancesurvey.co.uk/places/v1/addresses/uprn?uprn=200010019924&key=[INSERT_USER_API_KEY_HERE]",
-        "query" : "uprn=200010019924",
+        "uri" : "https://api.ordnancesurvey.co.uk/places/v1/addresses/postcode?postcode=SO16%200AS&key=[INSERT_USER_API_KEY_HERE]",
+        "query" : "postcode=SO16 0AS",
         "offset" : 0,
         "totalresults" : 2,
         "format" : "JSON",

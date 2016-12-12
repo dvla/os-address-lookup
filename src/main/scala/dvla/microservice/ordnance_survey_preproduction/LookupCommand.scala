@@ -2,28 +2,23 @@ package dvla.microservice.ordnance_survey_preproduction
 
 import akka.actor.ActorSystem
 import akka.event.Logging
-import dvla.common.clientsidesession.TrackingId
 import dvla.common.LogFormats
-import dvla.domain.address_lookup.AddressDto
-import dvla.domain.address_lookup.AddressViewModel
-import dvla.domain.address_lookup.PostcodeToAddressLookupRequest
-import dvla.domain.address_lookup.PostcodeToAddressResponse
-import dvla.domain.address_lookup.AddressResponseDto
-import dvla.domain.address_lookup.UprnToAddressLookupRequest
-import dvla.domain.address_lookup.UprnToAddressResponse
-import dvla.domain.ordnance_survey_preproduction.{DPA, Response}
+import dvla.common.clientsidesession.TrackingId
+import dvla.domain.address_lookup.{AddressDto, PostcodeToAddressLookupRequest}
+import dvla.domain.ordnance_survey_preproduction.DPA
 import dvla.microservice.{AddressLookupCommand, Configuration}
-import scala.annotation.tailrec
+
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{ Success, Try}
+import scala.util.{Success, Try}
 
 class LookupCommand(configuration: Configuration,
                     callOrdnanceSurvey: CallOrdnanceSurvey)
                    (implicit system: ActorSystem, executionContext: ExecutionContext)
               extends AddressLookupCommand  {
 
+  private final val LineMaxLength = 30
+  private final val TownMaxLength = 30
   private final val Separator = ", "
-  private final val Nothing = ""
   private final val Space = " "
   private implicit final lazy val log = Logging(system, this.getClass)
   private implicit val AddressOrdering = new Ordering[String] {
@@ -38,31 +33,12 @@ class LookupCommand(configuration: Configuration,
       }
     }
 
-    def stripSameSuffix(a: String, b: String): (String, String) =
+    private def stripSameSuffix(a: String, b: String): (String, String) =
       if (a.head == b.head && !a.head.isDigit) stripSameSuffix(a.tail, b.tail)
       else (a, b)
   }
 
-  private def addresses(postcode: String, resp: Option[Response])
-                       (implicit trackingId: TrackingId): Seq[AddressResponseDto] = {
-    val responseResults = resp.flatMap(_.results)
-
-    responseResults match {
-      case Some(results) =>
-        val addresses = results.flatMap(_.DPA)
-        logMessage(trackingId, Info, s"Returning result for postcode request ${LogFormats.anonymize(postcode)}")
-        addresses.map{ address =>
-          val addressSanitisedForVss = applyVssRules(address)
-          AddressResponseDto(addressSanitisedForVss, Some(address.UPRN) ,address.organisationName)
-        }.sortBy(_.address)(AddressOrdering)
-      case None =>
-        // Handle no results for this postcode.
-        logMessage(trackingId, Info, s"No results returned for postcode: ${LogFormats.anonymize(postcode)}")
-        Seq.empty
-    }
-  }
-
-  private def addressLinesV2(address: DPA): String =
+  private def applyVssAddressRules(address: DPA)(implicit trackingId: TrackingId): String =
     (address.poBoxNumber,
       address.buildingNumber,
       address.buildingName,
@@ -71,191 +47,158 @@ class LookupCommand(configuration: Configuration,
       address.thoroughfareName,
       address.dependentLocality,
       address.organisationName) match {
-        case (None, None, Some(_), Some(_), None, Some(_), None, _) => rule8(address)
-        case (None, None, Some(buildingName), None, None, Some(_), _, _) if noAlphas(buildingName) => rule10(address)
-        case (None, Some(_), None, None, None, Some(_), _, _) => rule7(address)
-        case (Some(_), _, _, _, _, _, _, _) => rule1(address)
-        case (_, None, Some(buildingName), None, _, _, None, _) if noAlphas(buildingName) => rule9(address)
-        case (None, None, None, None, None, None, None, Some(_)) => rule11(address)
-        case (_, None, _, None, _, _, None, _) => rule2(address)
-        case (_, _, None, None, _, _, _, _) => rule3(address)
-        case (_, None, _, None, _, _, _, _) => rule4(address)
-        case (_, Some(_), _, _, _, Some(_), _, _) => rule6(address)
-        case (_, _, _, _, _, _, None, _) => rule5(address)
-        case _ => rule6(address)
+        case (None, None, Some(_), Some(_), None, Some(_), None, _) => {
+          logMessage(trackingId, Debug, "applying rule8")
+          rule8(address)
+        }
+        case (None, None, Some(buildingName), None, None, Some(_), _, _) if noAlphas(buildingName) => {
+          logMessage(trackingId, Debug, "applying rule10")
+          rule10(address)}
+        case (None, Some(_), None, None, None, Some(_), _, _) => {
+          logMessage(trackingId, Debug, "applying rule7")
+          rule7(address)
+        }
+        case (Some(_), _, _, _, _, _, _, _) => {
+          logMessage(trackingId, Debug, "applying rule1")
+          rule1(address)
+        }
+        case (_, None, Some(buildingName), None, _, _, None, _) if noAlphas(buildingName) => {
+          logMessage(trackingId, Debug, "applying rule9")
+           rule9(address)
+        }
+        case (None, None, None, None, None, None, None, Some(_)) => {
+          logMessage(trackingId, Debug, "applying rule11")
+          rule11(address)
+        }
+        case (_, None, _, None, _, _, None, _) => {
+          logMessage(trackingId, Debug, "applying rule2")
+          rule2(address)
+        }
+        case (_, _, None, None, _, _, _, _) => {
+          logMessage(trackingId, Debug, "applying rule3")
+          rule3(address)
+        }
+        case (_, None, _, None, _, _, _, _) => {
+          logMessage(trackingId, Debug, "applying rule4")
+          rule4(address)
+        }
+        case (_, Some(_), _, _, _, Some(_), _, _) => {
+          logMessage(trackingId, Debug, "applying rule6")
+          rule6(address)
+        }
+        case (_, _, _, _, _, _, None, _) => {
+          logMessage(trackingId, Debug, "applying rule5")
+          rule5(address)
+        }
+        case _ => {
+          logMessage(trackingId, Warn, "unable to match known rules, applying rule6 anyway...")
+          rule6(address)
+        }
       }
 
-  private def applyVssRules(address: DPA): String = {
-    val addrLines = addressLinesV2(address)
+  private def addressForVss(address: DPA)(implicit trackingId: TrackingId): String = {
+    val addrLines = applyVssAddressRules(address)
     if (addrLines.isEmpty) {
       val msg = s"ERROR: this address does not have any address lines - postcode: ${LogFormats.anonymize(address.postCode)}"
       throw new Exception(msg)
     }
-    addrLines + buildPostTown(address.postTown) + Separator + address.postCode
+    addrLines + Separator + parsePostTown(address.postTown) + Separator + address.postCode
   }
 
   //rule methods will build and return three strings for address line1, line2 and line3
   private def rule1(address: DPA): String = {
     val poBox = address.poBoxNumber.map(number => s"P.O. BOX $number")
-    lineBuild(Seq(poBox)) +
-      lineBuild(Seq(address.thoroughfareName)) +
-      lineBuild(Seq(address.dependentLocality))
+      buildAddressLine(Seq(poBox),
+          Seq(address.thoroughfareName),
+          address.dependentLocality)
   }
 
   private def rule2(address: DPA): String =
-    lineBuild(Seq(address.buildingName)) +
-      lineBuild(Seq(dependentThoroughfareNameNotBlank(address))) +
-      lineBuild(Seq(address.thoroughfareName))
-
-  private def dependentThoroughfareNameNotBlank(address: DPA): Option[String] =
-    address.dependentThoroughfareName match {
-      case Some(dependentThoroughfareName) if !dependentThoroughfareName.trim.isEmpty => Some(dependentThoroughfareName)
-      case _ => None
-    }
+    buildAddressLine(Seq(address.buildingName),
+      Seq(address.dependentThoroughfareName),
+      address.thoroughfareName)
 
   private def rule3(address: DPA): String =
-    lineBuild(Seq(address.buildingNumber, dependentThoroughfareNameNotBlank(address))) +
-      lineBuild(Seq(address.thoroughfareName)) +
-      lineBuild(Seq(address.dependentLocality))
+    buildAddressLine(Seq(address.buildingNumber, address.dependentThoroughfareName),
+      Seq(address.thoroughfareName),
+      address.dependentLocality)
 
   private def rule4(address: DPA): String =
-    lineBuild(Seq(address.buildingName, dependentThoroughfareNameNotBlank(address))) +
-      lineBuild(Seq(address.thoroughfareName)) +
-      lineBuild(Seq(address.dependentLocality))
+    buildAddressLine(Seq(address.buildingName, address.dependentThoroughfareName),
+      Seq(address.thoroughfareName),
+      address.dependentLocality)
 
+  //NOTE rule 5 is actually redundant since the default case match would work by calling rule 6
   private def rule5(address: DPA): String =
-    lineBuild(Seq(address.subBuildingName, address.buildingName)) +
-      lineBuild(Seq(address.buildingNumber, dependentThoroughfareNameNotBlank(address))) +
-      lineBuild(Seq(address.thoroughfareName))
+    buildAddressLine(Seq(address.subBuildingName, address.buildingName),
+      Seq(address.buildingNumber, address.dependentThoroughfareName),
+      address.thoroughfareName)
 
   private def rule6(address: DPA): String =
-    lineBuild(Seq(address.subBuildingName, address.buildingName)) +
-      lineBuild(Seq(address.buildingNumber, dependentThoroughfareNameNotBlank(address), address.thoroughfareName)) +
-      lineBuild(Seq(address.dependentLocality))
+    buildAddressLine(Seq(address.subBuildingName, address.buildingName),
+      Seq(address.buildingNumber, address.dependentThoroughfareName, address.thoroughfareName),
+      address.dependentLocality)
 
   private def rule7(address: DPA): String =
-    lineBuild(Seq(address.buildingNumber, address.thoroughfareName)) +
-      lineBuild(Seq(address.dependentLocality)) +
-      Nothing
+    buildAddressLine(Seq(address.buildingNumber, address.thoroughfareName),
+      Seq(address.dependentLocality),
+      None)
 
   private def rule8(address: DPA): String =
-    lineBuild(Seq(address.subBuildingName)) +
-      lineBuild(Seq(address.buildingName)) +
-      lineBuild(Seq(address.thoroughfareName))
+    buildAddressLine(Seq(address.subBuildingName),
+      Seq(address.buildingName),
+      address.thoroughfareName)
 
   private def rule9(address: DPA): String =
-    lineBuild(Seq(address.buildingName, dependentThoroughfareNameNotBlank(address))) +
-      lineBuild(Seq(address.thoroughfareName))
+    buildAddressLine(Seq(address.buildingName, address.dependentThoroughfareName),
+      Seq(address.thoroughfareName),
+      None)
 
   private def rule10(address: DPA): String =
-    lineBuild(Seq(address.buildingName, address.thoroughfareName)) +
-      lineBuild(Seq(address.dependentLocality)) +
-      Nothing
+    buildAddressLine(Seq(address.buildingName, address.thoroughfareName),
+      Seq(address.dependentLocality),
+      None)
 
   private def rule11(address: DPA): String =
-    lineBuild(Seq(address.organisationName))
+    buildAddressLine(Seq(address.organisationName),
+      Seq.empty,
+      None)
 
   private def noAlphas(messageText: String): Boolean =
     messageText.length==messageText.replaceAll( """[A-Za-z]""", "").length
 
-  @tailrec
-  private def lineBuild(addressPart: Seq[Option[String]], accumulatedLine: String = Nothing): String =
-    if (addressPart.size == 1) lastItemInList(addressPart.head, accumulatedLine, Separator)
-    else lineBuild(addressPart.tail, accumulateLine(addressPart.head, accumulatedLine, Space))
-
-  private def accumulateLine(currentItem: Option[String], accumulatedLine: String, lastChar: String): String =
-    currentItem match {
-      case Some(item) => accumulatedLine + item + lastChar
-      case _ => accumulatedLine
-    }
-
-  private def lastItemInList(lastItem: Option[String], accumulatedLine: String, lastChar: String): String = {
-    val currentAddressLine = if (accumulatedLine.takeRight(1) == Space) accumulatedLine.dropRight(1) else accumulatedLine
-    lastItem match {
-      case Some(item) => accumulatedLine + item + lastChar
-      case _ => if (currentAddressLine + lastChar == lastChar) Nothing
-      else currentAddressLine + lastChar
-    }
+  private def buildAddressLine(addressPart: Seq[Option[String]], line2: Seq[Option[String]], line3: Option[String]): String = {
+    Seq(addressPart.flatten, line2.flatten, Seq(line3).flatten)
+      .map(_.mkString(Space).trim)
+      .filterNot(_.isEmpty)
+      .mkString(Separator)
   }
 
-  private def buildPostTown (rawPostTown: String): String = {
+  private def parsePostTown (rawPostTown: String): String = {
     val postTownAbbreviations = Map("LLANFAIRPWLLGWYNGYLLGOGERYCHWYRNDROBWLLLLANTYSILIOGOGOGOCH" -> "LLANFAIRPWLLGWYNGYLL", // LL61 5UJ
       "LETCHWORTH GARDEN CITY" -> "LETCHWORTH", // SG6 1FT
       "APPLEBY-IN-WESTMORLAND" -> "APPLEBY") // CA16 6EJ
-    postTownAbbreviations.getOrElse(rawPostTown.toUpperCase, rawPostTown.take(20))
-  }
-
-  private def address(uprn: Long, resp: Option[Response])(implicit trackingId: TrackingId): Option[AddressViewModel] = {
-    val flattenMapResponse = resp.flatMap(_.results)
-
-    flattenMapResponse match {
-      case Some(results) =>
-        val addresses = results.flatMap(_.DPA)
-        logMessage(trackingId, Info, s"Returning result for uprn request ${LogFormats.anonymize(uprn.toString)}")
-        // If this line fails an IllegalArgumentException will be thrown
-        require(addresses.nonEmpty, "Should be at least one address for the UPRN")
-        Some(AddressViewModel(
-          uprn = Some(addresses.head.UPRN.toLong),
-          address = applyVssRules(addresses.head).split(", ")
-        )) // Translate to view model.
-      case None =>
-        val msg = s"No results returned by web service for submitted UPRN: ${LogFormats.anonymize(uprn.toString)}"
-        logMessage(trackingId, Info, msg)
-        None
-    }
+    postTownAbbreviations.getOrElse(rawPostTown.toUpperCase, rawPostTown.take(TownMaxLength))
   }
 
   override def apply(request: PostcodeToAddressLookupRequest)
-                    (implicit trackingId: TrackingId): Future[PostcodeToAddressResponse] = {
-    logMessage(trackingId, Info, s"Dealing with http GET request for postcode ${LogFormats.anonymize(request.postcode)}")
-
-    callOrdnanceSurvey.call(request).map { resp =>
-      val addressesResp = addresses(request.postcode, resp)
-      logMessage(trackingId, Debug, "addressesResp: " + addressesResp)
-      PostcodeToAddressResponse(addressesResp)
-    }.recover {
-      case e: Throwable =>
-        logErrorMessage(trackingId, s"Ordnance Survey postcode lookup service error", e)
-        // The previous implementation returned a PostcodeToAddressResponse with an empty list of addresses.
-        // Better to throw the exception so an error code can be returned to the client instead of http 200
-        // and the health check can pick it up as a micro service failure
-        throw e
-    }
-  }
-
-  override def apply(request: UprnToAddressLookupRequest)
-                    (implicit trackingId: TrackingId): Future[UprnToAddressResponse] = {
-    logMessage(trackingId, Info, s"Dealing with http GET request for uprn ${LogFormats.anonymize(request.uprn.toString)}")
-
-    callOrdnanceSurvey.call(request).map { resp =>
-      UprnToAddressResponse(address(request.uprn, resp))
-    }.recover {
-      case e: IllegalArgumentException =>
-        logErrorMessage(trackingId, s"Ordnance Survey uprn lookup service error", e)
-        UprnToAddressResponse(None)
-      case e: Throwable =>
-        logErrorMessage(trackingId, s"Ordnance Survey uprn lookup service error", e)
-        throw e
-    }
-  }
-
-  override def applyDetailedResult(request: PostcodeToAddressLookupRequest)
-                                  (implicit trackingId: TrackingId): Future[Seq[AddressDto]] = {
+                           (implicit trackingId: TrackingId): Future[Seq[AddressDto]] = {
     logMessage(trackingId, Info, s"Dealing with http GET request for postcode: ${LogFormats.anonymize(request.postcode)}")
+    logMessage(trackingId, Debug, s"apply - postcode: ${request.postcode}")
 
-    def toOpt(str: String) = if (str.isEmpty) None else Some(str)
     def splitAddressLines(addressLines: String) = {
-      logMessage(trackingId, Debug, "addressLines: " + addressLines)
+      logMessage(trackingId, Debug, "splitAddressLines - addressLines:" + addressLines + "<end>")
       addressLines.split(",").map(_.trim).map {line =>
-        if (line.length > 30) line.take(30) else line
+        if (line.length > LineMaxLength) line.take(LineMaxLength) else line
       }.filterNot(_.isEmpty) match {
         case Array(line1) => (line1, None, None)
-        case Array(line1, line2) => (line1, toOpt(line2), None)
-        case Array(line1, line2, line3) => (line1, toOpt(line2), toOpt(line3))
+        case Array(line1, line2) => (line1, Some(line2), None)
+        case Array(line1, line2, line3) => (line1, Some(line2), Some(line3))
         case _ =>
           // Note: No known postcode/address returned by OS that would result in reaching this but you never know...
-          val msg = s"ERROR: this address does not have any address lines - postcode: ${LogFormats.anonymize(request.postcode)}"
-          throw new Exception(msg)
+          val msg = s"unable to extract any address lines for postcode: ${LogFormats.anonymize(request.postcode)}"
+          logMessage(trackingId, Warn, msg)
+          (s"", None, None)
       }}
 
     callOrdnanceSurvey.call(request).map { resp =>
@@ -269,22 +212,35 @@ class LookupCommand(configuration: Configuration,
         logMessage(trackingId, Info, msg)
 
         results.flatMap(_.DPA).map { address =>
-          val addressSanitisedForVss = applyVssRules(address)
-          val (line1, line2, line3) = splitAddressLines(addressLinesV2(address))
-          var addressLine = Seq(address.organisationName, Some(addressSanitisedForVss)).flatten.mkString(Separator)
-          if (line1.startsWith(address.organisationName.getOrElse(""))) {
-            logMessage(trackingId, Debug, "line1 includes business name")
-            addressLine = Seq(Some(addressSanitisedForVss)).flatten.mkString(Separator)
+          val addressSanitisedForVss = addressForVss(address)
+          // remove org name, post town and post code from address before splitting
+          val addressLinesPart = addressSanitisedForVss.replace(parsePostTown(address.postTown), "").replace(address.postCode, "").replace(address.organisationName.getOrElse(""), "")
+          val (line1, line2, line3) = splitAddressLines(addressLinesPart)
+          var addressLine = Seq(Some(addressSanitisedForVss)).flatten.mkString(Separator)
+          if (line1.length == 0 && address.organisationName != None) {
+            logMessage(trackingId, Debug, "line1 empty and org name present so set line1 to be it")
+
+            AddressDto(
+              addressLine,
+              businessName = address.organisationName,
+              streetAddress1 = address.organisationName.getOrElse(""),
+              streetAddress2 = line2,
+              streetAddress3 = line3,
+              postTown = parsePostTown(address.postTown),
+              postCode = address.postCode)
+
+          } else {
+
+            AddressDto(
+              addressLine,
+              businessName = address.organisationName,
+              streetAddress1 = line1,
+              streetAddress2 = line2,
+              streetAddress3 = line3,
+              postTown = parsePostTown(address.postTown),
+              postCode = address.postCode
+            )
           }
-          AddressDto(
-            addressLine,
-            businessName = address.organisationName,
-            streetAddress1 = line1,
-            streetAddress2 = line2,
-            streetAddress3 = line3,
-            postTown = buildPostTown(address.postTown),
-            postCode = request.postcode
-          )
         }.sortBy(_.addressLine)(AddressOrdering)
       }
     } recover {

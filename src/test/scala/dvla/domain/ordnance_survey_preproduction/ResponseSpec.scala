@@ -12,7 +12,7 @@ class ResponseSpec extends UnitSpec {
       val resp = getResource(Path + "Empty_Result_Response.json")
       val poso = Json.parse(resp).as[Response]
 
-      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/uprn?uprn=200010019924&key=[INSERT_USER_API_KEY_HERE]"))
+      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/postcode?postcode=EC1A4JQ&key=[INSERT_USER_API_KEY_HERE]"))
       poso.header.totalresults should equal(0)
     }
 
@@ -30,7 +30,7 @@ class ResponseSpec extends UnitSpec {
       val resp = getResource(Path + "One_DPA_Result_Response.json")
       val poso = Json.parse(resp).as[Response]
 
-      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/uprn?uprn=200010019924&key=[INSERT_USER_API_KEY_HERE]"))
+      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/postcode?postcode=SO16%200AS&key=[INSERT_USER_API_KEY_HERE]"))
       poso.header.totalresults should equal(1)
     }
 
@@ -48,7 +48,7 @@ class ResponseSpec extends UnitSpec {
       val resp = getResource(Path + "Multiple_Result_Response.json")
       val poso = Json.parse(resp).as[Response]
 
-      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/uprn?uprn=200010019924&key=[INSERT_USER_API_KEY_HERE]"))
+      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/postcode?postcode=SO16%200AS&key=[INSERT_USER_API_KEY_HERE]"))
       poso.header.totalresults should equal(3)
     }
 
@@ -66,7 +66,7 @@ class ResponseSpec extends UnitSpec {
       val resp = getResource(Path + "One_DPA_And_LPI_Result_Response.json")
       val poso = Json.parse(resp).as[Response]
 
-      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/uprn?uprn=200010019924&key=[INSERT_USER_API_KEY_HERE]"))
+      poso.header.uri should equal(new URI("https://api.ordnancesurvey.co.uk/places/v1/addresses/postcode?postcode=SO16%200AS&key=[INSERT_USER_API_KEY_HERE]"))
       poso.header.totalresults should equal(2)
     }
 

@@ -1,39 +1,31 @@
 package dvla.domain
 
-import org.scalatest.{Matchers, WordSpec}
 import dvla.domain.JsonFormats._
+import dvla.domain.address_lookup.AddressDto
+import org.scalatest.{Matchers, WordSpec}
 import spray.json._
-import dvla.domain.address_lookup.AddressViewModel
-import dvla.domain.address_lookup.PostcodeToAddressResponse
-import dvla.domain.address_lookup.AddressResponseDto
-import dvla.domain.address_lookup.UprnToAddressResponse
 
 class JsonFormatsSpec extends WordSpec with Matchers {
 
   "JsonFormats" should {
     "successfully unmarshall ordnance_survey valid json postcode to address lookup response payload into ordnance_survey response object" in {
-      val expectedResponse = PostcodeToAddressResponse(Seq(
-        AddressResponseDto(s"presentationProperty stub, 789, property stub, street stub, town stub, area stub, SA11AA", Some("12345"), None)))
+      val expectedResponse = Seq(AddressDto(
+        s"presentationProperty stub, 789, property stub, street stub, town stub, area stub, SA11AA",
+        None,
+        s"presentationProperty stub",
+        Some("789, property stub"),
+        Some("street stub"),
+        s"town stub",
+        s"SA11AA"))
       val jsonPayload =
-        """{"addresses":[
-          |{"uprn":"12345",
-          |"address":"presentationProperty stub, 789, property stub, street stub, town stub, area stub, SA11AA"
-          |}]}""".stripMargin
-      val unmarshalledResponse = jsonPayload.parseJson.convertTo[PostcodeToAddressResponse]
-      unmarshalledResponse should equal(expectedResponse)
-    }
-
-    "successfully unmarshall ordnance_survey valid json uprn to address lookup response payload into ordnance_survey response object" in {
-      val expectedResponse = UprnToAddressResponse(Some(AddressViewModel(
-        uprn = Some(12345),
-        address = Seq("44 Hythe Road", "White City", "London", "NW10 6RJ")
-      )))
-      val jsonPayload =
-        """{"addressViewModel":
-          |{"uprn":12345,
-          |"address":["44 Hythe Road","White City","London","NW10 6RJ"]
-          |}}""".stripMargin
-      val unmarshalledResponse = jsonPayload.parseJson.convertTo[UprnToAddressResponse]
+        """[{"addressLine":"presentationProperty stub, 789, property stub, street stub, town stub, area stub, SA11AA",
+          |"streetAddress1":"presentationProperty stub",
+          |"streetAddress2":"789, property stub",
+          |"streetAddress3":"street stub",
+          |"postTown":"town stub",
+          |"postCode":"SA11AA"
+          |}]""".stripMargin
+      val unmarshalledResponse = jsonPayload.parseJson.convertTo[Seq[AddressDto]]
       unmarshalledResponse should equal(expectedResponse)
     }
   }

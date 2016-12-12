@@ -1,11 +1,12 @@
 package dvla.microservice
 
 import java.util.TimeZone
+
 import akka.actor.{ActorSystem, Props}
 import akka.event.Logging
 import akka.io.IO
 import com.typesafe.config.ConfigFactory
-import dvla.microservice.ordnance_survey_preproduction.{CallOrdnanceSurveyImpl, PostcodeUrlBuilder, UprnUrlBuilder}
+import dvla.microservice.ordnance_survey_preproduction.{CallOrdnanceSurveyImpl, PostcodeUrlBuilder}
 import org.joda.time.DateTimeZone
 import spray.can.Http
 
@@ -30,8 +31,7 @@ object Boot extends App {
     val command = {
       val callOrdnanceSurvey = {
         val postcodeUrlBuilder = new PostcodeUrlBuilder(configuration = configuration)
-        val uprnUrlBuilder = new UprnUrlBuilder(configuration = configuration)
-        new CallOrdnanceSurveyImpl(postcodeUrlBuilder, uprnUrlBuilder)
+        new CallOrdnanceSurveyImpl(postcodeUrlBuilder)
       }
       new ordnance_survey_preproduction.LookupCommand(
         configuration = configuration,
