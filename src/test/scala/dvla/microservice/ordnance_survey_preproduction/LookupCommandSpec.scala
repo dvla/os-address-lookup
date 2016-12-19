@@ -514,7 +514,7 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
       }
     }
 
-    "1, ANOTHER ROAD, POST TOWN NAME IS FAR TOO LONG AND IS OVER THIRTY CHARACTERS, QQ9 9QQ should return post town abbreviated to the first 30 characters" in {
+    "1, ANOTHER ROAD, POST TOWN NAME IS FAR TOO LONG AND IS OVER THIRTY CHARACTERS, QQ9 9QQ should return post town abbreviated to the first twenty characters" in {
       val osResult = resultBuilder(buildingNumber = Some("1"),
         thoroughfareName = Some("ANOTHER ROAD"),
         postTown = "POST TOWN NAME IS FAR TOO LONG AND IS OVER THIRTY CHARACTERS",
@@ -525,12 +525,12 @@ class LookupCommandSpec extends UnitSpec with MockitoSugar {
 
       whenReady(result) { r =>
         r.length should equal(osResult.length)
-        r shouldBe Seq(AddressDto(s"1 ANOTHER ROAD, POST TOWN NAME IS FAR TOO LONG, QQ9 9QQ",
+        r shouldBe Seq(AddressDto(s"1 ANOTHER ROAD, POST TOWN NAME IS FA, QQ9 9QQ",
           None,
           s"1 ANOTHER ROAD",
           None,
           None,
-          s"POST TOWN NAME IS FAR TOO LONG",
+          s"POST TOWN NAME IS FA",
           s"QQ9 9QQ"))
       }
     }

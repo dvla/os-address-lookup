@@ -17,7 +17,7 @@ class LookupCommand(configuration: Configuration,
               extends AddressLookupCommand  {
 
   private final val LineMaxLength = 30
-  private final val TownMaxLength = 30
+  private final val TownMaxLength = 20
   private final val Separator = ", "
   private final val Space = " "
   private implicit final lazy val log = Logging(system, this.getClass)
@@ -53,7 +53,8 @@ class LookupCommand(configuration: Configuration,
         }
         case (None, None, Some(buildingName), None, None, Some(_), _, _) if noAlphas(buildingName) => {
           logMessage(trackingId, Debug, "applying rule10")
-          rule10(address)}
+          rule10(address)
+        }
         case (None, Some(_), None, None, None, Some(_), _, _) => {
           logMessage(trackingId, Debug, "applying rule7")
           rule7(address)
