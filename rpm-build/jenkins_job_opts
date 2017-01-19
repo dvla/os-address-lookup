@@ -2,5 +2,5 @@
 
 set -o errexit
 
-export SBT_OPTS="-Dspecs2.color=false -Dsbt.log.format=true -Dsbt.log.noformat=true -Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=3128 $SBT_OPTS"
+export SBT_OPTS="-Dspecs2.color=false -Dsbt.log.format=true -Dsbt.log.noformat=true  $SBT_OPTS"
 
