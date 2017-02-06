@@ -40,3 +40,6 @@ publishTo := {
   else
     Some("releases"  at s"$nexus/releases")
 }
+
+resolvers ++= Seq("Bintray-repo" at "http://dl.bintray.com/dvla/maven/")
+
